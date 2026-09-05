@@ -770,6 +770,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bootstrap_account: { Args: { _name?: string }; Returns: string }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
     }
