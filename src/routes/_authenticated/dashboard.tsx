@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/app/app-context";
 import { useAccounts, useTransactions } from "@/features/finance/queries";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
+import { contextEmoji, useContexts } from "@/features/contexts/queries";
 import { inMonth, netWorth, totalExpense, totalIncome } from "@/features/finance/calc";
 import { formatCurrency, formatDateLong, formatDateShort, formatTime, greeting } from "@/lib/format";
 
@@ -29,6 +30,7 @@ function Dashboard() {
   const eventsQuery = useEvents(workspaceId);
   const tasksQuery = useTasks(workspaceId);
   const goalsQuery = useGoals(workspaceId);
+  const contextsQuery = useContexts(workspaceId);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState onRetry={refetchWorkspace} />;
@@ -46,6 +48,9 @@ function Dashboard() {
     .slice(0, 4);
   const openTasks = (tasksQuery.data ?? []).filter((task) => task.status !== "DONE").slice(0, 5);
   const goals = (goalsQuery.data ?? []).slice(0, 3);
+  const activeContexts = (contextsQuery.data ?? [])
+    .filter((context) => context.status === "ACTIVE" || context.status === "PLANNED")
+    .slice(0, 5);
   const sharedMonth = monthly.filter((t) => t.is_shared && t.type === "EXPENSE");
   const sharedTotal = sharedMonth.reduce((total, t) => total + Number(t.amount), 0);
 
