@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -10,36 +10,100 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/features/app/app-context";
 import { parseAmount, toDateInput } from "@/lib/format";
+import { ContextSelect, NO_CONTEXT } from "./context-select";
 
 export type SimpleKind = "event" | "task" | "goal" | "note";
 
-const CONFIG: Record<SimpleKind, { title: string; label: string; queryKey: string }> = {
-  event: { title: "Novo evento", label: "Título do evento", queryKey: "events" },
-  task: { title: "Nova tarefa", label: "O que precisa ser feito?", queryKey: "tasks" },
-  goal: { title: "Nova meta", label: "Nome da meta", queryKey: "goals" },
-  note: { title: "Nova nota", label: "Título da nota", queryKey: "notes" },
+type SimpleRecord = {
+  id: string;
+  title: string;
+  context_id?: string | null;
+  visibility?: string | null;
+  content?: string | null;
+  due_date?: string | null;
+  starts_at?: string | null;
+  target_amount?: number | string | null;
+};
+
+const CONFIG: Record<SimpleKind, { title: string; editTitle: string; label: string; queryKey: string }> =
+  {
+    event: {
+      title: "Novo evento",
+      editTitle: "Editar evento",
+      label: "Título do evento",
+      queryKey: "events",
+    },
+    task: {
+      title: "Nova tarefa",
+      editTitle: "Editar tarefa",
+      label: "O que precisa ser feito?",
+      queryKey: "tasks",
+    },
+    goal: { title: "Nova meta", editTitle: "Editar meta", label: "Nome da meta", queryKey: "goals" },
+    note: { title: "Nova nota", editTitle: "Editar nota", label: "Título da nota", queryKey: "notes" },
+  };
+
+const TABLE: Record<SimpleKind, "events" | "tasks" | "goals" | "notes"> = {
+  event: "events",
+  task: "tasks",
+  goal: "goals",
+  note: "notes",
 };
 
 export function SimpleRecordDialog({
   kind,
   open,
   onOpenChange,
+  record,
+  defaultContextId,
 }: {
   kind: SimpleKind;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  record?: SimpleRecord | null;
+  defaultContextId?: string | null;
 }) {
-  const { workspaceId, userId } = useApp();
+  const { workspaceId, userId, activeContextId } = useApp();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(toDateInput());
   const [time, setTime] = useState("19:00");
   const [target, setTarget] = useState("");
   const [content, setContent] = useState("");
+  const [contextId, setContextId] = useState<string>(NO_CONTEXT);
   const [shared, setShared] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const config = CONFIG[kind];
+  const isEditing = !!record;
+
+  useEffect(() => {
+    if (!open) return;
+    if (record) {
+      setTitle(record.title ?? "");
+      setContent(record.content ?? "");
+      setTarget(record.target_amount ? String(Number(record.target_amount)).replace(".", ",") : "");
+      setContextId(record.context_id ?? NO_CONTEXT);
+      setShared(record.visibility === "SHARED");
+      if (record.starts_at) {
+        const start = new Date(record.starts_at);
+        setDate(toDateInput(start));
+        setTime(
+          `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`,
+        );
+      } else if (record.due_date) {
+        setDate(record.due_date);
+      }
+    } else {
+      setTitle("");
+      setContent("");
+      setTarget("");
+      setDate(toDateInput());
+      setTime("19:00");
+      setShared(false);
+      setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
+    }
+  }, [open, record, defaultContextId, activeContextId]);
 
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
@@ -48,33 +112,31 @@ export function SimpleRecordDialog({
       return;
     }
     setSaving(true);
-    const base = {
-      workspace_id: workspaceId,
-      owner_id: userId,
+    const shape = {
       title: title.trim(),
       visibility: shared ? ("SHARED" as const) : ("PRIVATE" as const),
+      context_id: contextId === NO_CONTEXT ? null : contextId,
     };
+    const specific =
+      kind === "event"
+        ? { starts_at: new Date(`${date}T${time}`).toISOString() }
+        : kind === "task"
+          ? { due_date: date }
+          : kind === "goal"
+            ? { target_amount: parseAmount(target) || null, due_date: date }
+            : { content };
+
     try {
-      let error = null;
-      if (kind === "event") {
-        ({ error } = await supabase
-          .from("events")
-          .insert({ ...base, starts_at: new Date(`${date}T${time}`).toISOString() }));
-      } else if (kind === "task") {
-        ({ error } = await supabase.from("tasks").insert({ ...base, due_date: date }));
-      } else if (kind === "goal") {
-        ({ error } = await supabase
-          .from("goals")
-          .insert({ ...base, target_amount: parseAmount(target) || null, due_date: date }));
-      } else {
-        ({ error } = await supabase.from("notes").insert({ ...base, content }));
-      }
+      const values = { ...shape, ...specific };
+      const { error } = isEditing
+        ? await supabase.from(TABLE[kind]).update(values).eq("id", record!.id)
+        : await supabase
+            .from(TABLE[kind])
+            .insert({ ...values, workspace_id: workspaceId, owner_id: userId });
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: [config.queryKey] });
-      toast.success("Registro criado.");
-      setTitle("");
-      setContent("");
-      setTarget("");
+      await queryClient.invalidateQueries({ queryKey: ["goal", record?.id] });
+      toast.success(isEditing ? "Registro atualizado." : "Registro criado.");
       onOpenChange(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");
@@ -85,9 +147,9 @@ export function SimpleRecordDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{config.title}</DialogTitle>
+          <DialogTitle>{isEditing ? config.editTitle : config.title}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
@@ -146,6 +208,8 @@ export function SimpleRecordDialog({
               />
             </div>
           )}
+
+          <ContextSelect value={contextId} onChange={setContextId} />
 
           <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
             <div>
