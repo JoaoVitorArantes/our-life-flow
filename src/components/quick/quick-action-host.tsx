@@ -4,6 +4,11 @@ import { QuickActionMenu } from "./quick-action-menu";
 import { TransactionDialog } from "./transaction-dialog";
 import { SimpleRecordDialog, type SimpleKind } from "./simple-record-dialog";
 import { ContextDialog } from "./context-dialog";
+import { TransferDialog } from "./transfer-dialog";
+import { InstallmentDialog } from "./installment-dialog";
+import { RecurringDialog } from "./recurring-dialog";
+import { LoanDialog } from "./loan-dialog";
+import { FinancingDialog } from "./financing-dialog";
 
 const SIMPLE: SimpleKind[] = ["event", "task", "goal", "note"];
 
@@ -26,6 +31,11 @@ export function QuickActionHost() {
       ) : null}
 
       {quickAction === "context" ? <ContextDialog open onOpenChange={close} /> : null}
+      {quickAction === "transfer" ? <TransferDialog open onOpenChange={close} /> : null}
+      {quickAction === "installment" ? <InstallmentDialog open onOpenChange={close} /> : null}
+      {quickAction === "recurring" ? <RecurringDialog open onOpenChange={close} /> : null}
+      {quickAction === "loan" ? <LoanDialog open onOpenChange={close} /> : null}
+      {quickAction === "financing" ? <FinancingDialog open onOpenChange={close} /> : null}
 
       <Dialog open={quickAction === "workout"} onOpenChange={close}>
         <DialogContent className="sm:max-w-md">
