@@ -24,6 +24,7 @@ import { Route as AuthenticatedNosRouteImport } from './routes/_authenticated/no
 import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
+import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -101,6 +102,12 @@ const AuthenticatedContextosIndexRoute =
     path: '/contextos/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedContextosIdRoute =
+  AuthenticatedContextosIdRouteImport.update({
+    id: '/contextos/$id',
+    path: '/contextos/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/nos': typeof AuthenticatedNosRoute
   '/notas': typeof AuthenticatedNotasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/contextos/': typeof AuthenticatedContextosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -132,6 +140,7 @@ export interface FileRoutesByTo {
   '/nos': typeof AuthenticatedNosRoute
   '/notas': typeof AuthenticatedNotasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/contextos': typeof AuthenticatedContextosIndexRoute
 }
 export interface FileRoutesById {
@@ -150,6 +159,7 @@ export interface FileRoutesById {
   '/_authenticated/nos': typeof AuthenticatedNosRoute
   '/_authenticated/notas': typeof AuthenticatedNotasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
+  '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/_authenticated/contextos/': typeof AuthenticatedContextosIndexRoute
 }
 export interface FileRouteTypes {
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/nos'
     | '/notas'
     | '/tarefas'
+    | '/contextos/$id'
     | '/contextos/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/nos'
     | '/notas'
     | '/tarefas'
+    | '/contextos/$id'
     | '/contextos'
   id:
     | '__root__'
@@ -201,6 +213,7 @@ export interface FileRouteTypes {
     | '/_authenticated/nos'
     | '/_authenticated/notas'
     | '/_authenticated/tarefas'
+    | '/_authenticated/contextos/$id'
     | '/_authenticated/contextos/'
   fileRoutesById: FileRoutesById
 }
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContextosIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/contextos/$id': {
+      id: '/_authenticated/contextos/$id'
+      path: '/contextos/$id'
+      fullPath: '/contextos/$id'
+      preLoaderRoute: typeof AuthenticatedContextosIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -332,6 +352,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNosRoute: typeof AuthenticatedNosRoute
   AuthenticatedNotasRoute: typeof AuthenticatedNotasRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
+  AuthenticatedContextosIdRoute: typeof AuthenticatedContextosIdRoute
   AuthenticatedContextosIndexRoute: typeof AuthenticatedContextosIndexRoute
 }
 
@@ -346,6 +367,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNosRoute: AuthenticatedNosRoute,
   AuthenticatedNotasRoute: AuthenticatedNotasRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
+  AuthenticatedContextosIdRoute: AuthenticatedContextosIdRoute,
   AuthenticatedContextosIndexRoute: AuthenticatedContextosIndexRoute,
 }
 
