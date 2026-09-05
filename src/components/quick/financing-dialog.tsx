@@ -63,8 +63,8 @@ export function FinancingDialog({ open, onOpenChange }: Props) {
 
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
-    if (!name.trim()) return toast.error("Informe o nome.");
-    if (!installmentValue) return toast.error("Informe o valor da parcela.");
+    if (!name.trim()) { toast.error("Informe o nome."); return; }
+    if (!installmentValue) { toast.error("Informe o valor da parcela."); return; }
 
     setSaving(true);
     try {

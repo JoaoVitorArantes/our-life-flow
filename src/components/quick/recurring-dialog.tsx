@@ -88,8 +88,8 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
     const value = parseAmount(amount);
-    if (!description.trim()) return toast.error("Informe uma descrição.");
-    if (!value) return toast.error("Informe um valor.");
+    if (!description.trim()) { toast.error("Informe uma descrição."); return; }
+    if (!value) { toast.error("Informe um valor."); return; }
 
     setSaving(true);
     try {

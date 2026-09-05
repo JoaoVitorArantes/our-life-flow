@@ -42,9 +42,9 @@ export function TransferDialog({ open, onOpenChange }: Props) {
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
     const value = parseAmount(amount);
-    if (!value) return toast.error("Informe um valor.");
-    if (!from || !to) return toast.error("Escolha as contas de origem e destino.");
-    if (from === to) return toast.error("As contas devem ser diferentes.");
+    if (!value) { toast.error("Informe um valor."); return; }
+    if (!from || !to) { toast.error("Escolha as contas de origem e destino."); return; }
+    if (from === to) { toast.error("As contas devem ser diferentes."); return; }
 
     setSaving(true);
     try {

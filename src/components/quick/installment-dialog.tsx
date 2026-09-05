@@ -66,8 +66,8 @@ export function InstallmentDialog({ open, onOpenChange, defaultContextId }: Prop
 
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
-    if (!description.trim()) return toast.error("Informe uma descrição.");
-    if (!totalValue) return toast.error("Informe o valor total.");
+    if (!description.trim()) { toast.error("Informe uma descrição."); return; }
+    if (!totalValue) { toast.error("Informe o valor total."); return; }
 
     setSaving(true);
     try {

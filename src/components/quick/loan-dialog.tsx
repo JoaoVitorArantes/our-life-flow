@@ -61,8 +61,8 @@ export function LoanDialog({ open, onOpenChange }: Props) {
 
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
-    if (!person.trim()) return toast.error("Informe a pessoa.");
-    if (!totalValue) return toast.error("Informe o valor.");
+    if (!person.trim()) { toast.error("Informe a pessoa."); return; }
+    if (!totalValue) { toast.error("Informe o valor."); return; }
 
     setSaving(true);
     try {
