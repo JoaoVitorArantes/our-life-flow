@@ -81,6 +81,7 @@ export function TransactionDialog({
       );
       setContextId(transaction.context_id ?? NO_CONTEXT);
       setDate(transaction.transaction_date);
+      setStatus(transaction.status);
       setShared(!!transaction.is_shared);
       setNotes(transaction.notes ?? "");
     } else {
