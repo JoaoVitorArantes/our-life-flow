@@ -302,6 +302,101 @@ export type Database = {
           },
         ]
       }
+      financings: {
+        Row: {
+          account_id: string | null
+          category_id: string | null
+          context_id: string | null
+          created_at: string
+          description: string | null
+          due_day: number | null
+          financed_amount: number
+          id: string
+          installment_amount: number
+          interest_rate: number | null
+          is_demo: boolean
+          name: string
+          owner_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["obligation_status"]
+          total_installments: number
+          updated_at: string
+          visibility: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          category_id?: string | null
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_day?: number | null
+          financed_amount?: number
+          id?: string
+          installment_amount?: number
+          interest_rate?: number | null
+          is_demo?: boolean
+          name: string
+          owner_id: string
+          start_date: string
+          status?: Database["public"]["Enums"]["obligation_status"]
+          total_installments?: number
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Update: {
+          account_id?: string | null
+          category_id?: string | null
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_day?: number | null
+          financed_amount?: number
+          id?: string
+          installment_amount?: number
+          interest_rate?: number | null
+          is_demo?: boolean
+          name?: string
+          owner_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["obligation_status"]
+          total_installments?: number
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_contributions: {
         Row: {
           amount: number
@@ -412,6 +507,102 @@ export type Database = {
           },
         ]
       }
+      installment_plans: {
+        Row: {
+          account_id: string | null
+          card_id: string | null
+          category_id: string | null
+          context_id: string | null
+          created_at: string
+          description: string
+          id: string
+          installment_amount: number
+          is_demo: boolean
+          notes: string | null
+          owner_id: string
+          start_date: string
+          total_amount: number
+          total_installments: number
+          updated_at: string
+          visibility: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          card_id?: string | null
+          category_id?: string | null
+          context_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          installment_amount?: number
+          is_demo?: boolean
+          notes?: string | null
+          owner_id: string
+          start_date: string
+          total_amount?: number
+          total_installments?: number
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Update: {
+          account_id?: string | null
+          card_id?: string | null
+          category_id?: string | null
+          context_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          installment_amount?: number
+          is_demo?: boolean
+          notes?: string | null
+          owner_id?: string
+          start_date?: string
+          total_amount?: number
+          total_installments?: number
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installment_plans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installment_plans_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installment_plans_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installment_plans_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installment_plans_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       installments: {
         Row: {
           created_at: string
@@ -446,6 +637,91 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          account_id: string | null
+          context_id: string | null
+          created_at: string
+          description: string | null
+          due_day: number | null
+          id: string
+          installment_amount: number
+          is_demo: boolean
+          owner_id: string
+          person_name: string
+          start_date: string
+          status: Database["public"]["Enums"]["obligation_status"]
+          total_amount: number
+          total_installments: number
+          type: Database["public"]["Enums"]["loan_type"]
+          updated_at: string
+          visibility: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_day?: number | null
+          id?: string
+          installment_amount?: number
+          is_demo?: boolean
+          owner_id: string
+          person_name: string
+          start_date: string
+          status?: Database["public"]["Enums"]["obligation_status"]
+          total_amount?: number
+          total_installments?: number
+          type?: Database["public"]["Enums"]["loan_type"]
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Update: {
+          account_id?: string | null
+          context_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_day?: number | null
+          id?: string
+          installment_amount?: number
+          is_demo?: boolean
+          owner_id?: string
+          person_name?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["obligation_status"]
+          total_amount?: number
+          total_installments?: number
+          type?: Database["public"]["Enums"]["loan_type"]
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -535,9 +811,12 @@ export type Database = {
         Row: {
           account_id: string | null
           amount: number
+          card_id: string | null
           category_id: string | null
+          context_id: string | null
           created_at: string
           description: string
+          due_day: number | null
           end_date: string | null
           frequency: Database["public"]["Enums"]["recurrence_frequency"]
           id: string
@@ -554,9 +833,12 @@ export type Database = {
         Insert: {
           account_id?: string | null
           amount: number
+          card_id?: string | null
           category_id?: string | null
+          context_id?: string | null
           created_at?: string
           description: string
+          due_day?: number | null
           end_date?: string | null
           frequency?: Database["public"]["Enums"]["recurrence_frequency"]
           id?: string
@@ -573,9 +855,12 @@ export type Database = {
         Update: {
           account_id?: string | null
           amount?: number
+          card_id?: string | null
           category_id?: string | null
+          context_id?: string | null
           created_at?: string
           description?: string
+          due_day?: number | null
           end_date?: string | null
           frequency?: Database["public"]["Enums"]["recurrence_frequency"]
           id?: string
@@ -598,10 +883,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "recurring_transactions_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "recurring_transactions_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
             referencedColumns: ["id"]
           },
           {
@@ -759,12 +1058,20 @@ export type Database = {
           created_at: string
           description: string
           destination_account_id: string | null
+          due_date: string | null
+          financing_id: string | null
           id: string
+          installment_number: number | null
+          installment_plan_id: string | null
           is_demo: boolean
           is_shared: boolean
+          loan_id: string | null
           notes: string | null
           owner_id: string
+          paid_at: string | null
+          recurring_id: string | null
           source_account_id: string | null
+          status: Database["public"]["Enums"]["payment_status"]
           transaction_date: string
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
@@ -780,12 +1087,20 @@ export type Database = {
           created_at?: string
           description: string
           destination_account_id?: string | null
+          due_date?: string | null
+          financing_id?: string | null
           id?: string
+          installment_number?: number | null
+          installment_plan_id?: string | null
           is_demo?: boolean
           is_shared?: boolean
+          loan_id?: string | null
           notes?: string | null
           owner_id: string
+          paid_at?: string | null
+          recurring_id?: string | null
           source_account_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
           transaction_date?: string
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
@@ -801,12 +1116,20 @@ export type Database = {
           created_at?: string
           description?: string
           destination_account_id?: string | null
+          due_date?: string | null
+          financing_id?: string | null
           id?: string
+          installment_number?: number | null
+          installment_plan_id?: string | null
           is_demo?: boolean
           is_shared?: boolean
+          loan_id?: string | null
           notes?: string | null
           owner_id?: string
+          paid_at?: string | null
+          recurring_id?: string | null
           source_account_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
           transaction_date?: string
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
@@ -847,6 +1170,34 @@ export type Database = {
             columns: ["destination_account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_financing_id_fkey"
+            columns: ["financing_id"]
+            isOneToOne: false
+            referencedRelation: "financings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_installment_plan_id_fkey"
+            columns: ["installment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "installment_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_recurring_id_fkey"
+            columns: ["recurring_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_transactions"
             referencedColumns: ["id"]
           },
           {
@@ -946,7 +1297,10 @@ export type Database = {
         | "COUPLE"
         | "OTHER"
       goal_status: "ACTIVE" | "PAUSED" | "DONE"
+      loan_type: "LENT" | "BORROWED"
       member_role: "OWNER" | "MEMBER"
+      obligation_status: "ACTIVE" | "COMPLETED" | "CANCELLED"
+      payment_status: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED"
       recurrence_frequency: "WEEKLY" | "MONTHLY" | "YEARLY" | "CUSTOM"
       settlement_status: "PENDING" | "SETTLED" | "CANCELLED"
       task_status: "TODO" | "DOING" | "DONE"
@@ -1092,7 +1446,10 @@ export const Constants = {
         "OTHER",
       ],
       goal_status: ["ACTIVE", "PAUSED", "DONE"],
+      loan_type: ["LENT", "BORROWED"],
       member_role: ["OWNER", "MEMBER"],
+      obligation_status: ["ACTIVE", "COMPLETED", "CANCELLED"],
+      payment_status: ["PENDING", "PAID", "OVERDUE", "CANCELLED"],
       recurrence_frequency: ["WEEKLY", "MONTHLY", "YEARLY", "CUSTOM"],
       settlement_status: ["PENDING", "SETTLED", "CANCELLED"],
       task_status: ["TODO", "DOING", "DONE"],
