@@ -55,6 +55,23 @@ export function useGoals(workspaceId?: string) {
   });
 }
 
+export function useGoal(goalId?: string) {
+  return useQuery({
+    queryKey: ["goal", goalId],
+    enabled: !!goalId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("goals")
+        .select("*")
+        .eq("id", goalId!)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as Goal | null) ?? null;
+    },
+  });
+}
+
+
 export function useNotes(workspaceId?: string) {
   return useQuery({
     queryKey: ["notes", workspaceId],

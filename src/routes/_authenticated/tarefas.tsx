@@ -1,14 +1,18 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckSquare } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader, Panel, PanelTitle } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
+import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { SimpleRecordDialog } from "@/components/quick/simple-record-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/features/app/app-context";
-import { useTasks } from "@/features/planner/queries";
+import { useTasks, type Task } from "@/features/planner/queries";
 import { formatDateShort } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/tarefas")({
@@ -24,9 +28,10 @@ export const Route = createFileRoute("/_authenticated/tarefas")({
 });
 
 function Tarefas() {
-  const { workspaceId, openQuickAction } = useApp();
+  const { workspaceId, userId, openQuickAction } = useApp();
   const { data: tasks = [], isLoading } = useTasks(workspaceId);
   const queryClient = useQueryClient();
+  const [editing, setEditing] = useState<Task | null>(null);
 
   async function toggle(id: string, done: boolean) {
     await supabase
@@ -35,6 +40,17 @@ function Tarefas() {
       .eq("id", id);
 
     await queryClient.invalidateQueries({ queryKey: ["tasks"] });
+  }
+
+  async function remove(task: Task) {
+    try {
+      const { error } = await supabase.from("tasks").delete().eq("id", task.id);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Tarefa excluída.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível excluir.");
+    }
   }
 
   if (isLoading) return <LoadingState />;
@@ -79,6 +95,13 @@ function Tarefas() {
                     {formatDateShort(task.due_date)}
                   </span>
                 ) : null}
+                <RecordActions
+                  canManage={task.owner_id === userId}
+                  onEdit={() => setEditing(task)}
+                  onDelete={() => remove(task)}
+                  confirmTitle="Excluir esta tarefa?"
+                  confirmDescription="Essa ação não poderá ser desfeita."
+                />
               </li>
             ))}
           </ul>
@@ -93,11 +116,27 @@ function Tarefas() {
               <li key={task.id} className="flex items-center gap-3 py-3 text-muted-foreground">
                 <Checkbox checked onCheckedChange={() => toggle(task.id, false)} />
                 <span className="min-w-0 flex-1 truncate text-sm line-through">{task.title}</span>
+                <RecordActions
+                  canManage={task.owner_id === userId}
+                  onEdit={() => setEditing(task)}
+                  onDelete={() => remove(task)}
+                  confirmTitle="Excluir esta tarefa?"
+                  confirmDescription="Essa ação não poderá ser desfeita."
+                />
               </li>
             ))}
           </ul>
         </Panel>
       ) : null}
+
+      <SimpleRecordDialog
+        kind="task"
+        open={!!editing}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+        record={editing}
+      />
     </div>
   );
 }

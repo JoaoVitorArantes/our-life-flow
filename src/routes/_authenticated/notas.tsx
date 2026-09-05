@@ -1,11 +1,17 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { StickyNote } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader, Panel } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
+import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SimpleRecordDialog } from "@/components/quick/simple-record-dialog";
+import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/features/app/app-context";
-import { useNotes } from "@/features/planner/queries";
+import { useNotes, type Note } from "@/features/planner/queries";
 
 export const Route = createFileRoute("/_authenticated/notas")({
   head: () => ({
@@ -20,10 +26,23 @@ export const Route = createFileRoute("/_authenticated/notas")({
 });
 
 function Notas() {
-  const { workspaceId, openQuickAction } = useApp();
+  const { workspaceId, userId, openQuickAction } = useApp();
   const { data: notes = [], isLoading } = useNotes(workspaceId);
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState<Note | null>(null);
 
   if (isLoading) return <LoadingState />;
+
+  async function remove(note: Note) {
+    try {
+      const { error } = await supabase.from("notes").delete().eq("id", note.id);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["notes"] });
+      toast.success("Nota excluída.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível excluir.");
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -53,8 +72,17 @@ function Notas() {
           {notes.map((note) => (
             <Panel key={note.id} className="space-y-2">
               <div className="flex items-start justify-between gap-3">
-                <p className="font-medium">{note.title}</p>
-                {note.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                <p className="min-w-0 flex-1 truncate font-medium">{note.title}</p>
+                <div className="flex items-center gap-2">
+                  {note.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                  <RecordActions
+                    canManage={note.owner_id === userId}
+                    onEdit={() => setEditing(note)}
+                    onDelete={() => remove(note)}
+                    confirmTitle="Excluir esta nota?"
+                    confirmDescription="Essa ação não poderá ser desfeita."
+                  />
+                </div>
               </div>
               {note.content ? (
                 <p className="whitespace-pre-wrap text-sm text-muted-foreground">{note.content}</p>
@@ -63,6 +91,15 @@ function Notas() {
           ))}
         </div>
       )}
+
+      <SimpleRecordDialog
+        kind="note"
+        open={!!editing}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+        record={editing}
+      />
     </div>
   );
 }

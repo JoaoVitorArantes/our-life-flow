@@ -1,11 +1,17 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader, Panel, PanelTitle } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
+import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SimpleRecordDialog } from "@/components/quick/simple-record-dialog";
+import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/features/app/app-context";
-import { useEvents } from "@/features/planner/queries";
+import { useEvents, type Event } from "@/features/planner/queries";
 import { formatDateShort, formatTime } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
@@ -21,14 +27,27 @@ export const Route = createFileRoute("/_authenticated/agenda")({
 });
 
 function Agenda() {
-  const { workspaceId, openQuickAction } = useApp();
+  const { workspaceId, userId, openQuickAction } = useApp();
   const { data: events = [], isLoading } = useEvents(workspaceId);
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState<Event | null>(null);
 
   if (isLoading) return <LoadingState />;
 
   const today = new Date(new Date().toDateString());
   const upcoming = events.filter((event) => new Date(event.starts_at) >= today);
   const past = events.filter((event) => new Date(event.starts_at) < today).reverse();
+
+  async function remove(event: Event) {
+    try {
+      const { error } = await supabase.from("events").delete().eq("id", event.id);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast.success("Evento excluído.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível excluir.");
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -65,7 +84,16 @@ function Agenda() {
                     {formatDateShort(new Date(event.starts_at))} · {formatTime(event.starts_at)}
                   </p>
                 </div>
-                {event.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                <div className="flex shrink-0 items-center gap-2">
+                  {event.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                  <RecordActions
+                    canManage={event.owner_id === userId}
+                    onEdit={() => setEditing(event)}
+                    onDelete={() => remove(event)}
+                    confirmTitle="Excluir este evento?"
+                    confirmDescription="Essa ação não poderá ser desfeita."
+                  />
+                </div>
               </li>
             ))}
           </ul>
@@ -77,16 +105,34 @@ function Agenda() {
           <PanelTitle>Anteriores</PanelTitle>
           <ul className="divide-y divide-border">
             {past.slice(0, 10).map((event) => (
-              <li key={event.id} className="flex items-center justify-between gap-3 py-3 text-muted-foreground">
-                <p className="truncate text-sm">{event.title}</p>
-                <span className="numeric shrink-0 text-xs">
-                  {formatDateShort(new Date(event.starts_at))}
-                </span>
+              <li key={event.id} className="flex items-center justify-between gap-3 py-3">
+                <p className="truncate text-sm text-muted-foreground">{event.title}</p>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="numeric text-xs text-muted-foreground">
+                    {formatDateShort(new Date(event.starts_at))}
+                  </span>
+                  <RecordActions
+                    canManage={event.owner_id === userId}
+                    onEdit={() => setEditing(event)}
+                    onDelete={() => remove(event)}
+                    confirmTitle="Excluir este evento?"
+                    confirmDescription="Essa ação não poderá ser desfeita."
+                  />
+                </div>
               </li>
             ))}
           </ul>
         </Panel>
       ) : null}
+
+      <SimpleRecordDialog
+        kind="event"
+        open={!!editing}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+        record={editing}
+      />
     </div>
   );
 }

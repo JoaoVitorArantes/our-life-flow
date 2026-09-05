@@ -1,0 +1,211 @@
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useApp } from "@/features/app/app-context";
+import { ACCOUNT_TYPES } from "@/features/finance/constants";
+import { saveAccount, saveCard, saveCategory } from "@/features/finance/mutations";
+import type { Account, Card, Category } from "@/features/finance/queries";
+import { parseAmount } from "@/lib/format";
+import type { Enums } from "@/integrations/supabase/types";
+
+export type FinanceEntityKind = "account" | "card" | "category";
+
+const TITLES: Record<FinanceEntityKind, [string, string]> = {
+  account: ["Nova conta", "Editar conta"],
+  card: ["Novo cartão", "Editar cartão"],
+  category: ["Nova categoria", "Editar categoria"],
+};
+
+export function FinanceEntityDialog({
+  kind,
+  open,
+  onOpenChange,
+  record,
+}: {
+  kind: FinanceEntityKind;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  record?: Account | Card | Category | null;
+}) {
+  const { workspaceId, userId } = useApp();
+  const queryClient = useQueryClient();
+  const [name, setName] = useState("");
+  const [institution, setInstitution] = useState("");
+  const [accountType, setAccountType] = useState<Enums<"account_type">>("CHECKING");
+  const [initialBalance, setInitialBalance] = useState("");
+  const [creditLimit, setCreditLimit] = useState("");
+  const [categoryType, setCategoryType] = useState<Enums<"category_type">>("EXPENSE");
+  const [saving, setSaving] = useState(false);
+
+  const isEditing = !!record;
+
+  useEffect(() => {
+    if (!open) return;
+    const any = record as (Account & Card & Category) | null | undefined;
+    setName(any?.name ?? "");
+    setInstitution(any?.institution ?? "");
+    setAccountType((any?.account_type as Enums<"account_type">) ?? "CHECKING");
+    setInitialBalance(any?.initial_balance ? String(Number(any.initial_balance)) : "");
+    setCreditLimit(any?.credit_limit ? String(Number(any.credit_limit)) : "");
+    setCategoryType((any?.type as Enums<"category_type">) ?? "EXPENSE");
+  }, [open, record]);
+
+  async function handleSubmit() {
+    if (!workspaceId || !userId) return;
+    if (!name.trim()) {
+      toast.error("Informe um nome.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const id = record?.id ?? null;
+      if (kind === "account") {
+        const balance = parseAmount(initialBalance);
+        await saveAccount(id, {
+          workspace_id: workspaceId,
+          owner_id: userId,
+          name: name.trim(),
+          institution: institution.trim() || null,
+          account_type: accountType,
+          initial_balance: balance,
+          current_balance: balance,
+        });
+        await queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      } else if (kind === "card") {
+        await saveCard(id, {
+          workspace_id: workspaceId,
+          owner_id: userId,
+          name: name.trim(),
+          institution: institution.trim() || null,
+          credit_limit: parseAmount(creditLimit),
+        });
+        await queryClient.invalidateQueries({ queryKey: ["cards"] });
+      } else {
+        await saveCategory(id, {
+          workspace_id: workspaceId,
+          name: name.trim(),
+          type: categoryType,
+        });
+        await queryClient.invalidateQueries({ queryKey: ["categories"] });
+      }
+      toast.success(isEditing ? "Atualizado." : "Criado.");
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{TITLES[kind][isEditing ? 1 : 0]}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="entity-name">Nome</Label>
+            <Input
+              id="entity-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              autoFocus
+            />
+          </div>
+
+          {kind !== "category" ? (
+            <div className="space-y-2">
+              <Label htmlFor="entity-institution">Instituição</Label>
+              <Input
+                id="entity-institution"
+                value={institution}
+                onChange={(event) => setInstitution(event.target.value)}
+              />
+            </div>
+          ) : null}
+
+          {kind === "account" ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Tipo</Label>
+                <Select
+                  value={accountType}
+                  onValueChange={(value) => setAccountType(value as Enums<"account_type">)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCOUNT_TYPES.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="entity-balance">Saldo inicial</Label>
+                <Input
+                  id="entity-balance"
+                  inputMode="decimal"
+                  placeholder="R$ 0,00"
+                  value={initialBalance}
+                  onChange={(event) => setInitialBalance(event.target.value)}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {kind === "card" ? (
+            <div className="space-y-2">
+              <Label htmlFor="entity-limit">Limite</Label>
+              <Input
+                id="entity-limit"
+                inputMode="decimal"
+                placeholder="R$ 0,00"
+                value={creditLimit}
+                onChange={(event) => setCreditLimit(event.target.value)}
+              />
+            </div>
+          ) : null}
+
+          {kind === "category" ? (
+            <div className="space-y-2">
+              <Label>Tipo</Label>
+              <Select
+                value={categoryType}
+                onValueChange={(value) => setCategoryType(value as Enums<"category_type">)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EXPENSE">Despesa</SelectItem>
+                  <SelectItem value="INCOME">Receita</SelectItem>
+                  <SelectItem value="BOTH">Ambos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
+
+          <Button className="w-full" disabled={saving} onClick={handleSubmit}>
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -5,6 +5,7 @@ import {
   CheckSquare,
   Dumbbell,
   StickyNote,
+  Compass,
   Target,
 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -17,6 +18,7 @@ const OPTIONS: { kind: QuickActionKind; label: string; icon: typeof ArrowUpRight
   { kind: "task", label: "Nova tarefa", icon: CheckSquare },
   { kind: "goal", label: "Nova meta", icon: Target },
   { kind: "note", label: "Nova nota", icon: StickyNote },
+  { kind: "context", label: "Novo contexto", icon: Compass },
   { kind: "workout", label: "Novo treino", icon: Dumbbell },
 ];
 

@@ -174,8 +174,74 @@ export type Database = {
           },
         ]
       }
+      contexts: {
+        Row: {
+          color: string | null
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_demo: boolean
+          location: string | null
+          name: string
+          owner_id: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["context_status"]
+          type: Database["public"]["Enums"]["context_type"]
+          updated_at: string
+          visibility: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Insert: {
+          color?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_demo?: boolean
+          location?: string | null
+          name: string
+          owner_id: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["context_status"]
+          type?: Database["public"]["Enums"]["context_type"]
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Update: {
+          color?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_demo?: boolean
+          location?: string | null
+          name?: string
+          owner_id?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["context_status"]
+          type?: Database["public"]["Enums"]["context_type"]
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexts_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
+          context_id: string | null
           created_at: string
           description: string | null
           ends_at: string | null
@@ -190,6 +256,7 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          context_id?: string | null
           created_at?: string
           description?: string | null
           ends_at?: string | null
@@ -204,6 +271,7 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          context_id?: string | null
           created_at?: string
           description?: string | null
           ends_at?: string | null
@@ -219,6 +287,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "events_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "events_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
@@ -227,8 +302,53 @@ export type Database = {
           },
         ]
       }
+      goal_contributions: {
+        Row: {
+          amount: number
+          contribution_date: string
+          created_at: string
+          description: string | null
+          goal_id: string
+          id: string
+          is_demo: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          contribution_date?: string
+          created_at?: string
+          description?: string | null
+          goal_id: string
+          id?: string
+          is_demo?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contribution_date?: string
+          created_at?: string
+          description?: string | null
+          goal_id?: string
+          id?: string
+          is_demo?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_contributions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
+          context_id: string | null
           created_at: string
           current_amount: number
           description: string | null
@@ -244,6 +364,7 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          context_id?: string | null
           created_at?: string
           current_amount?: number
           description?: string | null
@@ -259,6 +380,7 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          context_id?: string | null
           created_at?: string
           current_amount?: number
           description?: string | null
@@ -274,6 +396,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "goals_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "goals_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -324,6 +453,7 @@ export type Database = {
       notes: {
         Row: {
           content: string | null
+          context_id: string | null
           created_at: string
           id: string
           is_demo: boolean
@@ -335,6 +465,7 @@ export type Database = {
         }
         Insert: {
           content?: string | null
+          context_id?: string | null
           created_at?: string
           id?: string
           is_demo?: boolean
@@ -346,6 +477,7 @@ export type Database = {
         }
         Update: {
           content?: string | null
+          context_id?: string | null
           created_at?: string
           id?: string
           is_demo?: boolean
@@ -356,6 +488,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "notes_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notes_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -517,6 +656,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          context_id: string | null
           created_at: string
           due_date: string | null
           id: string
@@ -530,6 +670,7 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          context_id?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
@@ -543,6 +684,7 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          context_id?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
@@ -556,6 +698,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -606,6 +755,7 @@ export type Database = {
           amount: number
           card_id: string | null
           category_id: string | null
+          context_id: string | null
           created_at: string
           description: string
           destination_account_id: string | null
@@ -626,6 +776,7 @@ export type Database = {
           amount: number
           card_id?: string | null
           category_id?: string | null
+          context_id?: string | null
           created_at?: string
           description: string
           destination_account_id?: string | null
@@ -646,6 +797,7 @@ export type Database = {
           amount?: number
           card_id?: string | null
           category_id?: string | null
+          context_id?: string | null
           created_at?: string
           description?: string
           destination_account_id?: string | null
@@ -681,6 +833,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
             referencedColumns: ["id"]
           },
           {
@@ -777,6 +936,15 @@ export type Database = {
     Enums: {
       account_type: "CHECKING" | "SAVINGS" | "CASH" | "INVESTMENT" | "OTHER"
       category_type: "INCOME" | "EXPENSE" | "BOTH"
+      context_status: "PLANNED" | "ACTIVE" | "COMPLETED" | "ARCHIVED"
+      context_type:
+        | "EVENT"
+        | "TRIP"
+        | "PROJECT"
+        | "COLLEGE"
+        | "PERSONAL"
+        | "COUPLE"
+        | "OTHER"
       goal_status: "ACTIVE" | "PAUSED" | "DONE"
       member_role: "OWNER" | "MEMBER"
       recurrence_frequency: "WEEKLY" | "MONTHLY" | "YEARLY" | "CUSTOM"
@@ -913,6 +1081,16 @@ export const Constants = {
     Enums: {
       account_type: ["CHECKING", "SAVINGS", "CASH", "INVESTMENT", "OTHER"],
       category_type: ["INCOME", "EXPENSE", "BOTH"],
+      context_status: ["PLANNED", "ACTIVE", "COMPLETED", "ARCHIVED"],
+      context_type: [
+        "EVENT",
+        "TRIP",
+        "PROJECT",
+        "COLLEGE",
+        "PERSONAL",
+        "COUPLE",
+        "OTHER",
+      ],
       goal_status: ["ACTIVE", "PAUSED", "DONE"],
       member_role: ["OWNER", "MEMBER"],
       recurrence_frequency: ["WEEKLY", "MONTHLY", "YEARLY", "CUSTOM"],

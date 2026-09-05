@@ -9,7 +9,8 @@ export type QuickActionKind =
   | "task"
   | "goal"
   | "note"
-  | "workout";
+  | "workout"
+  | "context";
 
 type AppContextValue = {
   workspaceId?: string | undefined;
@@ -26,6 +27,9 @@ type AppContextValue = {
   openQuickAction: (kind: QuickActionKind | null) => void;
   quickMenuOpen: boolean;
   setQuickMenuOpen: (open: boolean) => void;
+  /** Context the user is currently browsing; new records inherit it. */
+  activeContextId: string | null;
+  setActiveContextId: (id: string | null) => void;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -36,6 +40,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [quickAction, setQuickAction] = useState<QuickActionKind | null>(null);
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
+  const [activeContextId, setActiveContextId] = useState<string | null>(null);
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -56,8 +61,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       },
       quickMenuOpen,
       setQuickMenuOpen,
+      activeContextId,
+      setActiveContextId,
     }),
-    [workspaceQuery, user?.id, commandOpen, quickAction, quickMenuOpen],
+    [workspaceQuery, user?.id, commandOpen, quickAction, quickMenuOpen, activeContextId],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
