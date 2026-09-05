@@ -54,6 +54,7 @@ export function TransactionDialog({
   const [payment, setPayment] = useState<string>("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
   const [date, setDate] = useState(toDateInput());
+  const [status, setStatus] = useState<PaymentStatus>("PAID");
   const [shared, setShared] = useState(false);
   const [splitPreset, setSplitPreset] = useState<number>(50);
   const [ownerShare, setOwnerShare] = useState("");
