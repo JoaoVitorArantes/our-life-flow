@@ -8,6 +8,7 @@ import {
   Heart,
   Target,
   StickyNote,
+  Compass,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -32,6 +33,7 @@ export const SECONDARY_NAV: NavItem[] = [
   { to: "/nos", label: "Nós", icon: Heart, emoji: "💜" },
   { to: "/metas", label: "Metas", icon: Target, emoji: "🎯" },
   { to: "/notas", label: "Notas", icon: StickyNote, emoji: "📝" },
+  { to: "/contextos", label: "Contextos", icon: Compass, emoji: "🧭" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [
