@@ -80,16 +80,16 @@ export type NewTransactionInput = {
   amount: number;
   description: string;
   transactionDate: string;
-  categoryId?: string | null;
-  accountId?: string | null;
-  cardId?: string | null;
-  sourceAccountId?: string | null;
-  destinationAccountId?: string | null;
+  categoryId?: string | null | undefined;
+  accountId?: string | null | undefined;
+  cardId?: string | null | undefined;
+  sourceAccountId?: string | null | undefined;
+  destinationAccountId?: string | null | undefined;
   visibility: Visibility;
   isShared: boolean;
-  notes?: string | null;
-  splits?: { userId: string; amount: number; percentage: number }[];
-  installments?: { total: number; amount: number; startDate: string } | null;
+  notes?: string | null | undefined;
+  splits?: { userId: string; amount: number; percentage: number }[] | undefined;
+  installments?: { total: number; amount: number; startDate: string } | null | undefined;
 };
 
 export async function createTransaction(input: NewTransactionInput) {
