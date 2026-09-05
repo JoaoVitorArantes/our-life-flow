@@ -3,6 +3,7 @@ import { useApp } from "@/features/app/app-context";
 import { QuickActionMenu } from "./quick-action-menu";
 import { TransactionDialog } from "./transaction-dialog";
 import { SimpleRecordDialog, type SimpleKind } from "./simple-record-dialog";
+import { ContextDialog } from "./context-dialog";
 
 const SIMPLE: SimpleKind[] = ["event", "task", "goal", "note"];
 
@@ -23,6 +24,8 @@ export function QuickActionHost() {
       {quickAction && SIMPLE.includes(quickAction as SimpleKind) ? (
         <SimpleRecordDialog kind={quickAction as SimpleKind} open onOpenChange={close} />
       ) : null}
+
+      {quickAction === "context" ? <ContextDialog open onOpenChange={close} /> : null}
 
       <Dialog open={quickAction === "workout"} onOpenChange={close}>
         <DialogContent className="sm:max-w-md">
