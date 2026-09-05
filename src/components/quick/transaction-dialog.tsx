@@ -286,8 +286,25 @@ export function TransactionDialog({
                 onChange={(event) => setDate(event.target.value)}
               />
             </div>
-            <ContextSelect value={contextId} onChange={setContextId} />
+            <div className="space-y-2">
+              <Label>Situação</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as PaymentStatus)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAYMENT_STATUSES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
+          <ContextSelect value={contextId} onChange={setContextId} />
+
 
           <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
             <div>
