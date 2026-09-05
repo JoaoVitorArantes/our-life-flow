@@ -165,6 +165,8 @@ export function TransactionDialog({
           amount: value,
           description: description.trim(),
           transactionDate: date,
+          dueDate: date,
+          status,
           categoryId: categoryId || null,
           accountId: source === "account" ? (id ?? null) : null,
           cardId: source === "card" ? (id ?? null) : null,
