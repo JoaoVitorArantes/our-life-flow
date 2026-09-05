@@ -39,7 +39,10 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     navigate({ to: "/dashboard", replace: true });
   }
 
@@ -51,7 +54,10 @@ function AuthPage() {
       options: { emailRedirectTo: window.location.origin, data: { name } },
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     if (!data.session) {
       setAwaitingConfirm(true);
       toast.success("Confira seu e-mail para confirmar a conta.");
@@ -62,17 +68,26 @@ function AuthPage() {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    if (result.error) return toast.error("Não foi possível entrar com o Google.");
+    if (result.error) {
+      toast.error("Não foi possível entrar com o Google.");
+      return;
+    }
     if (result.redirected) return;
     navigate({ to: "/dashboard", replace: true });
   }
 
   async function resetPassword() {
-    if (!email) return toast.error("Informe seu e-mail primeiro.");
+    if (!email) {
+      toast.error("Informe seu e-mail primeiro.");
+      return;
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Enviamos um link de recuperação.");
   }
 

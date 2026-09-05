@@ -12,11 +12,11 @@ export type QuickActionKind =
   | "workout";
 
 type AppContextValue = {
-  workspaceId?: string;
+  workspaceId?: string | undefined;
   workspaceName: string;
   profile: Profile | null;
   memberProfiles: Profile[];
-  userId?: string;
+  userId?: string | undefined;
   loading: boolean;
   error: unknown;
   refetchWorkspace: () => void;

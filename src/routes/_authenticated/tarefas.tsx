@@ -31,8 +31,9 @@ function Tarefas() {
   async function toggle(id: string, done: boolean) {
     await supabase
       .from("tasks")
-      .update({ status: done ? "DONE" : "TODO", completed_at: done ? new Date().toISOString() : null })
+      .update({ status: done ? "DONE" : "TODO" })
       .eq("id", id);
+
     await queryClient.invalidateQueries({ queryKey: ["tasks"] });
   }
 

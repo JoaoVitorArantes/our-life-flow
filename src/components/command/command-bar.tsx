@@ -41,12 +41,8 @@ export function CommandBar() {
   }, [commandOpen, setCommandOpen]);
 
   return (
-    <CommandDialog
-      open={commandOpen}
-      onOpenChange={setCommandOpen}
-      title="Command bar"
-      description="Pesquisar ou registrar algo"
-    >
+    <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+
       <CommandInput placeholder="Pesquisar ou registrar algo..." />
       <CommandList>
         <CommandEmpty>Nada encontrado.</CommandEmpty>
