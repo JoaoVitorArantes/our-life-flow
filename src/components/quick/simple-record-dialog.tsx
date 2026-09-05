@@ -117,23 +117,34 @@ export function SimpleRecordDialog({
       visibility: shared ? ("SHARED" as const) : ("PRIVATE" as const),
       context_id: contextId === NO_CONTEXT ? null : contextId,
     };
-    const specific =
-      kind === "event"
-        ? { starts_at: new Date(`${date}T${time}`).toISOString() }
-        : kind === "task"
-          ? { due_date: date }
-          : kind === "goal"
-            ? { target_amount: parseAmount(target) || null, due_date: date }
-            : { content };
+    const owner = { workspace_id: workspaceId, owner_id: userId };
+    const recordId = record?.id ?? "";
 
     try {
-      const values = { ...shape, ...specific };
-      const { error } = isEditing
-        ? await supabase.from(TABLE[kind]).update(values).eq("id", record!.id)
-        : await supabase
-            .from(TABLE[kind])
-            .insert({ ...values, workspace_id: workspaceId, owner_id: userId });
+      let error = null;
+      if (kind === "event") {
+        const values = { ...shape, starts_at: new Date(`${date}T${time}`).toISOString() };
+        ({ error } = isEditing
+          ? await supabase.from("events").update(values).eq("id", recordId)
+          : await supabase.from("events").insert({ ...values, ...owner }));
+      } else if (kind === "task") {
+        const values = { ...shape, due_date: date };
+        ({ error } = isEditing
+          ? await supabase.from("tasks").update(values).eq("id", recordId)
+          : await supabase.from("tasks").insert({ ...values, ...owner }));
+      } else if (kind === "goal") {
+        const values = { ...shape, target_amount: parseAmount(target) || null, due_date: date };
+        ({ error } = isEditing
+          ? await supabase.from("goals").update(values).eq("id", recordId)
+          : await supabase.from("goals").insert({ ...values, ...owner }));
+      } else {
+        const values = { ...shape, content };
+        ({ error } = isEditing
+          ? await supabase.from("notes").update(values).eq("id", recordId)
+          : await supabase.from("notes").insert({ ...values, ...owner }));
+      }
       if (error) throw error;
+
       await queryClient.invalidateQueries({ queryKey: [config.queryKey] });
       await queryClient.invalidateQueries({ queryKey: ["goal", record?.id] });
       toast.success(isEditing ? "Registro atualizado." : "Registro criado.");
