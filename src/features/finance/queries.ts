@@ -85,6 +85,7 @@ export type NewTransactionInput = {
   cardId?: string | null | undefined;
   sourceAccountId?: string | null | undefined;
   destinationAccountId?: string | null | undefined;
+  contextId?: string | null | undefined;
   visibility: Visibility;
   isShared: boolean;
   notes?: string | null | undefined;
@@ -107,6 +108,7 @@ export async function createTransaction(input: NewTransactionInput) {
       card_id: input.cardId ?? null,
       source_account_id: input.sourceAccountId ?? null,
       destination_account_id: input.destinationAccountId ?? null,
+      context_id: input.contextId ?? null,
       visibility: input.visibility,
       is_shared: input.isShared,
       notes: input.notes ?? null,
