@@ -69,6 +69,26 @@ function Dashboard() {
         />
       </div>
 
+      {activeContexts.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">
+            Contextos ativos
+          </span>
+          {activeContexts.map((context) => (
+            <Link
+              key={context.id}
+              to="/contextos/$id"
+              params={{ id: context.id }}
+              className="rounded-full border border-border bg-surface px-3 py-1 text-xs transition-colors hover:border-primary"
+            >
+              {contextEmoji(context.type)} {context.name}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+
+
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
           <PanelTitle
