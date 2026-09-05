@@ -91,6 +91,7 @@ export function TransactionDialog({
       setPayment("");
       setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
       setDate(toDateInput());
+      setStatus("PAID");
       setShared(false);
       setSplitPreset(50);
       setOwnerShare("");
