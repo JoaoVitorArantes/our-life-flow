@@ -25,11 +25,17 @@ function ResetPassword() {
   const navigate = useNavigate();
 
   async function submit() {
-    if (password.length < 6) return toast.error("Use ao menos 6 caracteres.");
+    if (password.length < 6) {
+      toast.error("Use ao menos 6 caracteres.");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Senha atualizada.");
     navigate({ to: "/dashboard", replace: true });
   }
