@@ -10,7 +10,12 @@ export type QuickActionKind =
   | "goal"
   | "note"
   | "workout"
-  | "context";
+  | "context"
+  | "transfer"
+  | "installment"
+  | "recurring"
+  | "loan"
+  | "financing";
 
 type AppContextValue = {
   workspaceId?: string | undefined;

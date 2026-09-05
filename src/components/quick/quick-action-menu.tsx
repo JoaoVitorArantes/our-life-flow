@@ -1,9 +1,15 @@
+import { useRouterState } from "@tanstack/react-router";
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  ArrowLeftRight,
+  Banknote,
   CalendarPlus,
   CheckSquare,
+  CreditCard,
   Dumbbell,
+  Landmark,
+  Repeat,
   StickyNote,
   Compass,
   Target,
@@ -11,7 +17,9 @@ import {
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useApp, type QuickActionKind } from "@/features/app/app-context";
 
-const OPTIONS: { kind: QuickActionKind; label: string; icon: typeof ArrowUpRight }[] = [
+type Option = { kind: QuickActionKind; label: string; icon: typeof ArrowUpRight };
+
+const GENERAL: Option[] = [
   { kind: "expense", label: "Nova despesa", icon: ArrowUpRight },
   { kind: "income", label: "Nova receita", icon: ArrowDownLeft },
   { kind: "event", label: "Novo evento", icon: CalendarPlus },
@@ -22,8 +30,20 @@ const OPTIONS: { kind: QuickActionKind; label: string; icon: typeof ArrowUpRight
   { kind: "workout", label: "Novo treino", icon: Dumbbell },
 ];
 
+const FINANCE: Option[] = [
+  { kind: "expense", label: "Nova despesa", icon: ArrowUpRight },
+  { kind: "income", label: "Nova receita", icon: ArrowDownLeft },
+  { kind: "installment", label: "Despesa parcelada", icon: CreditCard },
+  { kind: "transfer", label: "Transferência", icon: ArrowLeftRight },
+  { kind: "recurring", label: "Nova recorrência", icon: Repeat },
+  { kind: "loan", label: "Novo empréstimo", icon: Banknote },
+  { kind: "financing", label: "Novo financiamento", icon: Landmark },
+];
+
 export function QuickActionMenu() {
   const { quickMenuOpen, setQuickMenuOpen, openQuickAction } = useApp();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const options = pathname.startsWith("/financeiro") ? FINANCE : GENERAL;
 
   return (
     <Drawer open={quickMenuOpen} onOpenChange={setQuickMenuOpen}>
@@ -32,7 +52,7 @@ export function QuickActionMenu() {
           <DrawerTitle>Criação rápida</DrawerTitle>
         </DrawerHeader>
         <div className="grid grid-cols-2 gap-2 px-4 pb-8 sm:grid-cols-3">
-          {OPTIONS.map((option) => (
+          {options.map((option) => (
             <button
               key={option.kind}
               type="button"

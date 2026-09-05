@@ -23,7 +23,7 @@ import {
   type Transaction,
 } from "@/features/finance/queries";
 import { updateTransaction } from "@/features/finance/mutations";
-import { SPLIT_PRESETS } from "@/features/finance/constants";
+import { SPLIT_PRESETS, PAYMENT_STATUSES, type PaymentStatus } from "@/features/finance/constants";
 import { parseAmount, toDateInput, formatCurrency } from "@/lib/format";
 import { ContextSelect, NO_CONTEXT } from "./context-select";
 
@@ -54,6 +54,7 @@ export function TransactionDialog({
   const [payment, setPayment] = useState<string>("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
   const [date, setDate] = useState(toDateInput());
+  const [status, setStatus] = useState<PaymentStatus>("PAID");
   const [shared, setShared] = useState(false);
   const [splitPreset, setSplitPreset] = useState<number>(50);
   const [ownerShare, setOwnerShare] = useState("");
@@ -80,6 +81,7 @@ export function TransactionDialog({
       );
       setContextId(transaction.context_id ?? NO_CONTEXT);
       setDate(transaction.transaction_date);
+      setStatus(transaction.status);
       setShared(!!transaction.is_shared);
       setNotes(transaction.notes ?? "");
     } else {
@@ -89,6 +91,7 @@ export function TransactionDialog({
       setPayment("");
       setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
       setDate(toDateInput());
+      setStatus("PAID");
       setShared(false);
       setSplitPreset(50);
       setOwnerShare("");
@@ -127,6 +130,9 @@ export function TransactionDialog({
           amount: value,
           description: description.trim(),
           transaction_date: date,
+          due_date: date,
+          status,
+          paid_at: status === "PAID" ? (transaction.paid_at ?? date) : null,
           category_id: categoryId || null,
           account_id: source === "account" ? (id ?? null) : null,
           card_id: source === "card" ? (id ?? null) : null,
@@ -159,6 +165,8 @@ export function TransactionDialog({
           amount: value,
           description: description.trim(),
           transactionDate: date,
+          dueDate: date,
+          status,
           categoryId: categoryId || null,
           accountId: source === "account" ? (id ?? null) : null,
           cardId: source === "card" ? (id ?? null) : null,
@@ -278,8 +286,25 @@ export function TransactionDialog({
                 onChange={(event) => setDate(event.target.value)}
               />
             </div>
-            <ContextSelect value={contextId} onChange={setContextId} />
+            <div className="space-y-2">
+              <Label>Situação</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as PaymentStatus)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAYMENT_STATUSES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
+          <ContextSelect value={contextId} onChange={setContextId} />
+
 
           <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
             <div>
