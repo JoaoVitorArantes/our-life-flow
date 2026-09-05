@@ -1,59 +1,61 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import type { TransactionType, Visibility } from "./constants";
+import type { PaymentStatus, TransactionType, Visibility } from "./constants";
 
 export type Account = Tables<"accounts">;
 export type Card = Tables<"cards">;
 export type Category = Tables<"categories">;
 export type Transaction = Tables<"transactions">;
+export type InstallmentPlan = Tables<"installment_plans">;
+export type Loan = Tables<"loans">;
+export type Financing = Tables<"financings">;
+export type Recurring = Tables<"recurring_transactions">;
 
-export function useAccounts(workspaceId?: string) {
-  return useQuery({
-    queryKey: ["accounts", workspaceId],
+function listQuery<T>(table: string, key: string, workspaceId?: string, orderBy = "created_at") {
+  return {
+    queryKey: [key, workspaceId],
     enabled: !!workspaceId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("accounts")
+        .from(table as never)
         .select("*")
         .eq("workspace_id", workspaceId!)
-        .order("created_at");
+        .order(orderBy);
       if (error) throw error;
-      return data as Account[];
+      return (data ?? []) as T[];
     },
-  });
+  };
+}
+
+export function useAccounts(workspaceId?: string) {
+  return useQuery(listQuery<Account>("accounts", "accounts", workspaceId));
 }
 
 export function useCards(workspaceId?: string) {
-  return useQuery({
-    queryKey: ["cards", workspaceId],
-    enabled: !!workspaceId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("cards")
-        .select("*")
-        .eq("workspace_id", workspaceId!)
-        .order("created_at");
-      if (error) throw error;
-      return data as Card[];
-    },
-  });
+  return useQuery(listQuery<Card>("cards", "cards", workspaceId));
 }
 
 export function useCategories(workspaceId?: string) {
-  return useQuery({
-    queryKey: ["categories", workspaceId],
-    enabled: !!workspaceId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("workspace_id", workspaceId!)
-        .order("name");
-      if (error) throw error;
-      return data as Category[];
-    },
-  });
+  return useQuery(listQuery<Category>("categories", "categories", workspaceId, "name"));
+}
+
+export function useInstallmentPlans(workspaceId?: string) {
+  return useQuery(listQuery<InstallmentPlan>("installment_plans", "installment_plans", workspaceId));
+}
+
+export function useLoans(workspaceId?: string) {
+  return useQuery(listQuery<Loan>("loans", "loans", workspaceId));
+}
+
+export function useFinancings(workspaceId?: string) {
+  return useQuery(listQuery<Financing>("financings", "financings", workspaceId));
+}
+
+export function useRecurring(workspaceId?: string) {
+  return useQuery(
+    listQuery<Recurring>("recurring_transactions", "recurring_transactions", workspaceId),
+  );
 }
 
 export function useTransactions(workspaceId?: string) {
@@ -66,7 +68,7 @@ export function useTransactions(workspaceId?: string) {
         .select("*")
         .eq("workspace_id", workspaceId!)
         .order("transaction_date", { ascending: false })
-        .limit(500);
+        .limit(2000);
       if (error) throw error;
       return data as Transaction[];
     },
@@ -80,6 +82,9 @@ export type NewTransactionInput = {
   amount: number;
   description: string;
   transactionDate: string;
+  dueDate?: string | null | undefined;
+  status?: PaymentStatus | undefined;
+  paidAt?: string | null | undefined;
   categoryId?: string | null | undefined;
   accountId?: string | null | undefined;
   cardId?: string | null | undefined;
@@ -90,10 +95,10 @@ export type NewTransactionInput = {
   isShared: boolean;
   notes?: string | null | undefined;
   splits?: { userId: string; amount: number; percentage: number }[] | undefined;
-  installments?: { total: number; amount: number; startDate: string } | null | undefined;
 };
 
 export async function createTransaction(input: NewTransactionInput) {
+  const status = input.status ?? "PAID";
   const { data, error } = await supabase
     .from("transactions")
     .insert({
@@ -103,6 +108,9 @@ export async function createTransaction(input: NewTransactionInput) {
       amount: input.amount,
       description: input.description,
       transaction_date: input.transactionDate,
+      due_date: input.dueDate ?? input.transactionDate,
+      status,
+      paid_at: status === "PAID" ? (input.paidAt ?? input.transactionDate) : null,
       category_id: input.categoryId ?? null,
       account_id: input.accountId ?? null,
       card_id: input.cardId ?? null,
@@ -127,17 +135,6 @@ export async function createTransaction(input: NewTransactionInput) {
       })),
     );
     if (splitError) throw splitError;
-  }
-
-  if (input.installments && input.installments.total > 1) {
-    const { error: installmentError } = await supabase.from("installments").insert({
-      transaction_id: data.id,
-      total_installments: input.installments.total,
-      current_installment: 1,
-      installment_amount: input.installments.amount,
-      start_date: input.installments.startDate,
-    });
-    if (installmentError) throw installmentError;
   }
 
   return data as Transaction;
