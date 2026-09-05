@@ -9,6 +9,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { ALL_NAV } from "@/features/app/navigation";
+import { contextEmoji, useContexts } from "@/features/contexts/queries";
 import { useApp, type QuickActionKind } from "@/features/app/app-context";
 
 const CREATE_ACTIONS: { kind: QuickActionKind; label: string }[] = [
@@ -18,6 +19,7 @@ const CREATE_ACTIONS: { kind: QuickActionKind; label: string }[] = [
   { kind: "task", label: "Nova tarefa" },
   { kind: "goal", label: "Nova meta" },
   { kind: "note", label: "Nova nota" },
+  { kind: "context", label: "Novo contexto" },
   { kind: "workout", label: "Registrar treino" },
 ];
 
@@ -26,7 +28,8 @@ const CREATE_ACTIONS: { kind: QuickActionKind; label: string }[] = [
  * can be plugged in later without touching the UI.
  */
 export function CommandBar() {
-  const { commandOpen, setCommandOpen, openQuickAction } = useApp();
+  const { commandOpen, setCommandOpen, openQuickAction, workspaceId } = useApp();
+  const { data: contexts = [] } = useContexts(workspaceId);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +63,23 @@ export function CommandBar() {
             </CommandItem>
           ))}
         </CommandGroup>
+        {contexts.length > 0 ? (
+          <CommandGroup heading="Contextos">
+            {contexts.map((context) => (
+              <CommandItem
+                key={context.id}
+                value={`contexto ${context.name}`}
+                onSelect={() => {
+                  setCommandOpen(false);
+                  navigate({ to: "/contextos/$id", params: { id: context.id } });
+                }}
+              >
+                <span className="mr-1">{contextEmoji(context.type)}</span>
+                {context.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        ) : null}
         <CommandGroup heading="Ir para">
           {ALL_NAV.map((item) => (
             <CommandItem
