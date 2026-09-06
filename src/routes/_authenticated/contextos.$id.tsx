@@ -579,7 +579,7 @@ function ContextDetail() {
                             })}
                         onDelete={() =>
                           run(
-                            () => deleteTransaction(transaction.id),
+                            () => deleteTransaction(transaction.id, workspaceId ?? ""),
                             ["transactions"],
                             "Lançamento excluído.",
                           )

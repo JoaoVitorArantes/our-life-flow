@@ -75,7 +75,7 @@ export function InvitationInbox() {
 }
 
 export function PartnerSettings() {
-  const { workspaceId, memberProfiles, userId, relationship, refetchWorkspace } = useApp();
+  const { workspaceId, memberProfiles, members, userId, relationship, refetchWorkspace } = useApp();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [startedAt, setStartedAt] = useState("");
@@ -94,7 +94,7 @@ export function PartnerSettings() {
     if (relationship?.started_at) setStartedAt(relationship.started_at.slice(0, 16));
   }, [relationship?.started_at]);
 
-  const isOwner = memberProfiles.length > 0 && userId === memberProfiles.find((profile) => profile.id === userId)?.id;
+  const isOwner = members.some((member) => member.user_id === userId && member.role === "OWNER");
   const full = memberProfiles.length >= 2;
 
   async function invite() {
@@ -110,7 +110,7 @@ export function PartnerSettings() {
     }
     setEmail("");
     await invitations.refetch();
-    toast.success("Convite criado e link copiado.");
+    toast.success("Convite criado no Life OS e link copiado.");
   }
 
   async function saveRelationship() {

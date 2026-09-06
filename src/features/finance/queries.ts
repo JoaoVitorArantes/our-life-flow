@@ -128,6 +128,7 @@ export async function createTransaction(input: NewTransactionInput) {
   if (input.splits?.length) {
     const { error: splitError } = await supabase.from("transaction_splits").insert(
       input.splits.map((split) => ({
+        workspace_id: input.workspaceId,
         transaction_id: data.id,
         user_id: split.userId,
         amount: split.amount,

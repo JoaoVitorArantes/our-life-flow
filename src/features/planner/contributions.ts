@@ -70,6 +70,7 @@ export function goalProgress(goal: { id: string }, contributions: GoalContributi
 }
 
 export async function addContribution(input: {
+  workspaceId: string;
   goalId: string;
   userId: string;
   amount: number;
@@ -81,6 +82,7 @@ export async function addContribution(input: {
   const amount = Math.abs(input.amount);
   if (!amount || !Number.isFinite(amount)) throw new Error("Informe um valor maior que zero.");
   const { error } = await supabase.from("goal_contributions").insert({
+    workspace_id: input.workspaceId,
     goal_id: input.goalId,
     user_id: input.userId,
     amount,
@@ -93,6 +95,7 @@ export async function addContribution(input: {
 
 export async function updateContribution(
   id: string,
+  workspaceId: string,
   input: {
     amount: number;
     movementType: GoalMovementType;
@@ -110,11 +113,12 @@ export async function updateContribution(
       contribution_date: input.contribution_date,
       description: input.description ?? null,
     })
+    .eq("workspace_id", workspaceId)
     .eq("id", id);
   if (error) throw error;
 }
 
-export async function deleteContribution(id: string) {
-  const { error } = await supabase.from("goal_contributions").delete().eq("id", id);
+export async function deleteContribution(id: string, workspaceId: string) {
+  const { error } = await supabase.from("goal_contributions").delete().eq("workspace_id", workspaceId).eq("id", id);
   if (error) throw error;
 }

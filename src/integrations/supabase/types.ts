@@ -430,6 +430,7 @@ export type Database = {
           movement_type: Database["public"]["Enums"]["goal_movement_type"]
           updated_at: string
           user_id: string
+          workspace_id: string
         }
         Insert: {
           amount: number
@@ -442,6 +443,7 @@ export type Database = {
           movement_type?: Database["public"]["Enums"]["goal_movement_type"]
           updated_at?: string
           user_id: string
+          workspace_id: string
         }
         Update: {
           amount?: number
@@ -454,6 +456,7 @@ export type Database = {
           movement_type?: Database["public"]["Enums"]["goal_movement_type"]
           updated_at?: string
           user_id?: string
+          workspace_id?: string
         }
         Relationships: [
           {
@@ -461,6 +464,13 @@ export type Database = {
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_contributions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -636,6 +646,7 @@ export type Database = {
           start_date: string
           total_installments: number
           transaction_id: string
+          workspace_id: string
         }
         Insert: {
           created_at?: string
@@ -645,6 +656,7 @@ export type Database = {
           start_date?: string
           total_installments: number
           transaction_id: string
+          workspace_id: string
         }
         Update: {
           created_at?: string
@@ -654,6 +666,7 @@ export type Database = {
           start_date?: string
           total_installments?: number
           transaction_id?: string
+          workspace_id?: string
         }
         Relationships: [
           {
@@ -661,6 +674,13 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -1074,6 +1094,7 @@ export type Database = {
           id: string
           transaction_id: string
           user_id: string
+          workspace_id: string
         }
         Insert: {
           amount?: number
@@ -1081,6 +1102,7 @@ export type Database = {
           id?: string
           transaction_id: string
           user_id: string
+          workspace_id: string
         }
         Update: {
           amount?: number
@@ -1088,6 +1110,7 @@ export type Database = {
           id?: string
           transaction_id?: string
           user_id?: string
+          workspace_id?: string
         }
         Relationships: [
           {
@@ -1095,6 +1118,13 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_payers_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -1107,6 +1137,7 @@ export type Database = {
           percentage: number | null
           transaction_id: string
           user_id: string
+          workspace_id: string
         }
         Insert: {
           amount?: number
@@ -1115,6 +1146,7 @@ export type Database = {
           percentage?: number | null
           transaction_id: string
           user_id: string
+          workspace_id: string
         }
         Update: {
           amount?: number
@@ -1123,6 +1155,7 @@ export type Database = {
           percentage?: number | null
           transaction_id?: string
           user_id?: string
+          workspace_id?: string
         }
         Relationships: [
           {
@@ -1130,6 +1163,13 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_splits_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]

@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/metas/$id")({
 
 function GoalDetail() {
   const { id } = Route.useParams();
-  const { memberProfiles } = useApp();
+  const { memberProfiles, workspaceId } = useApp();
   const queryClient = useQueryClient();
   const { data: goal, isLoading } = useGoal(id);
   const { data: contributions = [] } = useGoalContributions(id);
@@ -74,7 +74,8 @@ function GoalDetail() {
 
   async function removeContribution(contribution: GoalContribution) {
     try {
-      await deleteContribution(contribution.id);
+      if (!workspaceId) return;
+      await deleteContribution(contribution.id, workspaceId);
       await queryClient.invalidateQueries({ queryKey: ["goal-contributions"] });
       await queryClient.invalidateQueries({ queryKey: ["goal-contributions-all"] });
       toast.success("Movimentação excluída.");

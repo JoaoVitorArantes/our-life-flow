@@ -30,6 +30,7 @@ export async function syncTransactionSettlement(input: SyncInput) {
   const { data, error } = await supabase
     .from("settlements")
     .select("*")
+    .eq("workspace_id", input.workspaceId)
     .eq("transaction_id", input.transactionId);
   if (error) throw error;
   const existing = (data ?? []) as Settlement[];
@@ -58,6 +59,7 @@ export async function syncTransactionSettlement(input: SyncInput) {
       const { error: deleteError } = await supabase
         .from("settlements")
         .delete()
+        .eq("workspace_id", input.workspaceId)
         .eq("id", pending.id);
       if (deleteError) throw deleteError;
     }
@@ -73,6 +75,7 @@ export async function syncTransactionSettlement(input: SyncInput) {
         amount: remaining.amount,
         note: input.note ?? pending.note,
       })
+      .eq("workspace_id", input.workspaceId)
       .eq("id", pending.id);
     if (updateError) throw updateError;
     return { settlement: { ...pending, ...remaining }, paidHistory: [] };
@@ -99,13 +102,14 @@ function pairOf(memberIds: string[], shares: Party[], payers: Party[]): [string,
 
 /** Regrava divisão + quem pagou de uma despesa e sincroniza o acerto. */
 export async function saveDivision(input: SyncInput) {
-  await supabase.from("transaction_splits").delete().eq("transaction_id", input.transactionId);
-  await supabase.from("transaction_payers").delete().eq("transaction_id", input.transactionId);
+  await supabase.from("transaction_splits").delete().eq("workspace_id", input.workspaceId).eq("transaction_id", input.transactionId);
+  await supabase.from("transaction_payers").delete().eq("workspace_id", input.workspaceId).eq("transaction_id", input.transactionId);
 
   const total = input.shares.reduce((sum, share) => sum + share.amount, 0);
   if (input.shares.length) {
     const { error } = await supabase.from("transaction_splits").insert(
       input.shares.map((share) => ({
+        workspace_id: input.workspaceId,
         transaction_id: input.transactionId,
         user_id: share.userId,
         amount: round2(share.amount),
@@ -117,6 +121,7 @@ export async function saveDivision(input: SyncInput) {
   if (input.payers.length) {
     const { error } = await supabase.from("transaction_payers").insert(
       input.payers.map((payer) => ({
+        workspace_id: input.workspaceId,
         transaction_id: input.transactionId,
         user_id: payer.userId,
         amount: round2(payer.amount),
@@ -129,12 +134,13 @@ export async function saveDivision(input: SyncInput) {
 }
 
 /** Remove divisão, pagadores e acertos pendentes (histórico pago é mantido). */
-export async function clearDivision(transactionId: string) {
-  await supabase.from("transaction_splits").delete().eq("transaction_id", transactionId);
-  await supabase.from("transaction_payers").delete().eq("transaction_id", transactionId);
+export async function clearDivision(transactionId: string, workspaceId: string) {
+  await supabase.from("transaction_splits").delete().eq("workspace_id", workspaceId).eq("transaction_id", transactionId);
+  await supabase.from("transaction_payers").delete().eq("workspace_id", workspaceId).eq("transaction_id", transactionId);
   await supabase
     .from("settlements")
     .delete()
+    .eq("workspace_id", workspaceId)
     .eq("transaction_id", transactionId)
     .eq("status", "PENDING");
 }
