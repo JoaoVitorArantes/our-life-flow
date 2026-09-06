@@ -58,7 +58,8 @@ export function CardPanel({
 
   const active = transactions.filter((t) => t.status !== "CANCELLED");
   const invoice = active.filter((t) => inRange(t, cycles.current));
-  const nextInvoice = active.filter((t) => inRange(t, cycles.next));
+  // Tudo lançado depois do fechamento atual entra na próxima fatura (inclusive parcelas futuras).
+  const nextInvoice = active.filter((t) => t.transaction_date > cycles.current.end);
   const invoiceTotal = sumBy(invoice, (t) => Number(t.amount));
   const nextTotal = sumBy(nextInvoice, (t) => Number(t.amount));
 
