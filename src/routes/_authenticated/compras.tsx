@@ -61,14 +61,17 @@ const SORTS = [
 
 const PRIORITY_WEIGHT: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ emoji, label, value }: { emoji: string; label: string; value: string }) {
   return (
-    <Panel className="p-4">
-      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+    <Panel className="p-4 transition-colors hover:border-primary/30">
+      <p className="text-xs text-muted-foreground">
+        {emoji} {label}
+      </p>
       <p className="numeric mt-1 text-xl font-semibold">{value}</p>
     </Panel>
   );
 }
+
 
 function Compras() {
   const { workspaceId } = useApp();
