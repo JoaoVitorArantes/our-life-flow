@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, CheckSquare, Heart, Target, Wallet } from "lucide-react";
 import { Panel, PanelTitle } from "@/components/common/page";
+import { useMemberName } from "@/components/common/created-by";
 import { StatCard } from "@/components/common/stat-card";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ function Dashboard() {
   const tasksQuery = useTasks(workspaceId);
   const goalsQuery = useGoals(workspaceId);
   const contextsQuery = useContexts(workspaceId);
+  const nameOf = useMemberName();
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState onRetry={refetchWorkspace} />;
