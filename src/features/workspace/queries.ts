@@ -5,6 +5,7 @@ import type { Tables } from "@/integrations/supabase/types";
 export type Profile = Tables<"profiles">;
 export type Workspace = Tables<"workspaces">;
 export type Member = Tables<"workspace_members">;
+export type Relationship = Tables<"workspace_relationships">;
 
 async function withAvatarUrls(profiles: Profile[]) {
   return Promise.all(
@@ -46,15 +47,19 @@ export function useWorkspace(enabled: boolean) {
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) throw authError ?? new Error("Usuário não autenticado.");
 
-      const [workspaceResult, profileResult, membersResult] = await Promise.all([
+      const [workspaceResult, profileResult, membersResult, relationshipResult, membershipsResult] = await Promise.all([
         supabase.from("workspaces").select("*").eq("id", workspaceId).maybeSingle(),
         supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle(),
         supabase.from("workspace_members").select("*").eq("workspace_id", workspaceId),
+        supabase.from("workspace_relationships").select("*").eq("workspace_id", workspaceId).maybeSingle(),
+        supabase.from("workspace_members").select("workspace_id, role, workspaces(*)").eq("user_id", authData.user.id),
       ]);
 
       if (workspaceResult.error) throw workspaceResult.error;
       if (profileResult.error) throw profileResult.error;
       if (membersResult.error) throw membersResult.error;
+      if (relationshipResult.error) throw relationshipResult.error;
+      if (membershipsResult.error) throw membershipsResult.error;
 
       const workspace = workspaceResult.data;
       const profile = profileResult.data;
@@ -77,6 +82,8 @@ export function useWorkspace(enabled: boolean) {
         profile: resolvedProfile as Profile | null,
         members: (members ?? []) as Member[],
         memberProfiles: resolvedProfiles,
+        relationship: relationshipResult.data as Relationship | null,
+        availableWorkspaces: (membershipsResult.data ?? []).map((membership) => membership.workspaces).filter(Boolean) as Workspace[],
       };
     },
   });

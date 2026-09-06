@@ -5,6 +5,7 @@ import { Header } from "./header";
 import { CommandBar } from "@/components/command/command-bar";
 import { QuickActionHost } from "@/components/quick/quick-action-host";
 import { useApp } from "@/features/app/app-context";
+import { InvitationInbox } from "@/features/workspace/partner";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,6 +27,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <BottomNav />
       <CommandBar />
       <QuickActionHost />
+      <InvitationInbox />
     </div>
   );
 }
