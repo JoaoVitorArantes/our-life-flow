@@ -6,6 +6,16 @@ export type Profile = Tables<"profiles">;
 export type Workspace = Tables<"workspaces">;
 export type Member = Tables<"workspace_members">;
 
+async function withAvatarUrls(profiles: Profile[]) {
+  return Promise.all(
+    profiles.map(async (profile) => {
+      if (!profile.avatar_url || profile.avatar_url.startsWith("http")) return profile;
+      const { data } = await supabase.storage.from("avatars").createSignedUrl(profile.avatar_url, 60 * 60);
+      return { ...profile, avatar_url: data?.signedUrl ?? null };
+    }),
+  );
+}
+
 /** Creates profile + "Life OS" workspace + default categories when missing. */
 export async function bootstrapAccount(name?: string) {
   const { data, error } = await supabase.rpc("bootstrap_account", { _name: name ?? "" });
@@ -45,12 +55,15 @@ export function useWorkspace(enabled: boolean) {
         : { data: [], error: null };
       if (profilesResult.error) throw profilesResult.error;
 
+      const resolvedProfiles = await withAvatarUrls((profilesResult.data ?? []) as Profile[]);
+      const resolvedProfile = resolvedProfiles.find((item) => item.id === profile?.id) ?? profile;
+
       return {
         workspaceId,
         workspace: workspace as Workspace | null,
-        profile: profile as Profile | null,
+        profile: resolvedProfile as Profile | null,
         members: (members ?? []) as Member[],
-        memberProfiles: (profilesResult.data ?? []) as Profile[],
+        memberProfiles: resolvedProfiles,
       };
     },
   });
