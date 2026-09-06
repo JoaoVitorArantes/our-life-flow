@@ -85,7 +85,7 @@ function relativeTime(at: string) {
   return formatDateShort(at);
 }
 
-function Money({ label, value, tone }: { label: string; value: number; tone?: string }) {
+function Money({ label, value, tone }: { label: string; value: number; tone?: string | undefined }) {
   return (
     <div>
       <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
