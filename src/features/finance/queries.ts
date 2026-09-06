@@ -33,7 +33,15 @@ export function useAccounts(workspaceId?: string) {
 }
 
 export function useCards(workspaceId?: string) {
-  return useQuery(listQuery<Card>("cards", "cards", workspaceId));
+  const base = listQuery<Card>("cards", "cards", workspaceId);
+  return useQuery({
+    ...base,
+    queryFn: async () => {
+      const cards = await base.queryFn();
+      registerCardCycles(cards);
+      return cards;
+    },
+  });
 }
 
 export function useCategories(workspaceId?: string) {
