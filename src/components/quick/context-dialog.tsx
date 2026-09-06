@@ -81,6 +81,9 @@ export function ContextDialog({
         start_date: startDate || null,
         end_date: endDate || null,
         location: location.trim() || null,
+        budget_amount: budget.trim() ? parseAmount(budget) : null,
+        color: color || null,
+        cover_image: coverImage.trim() || null,
         visibility: "SHARED" as const,
       };
       if (context) {
