@@ -167,33 +167,42 @@ function Compras() {
     <div className="space-y-8">
       <PageHeader
         title="Compras"
-        subtitle="O que vocês estão pensando em comprar?"
+        subtitle="Desejos, achados e próximas compras 👀"
         action={
           <Button size="sm" onClick={openNew}>
-            Nova compra
+            Quero isso
           </Button>
         }
       />
 
       {purchases.length === 0 ? (
-        <EmptyState
-          icon={ShoppingBag}
-          title="Nenhuma compra ainda"
-          description="Registre o que vocês querem comprar, compare preços e decidam juntos."
-          action={
-            <Button size="sm" variant="outline" onClick={openNew}>
-              Nova compra
-            </Button>
-          }
-        />
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-border bg-[radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--primary)_12%,transparent),transparent_65%)] px-6 py-16 text-center">
+          <span className="grid size-16 place-items-center rounded-2xl border border-primary/25 bg-primary/10 text-3xl">
+            🛍️
+          </span>
+          <div className="space-y-1">
+            <p className="text-base font-semibold">Por enquanto, a wishlist está vazia 👀</p>
+            <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+              Tem alguma coisa que vocês estão namorando por aí?
+            </p>
+          </div>
+          <Button size="sm" onClick={openNew}>
+            Adicionar primeira coisa
+          </Button>
+        </div>
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat label="Planejadas" value={String(stats.count)} />
-            <Stat label="Em orçamentos" value={formatCurrency(stats.budget)} />
-            <Stat label="Melhores preços" value={formatCurrency(stats.price)} />
-            <Stat label="Alta prioridade" value={String(stats.high)} />
+            <Stat emoji="🛍️" label="Desejos" value={String(stats.count)} />
+            <Stat emoji="💰" label="Planejados" value={formatCurrency(stats.budget)} />
+            {stats.saved > 0 ? (
+              <Stat emoji="🤑" label="Economizados" value={formatCurrency(stats.saved)} />
+            ) : (
+              <Stat emoji="🔎" label="Melhores preços" value={formatCurrency(stats.price)} />
+            )}
+            <Stat emoji="🔥" label="Queremos muito" value={String(stats.high)} />
           </div>
+
 
           {summary.length ? (
             <Panel className="space-y-1 p-4 text-sm text-muted-foreground">
