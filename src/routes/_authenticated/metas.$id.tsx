@@ -14,6 +14,8 @@ import { useApp } from "@/features/app/app-context";
 import { useGoal } from "@/features/planner/queries";
 import {
   deleteContribution,
+  movementType,
+  signedAmount,
   sumContributions,
   useGoalContributions,
   type GoalContribution,
@@ -59,9 +61,8 @@ function GoalDetail() {
   }
 
   const target = Number(goal.target_amount ?? 0);
-  const current = contributions.length
-    ? sumContributions(contributions)
-    : Number(goal.current_amount ?? 0);
+  const current = sumContributions(contributions);
+  const remaining = Math.max(target - current, 0);
   const progress = target ? Math.min((current / target) * 100, 100) : 0;
 
   const perMember = memberProfiles
@@ -76,7 +77,7 @@ function GoalDetail() {
       await deleteContribution(contribution.id);
       await queryClient.invalidateQueries({ queryKey: ["goal-contributions"] });
       await queryClient.invalidateQueries({ queryKey: ["goal-contributions-all"] });
-      toast.success("Contribuição removida.");
+      toast.success("Movimentação excluída.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível remover.");
     }
@@ -100,11 +101,9 @@ function GoalDetail() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {goal.owner_id === userId ? (
-              <Button variant="outline" size="sm" onClick={() => setEditGoalOpen(true)}>
-                Editar meta
-              </Button>
-            ) : null}
+            <Button variant="outline" size="sm" onClick={() => setEditGoalOpen(true)}>
+              Editar meta
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setWithdrawOpen(true)}>
               Retirar
             </Button>
@@ -119,16 +118,19 @@ function GoalDetail() {
         <div className="flex flex-wrap items-end justify-between gap-2">
           <p className="numeric text-3xl font-semibold">{formatCurrency(current)}</p>
           <p className="numeric text-sm text-muted-foreground">
-            de {formatCurrency(target)} · {progress.toFixed(2).replace(".", ",")}%
+            de {formatCurrency(target)} · {progress.toFixed(0)}%
           </p>
         </div>
+        <p className="numeric text-sm text-muted-foreground">
+          Faltam {formatCurrency(remaining)}
+        </p>
         <div className="h-2 rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-primary transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
-        {perMember.length > 1 ? (
+        {perMember.length > 0 ? (
           <ul className="space-y-1 pt-2">
             {perMember.map((item) => (
               <li key={item.profile.id} className="flex justify-between text-sm">
@@ -138,6 +140,10 @@ function GoalDetail() {
                 <span className="numeric">{formatCurrency(item.total)}</span>
               </li>
             ))}
+            <li className="flex justify-between border-t border-border pt-1 text-sm font-medium">
+              <span>Total</span>
+              <span className="numeric">{formatCurrency(current)}</span>
+            </li>
           </ul>
         ) : null}
       </Panel>
@@ -166,14 +172,15 @@ function GoalDetail() {
         ) : (
           <ul className="divide-y divide-border">
             {contributions.map((contribution) => {
-              const amount = Number(contribution.amount);
+              const amount = signedAmount(contribution);
+              const isWithdrawal = movementType(contribution) === "WITHDRAWAL";
               const author = memberProfiles.find((p) => p.id === contribution.user_id);
               return (
                 <li key={contribution.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
                     <p className="text-sm">
-                      <span className={amount < 0 ? "numeric text-destructive" : "numeric text-success"}>
-                        {amount < 0 ? "−" : "+"} {formatCurrency(Math.abs(amount))}
+                      <span className={isWithdrawal ? "numeric text-destructive" : "numeric text-success"}>
+                        {isWithdrawal ? "−" : "+"} {formatCurrency(Math.abs(amount))}
                       </span>
                       {contribution.description ? (
                         <span className="text-muted-foreground"> · {contribution.description}</span>
@@ -189,7 +196,7 @@ function GoalDetail() {
                   <RecordActions
                     onEdit={() => setEditing(contribution)}
                     onDelete={() => removeContribution(contribution)}
-                    confirmTitle="Remover esta contribuição?"
+                    confirmTitle="Excluir esta movimentação?"
                     confirmDescription="O progresso da meta será recalculado. Essa ação não poderá ser desfeita."
                     deleteLabel="Remover"
                   />
@@ -200,15 +207,17 @@ function GoalDetail() {
         )}
       </Panel>
 
-      <ContributionDialog goalId={goal.id} open={addOpen} onOpenChange={setAddOpen} />
+      <ContributionDialog goalId={goal.id} open={addOpen} onOpenChange={setAddOpen} balance={current} />
       <ContributionDialog
         goalId={goal.id}
         open={withdrawOpen}
         onOpenChange={setWithdrawOpen}
         mode="withdraw"
+        balance={current}
       />
       <ContributionDialog
         goalId={goal.id}
+        balance={current}
         open={!!editing}
         onOpenChange={(open) => {
           if (!open) setEditing(null);
