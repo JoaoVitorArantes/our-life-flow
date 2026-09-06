@@ -19,8 +19,8 @@ export function ActivityCard({
   onOpen,
 }: {
   activity: Activity;
-  contextName?: string | null;
-  contextType?: string | null;
+  contextName?: string | null | undefined;
+  contextType?: string | null | undefined;
   onOpen: () => void;
 }) {
   const together = activity.person_scope === "COUPLE";
@@ -59,7 +59,7 @@ export function ActivityCard({
           {activity.location ? <span className="truncate">📍 {activity.location}</span> : null}
           {contextName ? (
             <span className="truncate">
-              {contextEmoji(contextType ?? "OTHER")} {contextName}
+              {contextEmoji((contextType ?? "OTHER") as "OTHER")} {contextName}
             </span>
           ) : null}
           <CreatedBy userId={activity.created_by} className="ml-auto" />
