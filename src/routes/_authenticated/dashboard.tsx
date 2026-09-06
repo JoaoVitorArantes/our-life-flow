@@ -124,6 +124,15 @@ function Dashboard() {
   const contexts = useMemo(() => contextsQuery.data ?? [], [contextsQuery.data]);
   const contributions = contributionsQuery.data ?? [];
 
+  const purchasesQuery = usePurchases(workspaceId);
+  const plannedPurchases = useMemo(
+    () =>
+      (purchasesQuery.data ?? [])
+        .filter((item) => item.status !== "PURCHASED" && item.status !== "DISCARDED")
+        .slice(0, 4),
+    [purchasesQuery.data],
+  );
+
   const finance = useMemo(() => {
     const monthly = transactions.filter((t) => inMonth(t.transaction_date));
     const open = transactions
