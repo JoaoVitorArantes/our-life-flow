@@ -24,6 +24,12 @@ import {
 } from "@/features/finance/queries";
 import { updateTransaction } from "@/features/finance/mutations";
 import { SPLIT_PRESETS, PAYMENT_STATUSES, type PaymentStatus } from "@/features/finance/constants";
+import {
+  computeTransfer,
+  useTransactionDivision,
+  type Party,
+} from "@/features/nos/settlements";
+import { clearDivision, saveDivision } from "@/features/nos/mutations";
 import { parseAmount, toDateInput, formatCurrency } from "@/lib/format";
 import { ContextSelect, NO_CONTEXT } from "./context-select";
 
