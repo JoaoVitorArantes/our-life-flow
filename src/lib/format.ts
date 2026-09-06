@@ -11,7 +11,13 @@ export function formatDateLong(date: Date = new Date()) {
 }
 
 export function formatDateShort(value: string | Date) {
-  const date = typeof value === "string" ? parseDateOnly(value) : value;
+  const date =
+    typeof value === "string"
+      ? /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? parseDateOnly(value)
+        : new Date(value)
+      : value;
+  if (Number.isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(date);
 }
 
