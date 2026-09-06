@@ -51,6 +51,9 @@ function Dashboard() {
     .slice(0, 4);
   const openTasks = (tasksQuery.data ?? []).filter((task) => task.status !== "DONE").slice(0, 5);
   const goals = (goalsQuery.data ?? []).slice(0, 3);
+  const { data: goalContributions = [] } = useAllContributions(
+    (goalsQuery.data ?? []).map((goal) => goal.id),
+  );
   const activeContexts = (contextsQuery.data ?? [])
     .filter((context) => context.status === "ACTIVE" || context.status === "PLANNED")
     .slice(0, 5);

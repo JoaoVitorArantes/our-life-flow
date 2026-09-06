@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/metas/$id")({
 
 function GoalDetail() {
   const { id } = Route.useParams();
-  const { userId, memberProfiles } = useApp();
+  const { memberProfiles } = useApp();
   const queryClient = useQueryClient();
   const { data: goal, isLoading } = useGoal(id);
   const { data: contributions = [] } = useGoalContributions(id);
