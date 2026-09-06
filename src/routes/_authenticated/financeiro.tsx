@@ -533,6 +533,23 @@ function Financeiro() {
                 </Select>
               </div>
               <div className="space-y-1">
+                <Label className="text-xs">Pessoa</Label>
+                <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL}>Todos</SelectItem>
+                    {memberProfiles.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {profile.name || profile.email || "Membro"}
+                        {profile.id === userId ? " (você)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
                 <Label className="text-xs">Busca</Label>
                 <Input
                   placeholder="Descrição"
