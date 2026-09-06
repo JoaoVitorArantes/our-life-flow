@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { LayoutGrid, List, ShoppingBag } from "lucide-react";
+import { LayoutGrid, List } from "lucide-react";
 import { PageHeader, Panel } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { Badge } from "@/components/ui/badge";
