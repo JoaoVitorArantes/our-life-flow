@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Repeat2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FOOTER_NAV, NAV_GROUPS, type NavItem } from "@/features/app/navigation";
 import { useApp } from "@/features/app/app-context";
@@ -47,7 +47,7 @@ export function Sidebar({
   onToggle: () => void;
   workspaceName: string;
 }) {
-  const { workspaceId, profile } = useApp();
+  const { workspaceId, profile, availableWorkspaces, switchWorkspace } = useApp();
   const { data: tasks = [] } = useTasks(workspaceId);
   const { data: transactions = [] } = useTransactions(workspaceId);
   const { data: events = [] } = useEvents(workspaceId);
@@ -81,6 +81,17 @@ export function Sidebar({
           </div>
         )}
       </div>
+      {availableWorkspaces.length > 1 && !collapsed ? (
+        <div className="px-3 pb-3">
+          <button type="button" onClick={() => {
+            const index = availableWorkspaces.findIndex((item) => item.id === workspaceId);
+            const next = availableWorkspaces[(index + 1) % availableWorkspaces.length];
+            if (next) void switchWorkspace(next.id);
+          }} className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground">
+            <Repeat2 className="size-3.5" /> Trocar espaço
+          </button>
+        </div>
+      ) : null}
 
       <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
         {NAV_GROUPS.map((group) => (

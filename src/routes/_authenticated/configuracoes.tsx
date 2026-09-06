@@ -14,6 +14,8 @@ import { useTheme, type ThemeMode } from "@/lib/theme";
 import { clearDemoData, seedDemoData } from "@/features/demo/seed";
 import { AvatarMenu } from "@/components/profile/avatar-menu";
 import { MemberAvatar } from "@/components/profile/member-avatar";
+import { PartnerSettings } from "@/features/workspace/partner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
@@ -34,7 +36,7 @@ const THEMES: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
 ];
 
 function Configuracoes() {
-  const { profile, workspaceId, workspaceName, memberProfiles, userId, refetchWorkspace } = useApp();
+  const { profile, workspaceId, workspaceName, memberProfiles, userId, refetchWorkspace, availableWorkspaces, switchWorkspace } = useApp();
   const { mode, setMode } = useTheme();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -128,6 +130,15 @@ function Configuracoes() {
 
       <Panel>
         <PanelTitle>Workspace</PanelTitle>
+        {availableWorkspaces.length > 1 ? (
+          <div className="mb-4 space-y-2">
+            <Label>Espaço ativo</Label>
+            <Select value={workspaceId} onValueChange={(value) => void switchWorkspace(value)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>{availableWorkspaces.map((workspace) => <SelectItem key={workspace.id} value={workspace.id}>{workspace.name}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        ) : null}
         <p className="text-sm font-medium">{workspaceName}</p>
         <ul className="mt-3 divide-y divide-border">
           {memberProfiles.map((member) => (
@@ -140,9 +151,7 @@ function Configuracoes() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-xs text-muted-foreground">
-          A estrutura já suporta mais de duas pessoas — os convites entram em uma próxima etapa.
-        </p>
+        <div className="mt-4 border-t border-border pt-4"><PartnerSettings /></div>
       </Panel>
 
       <Panel className="space-y-3">
