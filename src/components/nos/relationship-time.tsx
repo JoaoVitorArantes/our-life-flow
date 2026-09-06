@@ -47,7 +47,7 @@ export function relationshipDuration(now: Date) {
 const pad = (value: number) => String(value).padStart(2, "0");
 
 export function RelationshipTime() {
-  const { memberProfiles } = useApp();
+  const { memberProfiles, workspace } = useApp();
   const [now, setNow] = useState(() => new Date());
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -75,7 +75,16 @@ export function RelationshipTime() {
         onClick={() => setOpen(true)}
         className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border border-primary/20 bg-surface/90 p-5 text-left text-foreground shadow-lift backdrop-blur-xl transition-all duration-300 hover:border-primary/45 hover:bg-surface sm:p-7"
       >
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-primary/5" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 overflow-hidden bg-primary/5">
+          {workspace?.avatar_url ? (
+            <img
+              src={workspace.avatar_url}
+              alt="Foto compartilhada do Life OS"
+              className="size-full object-cover opacity-30"
+            />
+          ) : null}
+          <div className="absolute inset-0 bg-background/25" />
+        </div>
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
