@@ -140,132 +140,153 @@ export function PurchaseDialog({
     }
   }
 
+  const imagePreview = image.trim() && isValidUrl(image.trim()) ? image.trim() : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{purchase ? "Editar compra" : "Nova compra"}</DialogTitle>
+          <DialogTitle>{purchase ? "Editar desejo" : "Quero isso 👀"}</DialogTitle>
+          <DialogDescription>
+            {purchase ? "Atualize os detalhes desse desejo." : "Vamos guardar essa ideia por aqui."}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="purchase-title">Nome</Label>
-            <Input
-              id="purchase-title"
-              placeholder="Karaokê"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              className="h-12 text-base"
-              autoFocus
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="purchase-description">Descrição</Label>
-            <Input
-              id="purchase-description"
-              placeholder="Opcional"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-6">
+          <section className="space-y-3">
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              O que vocês querem?
+            </p>
             <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Nenhuma" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_CATEGORY}>Nenhuma</SelectItem>
-                  {PURCHASE_CATEGORIES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.emoji} {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Pessoa</Label>
-              <Select value={person} onValueChange={(value) => setPerson(value as PersonScope)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PERSON_SCOPES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="purchase-budget">Orçamento</Label>
+              <Label htmlFor="purchase-title">Nome</Label>
               <Input
-                id="purchase-budget"
-                inputMode="decimal"
-                placeholder="R$ 0,00"
-                value={budget}
-                onChange={(event) => setBudget(event.target.value)}
-                className="numeric"
+                id="purchase-title"
+                placeholder="Karaokê, air fryer, viagem..."
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                className="h-12 text-base"
+                autoFocus
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="purchase-price">Melhor preço encontrado</Label>
+              <Label htmlFor="purchase-description">Descrição</Label>
               <Input
-                id="purchase-price"
-                inputMode="decimal"
-                placeholder="R$ 0,00"
-                value={price}
-                onChange={(event) => setPrice(event.target.value)}
-                className="numeric"
+                id="purchase-description"
+                placeholder="Um dia precisamos comprar um desses 😂"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
               />
             </div>
-          </div>
+          </section>
 
-          <div className="space-y-2">
-            <Label htmlFor="purchase-url">Link da compra</Label>
-            <Input
-              id="purchase-url"
-              inputMode="url"
-              placeholder="https://"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-            />
-          </div>
+          <section className="space-y-3">
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Quanto custa?
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="purchase-budget">Orçamento</Label>
+                <Input
+                  id="purchase-budget"
+                  inputMode="decimal"
+                  placeholder="Quanto vocês pretendem gastar?"
+                  value={budget}
+                  onChange={(event) => setBudget(event.target.value)}
+                  className="numeric"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="purchase-price">Melhor preço encontrado</Label>
+                <Input
+                  id="purchase-price"
+                  inputMode="decimal"
+                  placeholder="Encontraram por quanto?"
+                  value={price}
+                  onChange={(event) => setPrice(event.target.value)}
+                  className="numeric"
+                />
+              </div>
+            </div>
+          </section>
 
-          <div className="space-y-2">
-            <Label htmlFor="purchase-image">Imagem (endereço)</Label>
-            <Input
-              id="purchase-image"
-              inputMode="url"
-              placeholder="https://"
-              value={image}
-              onChange={(event) => setImage(event.target.value)}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+          <section className="space-y-3">
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Onde encontramos?
+            </p>
             <div className="space-y-2">
-              <Label>Prioridade</Label>
-              <Select value={priority} onValueChange={(value) => setPriority(value as PurchasePriority)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PURCHASE_PRIORITIES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="purchase-url">Link da compra</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="purchase-url"
+                  inputMode="url"
+                  placeholder="Cole o link da loja aqui..."
+                  value={url}
+                  onChange={(event) => setUrl(event.target.value)}
+                />
+                {url.trim() && isValidUrl(url.trim()) ? (
+                  <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <a href={url.trim()} target="_blank" rel="noreferrer noopener">
+                      Abrir
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="purchase-image">Imagem do produto</Label>
+              <Input
+                id="purchase-image"
+                inputMode="url"
+                placeholder="Cole o link da imagem..."
+                value={image}
+                onChange={(event) => setImage(event.target.value)}
+              />
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Prévia do produto"
+                  className="max-h-44 w-full rounded-xl border border-border object-cover animate-in fade-in duration-300"
+                />
+              ) : null}
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Como está essa compra?
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Categoria</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Nenhuma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_CATEGORY}>Nenhuma</SelectItem>
+                    {PURCHASE_CATEGORIES.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.emoji} {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Prioridade</Label>
+                <Select value={priority} onValueChange={(value) => setPriority(value as PurchasePriority)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PURCHASE_PRIORITIES.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.emoji} {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
@@ -276,41 +297,65 @@ export function PurchaseDialog({
                 <SelectContent>
                   {PURCHASE_STATUSES.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
-                      {item.label}
+                      {item.emoji} {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </section>
 
-          <div className="space-y-2">
-            <Label htmlFor="purchase-desired">Data desejada</Label>
-            <Input
-              id="purchase-desired"
-              type="date"
-              value={desired}
-              onChange={(event) => setDesired(event.target.value)}
-            />
-          </div>
+          <section className="space-y-3">
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Mais detalhes
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Pessoa</Label>
+                <Select value={person} onValueChange={(value) => setPerson(value as PersonScope)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERSON_SCOPES.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.emoji} {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="purchase-desired">Data desejada</Label>
+                <Input
+                  id="purchase-desired"
+                  type="date"
+                  value={desired}
+                  onChange={(event) => setDesired(event.target.value)}
+                />
+              </div>
+            </div>
 
-          <ContextSelect value={contextId} onChange={setContextId} />
+            <ContextSelect value={contextId} onChange={setContextId} />
 
-          <div className="space-y-2">
-            <Label htmlFor="purchase-notes">Observações</Label>
-            <Textarea
-              id="purchase-notes"
-              rows={3}
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="purchase-notes">Observações</Label>
+              <Textarea
+                id="purchase-notes"
+                rows={3}
+                placeholder="Detalhes, modelos, comparações..."
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+              />
+            </div>
+          </section>
 
           <Button className="h-12 w-full" onClick={() => void handleSubmit()} disabled={saving}>
-            {saving ? "Salvando..." : purchase ? "Salvar alterações" : "Adicionar compra"}
+            {saving ? "Salvando..." : purchase ? "Salvar alterações" : "Adicionar à wishlist"}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+
