@@ -19,6 +19,15 @@ async function withAvatarUrls(profiles: Profile[]) {
   );
 }
 
+async function withWorkspaceAvatar(workspace: Workspace) {
+  if (!workspace.avatar_url || workspace.avatar_url.startsWith("http")) return workspace;
+  const { data } = await supabase.storage.from("avatars").createSignedUrl(workspace.avatar_url, 60 * 60);
+  return {
+    ...workspace,
+    avatar_url: data?.signedUrl ? `${data.signedUrl}#avatar-path=${workspace.avatar_url}` : null,
+  };
+}
+
 /** Creates profile + "Life OS" workspace + default categories when missing. */
 export async function bootstrapAccount(name?: string) {
   const { data, error } = await supabase.rpc("bootstrap_account", { _name: name ?? "" });
@@ -60,10 +69,11 @@ export function useWorkspace(enabled: boolean) {
 
       const resolvedProfiles = await withAvatarUrls((profilesResult.data ?? []) as Profile[]);
       const resolvedProfile = resolvedProfiles.find((item) => item.id === profile?.id) ?? profile;
+      const resolvedWorkspace = await withWorkspaceAvatar(workspace as Workspace);
 
       return {
         workspaceId,
-        workspace: workspace as Workspace | null,
+        workspace: resolvedWorkspace,
         profile: resolvedProfile as Profile | null,
         members: (members ?? []) as Member[],
         memberProfiles: resolvedProfiles,
