@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { registerCardCycles } from "./calc";
 import type { PaymentStatus, TransactionType, Visibility } from "./constants";
 
 export type Account = Tables<"accounts">;
@@ -33,7 +34,15 @@ export function useAccounts(workspaceId?: string) {
 }
 
 export function useCards(workspaceId?: string) {
-  return useQuery(listQuery<Card>("cards", "cards", workspaceId));
+  const base = listQuery<Card>("cards", "cards", workspaceId);
+  return useQuery({
+    ...base,
+    queryFn: async () => {
+      const cards = await base.queryFn();
+      registerCardCycles(cards);
+      return cards;
+    },
+  });
 }
 
 export function useCategories(workspaceId?: string) {

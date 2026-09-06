@@ -5,11 +5,14 @@ import { Header } from "./header";
 import { CommandBar } from "@/components/command/command-bar";
 import { QuickActionHost } from "@/components/quick/quick-action-host";
 import { useApp } from "@/features/app/app-context";
+import { useCards } from "@/features/finance/queries";
 import { InvitationInbox } from "@/features/workspace/partner";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
-  const { workspaceName } = useApp();
+  const { workspaceName, workspaceId } = useApp();
+  // Mantém os ciclos de fatura carregados para o cálculo de vencimento em todas as telas.
+  useCards(workspaceId);
 
   return (
     <div className="flex min-h-dvh bg-background">
