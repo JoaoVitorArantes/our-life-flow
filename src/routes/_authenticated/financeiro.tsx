@@ -376,9 +376,10 @@ function Financeiro() {
                   <li key={t.id} className="flex items-center justify-between gap-3 py-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">✓ {t.description}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         {formatDateShort(t.paid_at ?? t.transaction_date)} ·{" "}
                         {categoryName(t.category_id)} · {sourceName(t)}
+                        <CreatedBy userId={t.owner_id} />
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -389,11 +390,23 @@ function Financeiro() {
                       >
                         {formatCurrency(Number(t.amount))}
                       </span>
-                      {t.owner_id === userId ? (
-                        <Button size="sm" variant="ghost" onClick={() => markPending(t.id)}>
-                          Desfazer
-                        </Button>
-                      ) : null}
+                      <Button size="sm" variant="ghost" onClick={() => markPending(t.id)}>
+                        Desfazer
+                      </Button>
+                      <RecordActions
+                        onEdit={() => setEditingTransaction(t)}
+                        onDelete={() =>
+                          run(
+                            () => deleteTransaction(t.id, workspaceId ?? ""),
+                            ["transactions", "settlements"],
+                            "Lançamento excluído.",
+                          )
+                        }
+                        confirmTitle={
+                          t.type === "INCOME" ? "Excluir esta receita?" : "Excluir esta despesa?"
+                        }
+                        confirmDescription="Essa ação não poderá ser desfeita."
+                      />
                     </div>
                   </li>
                 ))}
