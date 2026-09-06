@@ -56,6 +56,13 @@ export function ContextDialog({
     setStartDate(context?.start_date ?? "");
     setEndDate(context?.end_date ?? "");
     setLocation(context?.location ?? "");
+    setBudget(
+      context?.budget_amount != null
+        ? String(Number(context.budget_amount)).replace(".", ",")
+        : "",
+    );
+    setColor(context?.color ?? "#7C5CFC");
+    setCoverImage(context?.cover_image ?? "");
   }, [open, context]);
 
   async function handleSubmit() {
