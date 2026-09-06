@@ -186,6 +186,39 @@ export function ContextDialog({
             />
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="context-budget">Orçamento (opcional)</Label>
+              <Input
+                id="context-budget"
+                inputMode="decimal"
+                placeholder="R$ 0,00"
+                value={budget}
+                onChange={(event) => setBudget(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="context-color">Cor</Label>
+              <Input
+                id="context-color"
+                type="color"
+                className="h-10 p-1"
+                value={color}
+                onChange={(event) => setColor(event.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="context-image">Imagem de capa (URL)</Label>
+            <Input
+              id="context-image"
+              placeholder="https://..."
+              value={coverImage}
+              onChange={(event) => setCoverImage(event.target.value)}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="context-description">Descrição</Label>
             <Textarea
