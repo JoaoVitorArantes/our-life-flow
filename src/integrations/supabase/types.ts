@@ -809,6 +809,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_workspace_id: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -817,6 +818,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_workspace_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -825,6 +827,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_workspace_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -832,7 +835,15 @@ export type Database = {
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_workspace_id_fkey"
+            columns: ["active_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recurring_transactions: {
         Row: {
@@ -1291,6 +1302,53 @@ export type Database = {
           },
         ]
       }
+      workspace_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          responded_at: string | null
+          status: string
+          token: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          responded_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          responded_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_invitations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_members: {
         Row: {
           created_at: string
@@ -1318,6 +1376,38 @@ export type Database = {
             foreignKeyName: "workspace_members_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_relationships: {
+        Row: {
+          created_at: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_relationships_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
@@ -1359,6 +1449,14 @@ export type Database = {
     }
     Functions: {
       bootstrap_account: { Args: { _name?: string }; Returns: string }
+      create_partner_invitation: {
+        Args: { _email: string; _workspace_id: string }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          invitation_token: string
+        }[]
+      }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
       rebuild_settlements: { Args: { _workspace_id?: string }; Returns: number }
@@ -1366,6 +1464,11 @@ export type Database = {
         Args: { _transaction_id: string }
         Returns: undefined
       }
+      respond_partner_invitation: {
+        Args: { _accept: boolean; _token: string }
+        Returns: string
+      }
+      set_active_workspace: { Args: { _workspace_id: string }; Returns: string }
       user_is_workspace_member: {
         Args: { _workspace_id: string }
         Returns: boolean

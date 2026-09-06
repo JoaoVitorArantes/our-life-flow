@@ -5,8 +5,6 @@ import { MemberAvatar } from "@/components/profile/member-avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const RELATIONSHIP_START = new Date(2023, 8, 17, 0, 0, 0);
-
 function addCalendarMonths(date: Date, months: number) {
   const copy = new Date(date);
   const day = copy.getDate();
@@ -17,9 +15,9 @@ function addCalendarMonths(date: Date, months: number) {
   return copy;
 }
 
-export function relationshipDuration(now: Date) {
-  if (now < RELATIONSHIP_START) return { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
-  let cursor = new Date(RELATIONSHIP_START);
+export function relationshipDuration(start: Date, now: Date) {
+  if (now < start) return { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+  let cursor = new Date(start);
   let years = now.getFullYear() - cursor.getFullYear();
   let yearCursor = new Date(cursor);
   yearCursor.setFullYear(cursor.getFullYear() + years);
@@ -47,25 +45,36 @@ export function relationshipDuration(now: Date) {
 const pad = (value: number) => String(value).padStart(2, "0");
 
 export function RelationshipTime() {
-  const { memberProfiles, workspace } = useApp();
+  const { memberProfiles, workspace, relationship } = useApp();
   const [now, setNow] = useState(() => new Date());
   const [open, setOpen] = useState(false);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(timer);
   }, []);
-  const duration = relationshipDuration(now);
+  const start = relationship?.started_at ? new Date(relationship.started_at) : null;
+  const duration = start ? relationshipDuration(start, now) : null;
   const totals = useMemo(() => {
-    const milliseconds = Math.max(0, now.getTime() - RELATIONSHIP_START.getTime());
+    const milliseconds = start ? Math.max(0, now.getTime() - start.getTime()) : 0;
     return {
       days: Math.floor(milliseconds / 86_400_000),
       hours: Math.floor(milliseconds / 3_600_000),
       minutes: Math.floor(milliseconds / 60_000),
       seconds: Math.floor(milliseconds / 1000),
     };
-  }, [now]);
+  }, [now, start?.getTime()]);
   const people = memberProfiles.slice(0, 2);
   const names = people.map((person) => person.name.trim().split(" ")[0]).filter(Boolean);
+  if (people.length < 2 || !start || relationship?.status !== "ACTIVE" || !duration) {
+    return (
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-dashed border-primary/30 bg-surface/70 p-5 sm:p-7">
+        <div><p className="text-sm font-semibold">Tempo de Nós</p><p className="mt-1 text-sm text-muted-foreground">Adicione seu parceiro(a) e configure a data de início para começar o contador.</p></div>
+        <CalendarHeart className="size-6 shrink-0 text-primary" />
+      </div>
+    );
+  }
+  const longDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric" }).format(start);
+  const shortDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(start);
 
   return (
     <>
@@ -106,7 +115,7 @@ export function RelationshipTime() {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">{names.join(" + ") || "Nossa história"}</p>
-                <p className="text-xs text-muted-foreground">Desde 17 de setembro de 2023</p>
+                <p className="text-xs text-muted-foreground">Desde {longDate}</p>
               </div>
             </div>
           </div>
@@ -140,7 +149,7 @@ export function RelationshipTime() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><CalendarHeart className="size-5 text-primary" /> Tempo de Nós</DialogTitle>
-            <DialogDescription>{names.join(" e ") || "Nossa história"} · desde 17/09/2023 às 00:00</DialogDescription>
+            <DialogDescription>{names.join(" e ") || "Nossa história"} · desde {shortDate}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-3 gap-3 py-2">
             {[

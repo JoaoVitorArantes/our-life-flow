@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: z.object({ invite: z.string().uuid().optional() }),
   head: () => ({
     meta: [
       { title: "Entrar no Life OS" },
@@ -24,6 +26,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { invite } = Route.useSearch();
   const { user, loading } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,10 +35,14 @@ function AuthPage() {
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
-  }, [loading, user, navigate]);
+    if (!loading && user) {
+      if (invite) window.sessionStorage.setItem("lifeos-invite", invite);
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [loading, user, invite, navigate]);
 
   async function signIn() {
+    if (invite) window.sessionStorage.setItem("lifeos-invite", invite);
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
@@ -47,11 +54,12 @@ function AuthPage() {
   }
 
   async function signUp() {
+    if (invite) window.sessionStorage.setItem("lifeos-invite", invite);
     setBusy(true);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin, data: { name } },
+      options: { emailRedirectTo: invite ? `${window.location.origin}/auth?invite=${invite}` : window.location.origin, data: { name } },
     });
     setBusy(false);
     if (error) {
@@ -65,6 +73,7 @@ function AuthPage() {
   }
 
   async function signInWithGoogle() {
+    if (invite) window.sessionStorage.setItem("lifeos-invite", invite);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
