@@ -568,15 +568,15 @@ function ContextDetail() {
                         </Button>
                       ) : null}
                       <RecordActions
-                        onEdit={
-                          transaction.type === "TRANSFER"
-                            ? undefined
-                            : () =>
+                        {...(transaction.type === "TRANSFER"
+                          ? {}
+                          : {
+                              onEdit: () =>
                                 setTxEdit({
                                   id: transaction.id,
                                   type: transaction.type === "INCOME" ? "INCOME" : "EXPENSE",
-                                })
-                        }
+                                }),
+                            })}
                         onDelete={() =>
                           run(
                             () => deleteTransaction(transaction.id),
