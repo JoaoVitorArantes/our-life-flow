@@ -176,6 +176,7 @@ export type Database = {
       }
       contexts: {
         Row: {
+          budget_amount: number | null
           color: string | null
           cover_image: string | null
           created_at: string
@@ -194,6 +195,7 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          budget_amount?: number | null
           color?: string | null
           cover_image?: string | null
           created_at?: string
@@ -212,6 +214,7 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          budget_amount?: number | null
           color?: string | null
           cover_image?: string | null
           created_at?: string

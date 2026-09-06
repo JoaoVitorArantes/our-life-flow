@@ -1,0 +1,1 @@
+ALTER TABLE public.contexts ADD COLUMN IF NOT EXISTS budget_amount numeric;
