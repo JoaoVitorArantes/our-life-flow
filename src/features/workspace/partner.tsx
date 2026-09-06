@@ -134,7 +134,7 @@ export function PartnerSettings() {
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="size-4" /></span>
         <div><p className="text-sm font-medium">Parceiro(a)</p><p className="text-xs text-muted-foreground">Um espaço compartilhado comporta somente duas pessoas.</p></div>
       </div>
-      {!full ? (
+      {!full && isOwner ? (
         <div className="space-y-2">
           <Label htmlFor="partner-email">E-mail do parceiro(a)</Label>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -143,13 +143,13 @@ export function PartnerSettings() {
           </div>
           {invitations.data?.[0] ? <p className="text-xs text-muted-foreground">Convite pendente para {invitations.data[0].email}, válido por sete dias.</p> : null}
         </div>
-      ) : null}
+      ) : !full ? <p className="text-xs text-muted-foreground">Somente a pessoa responsável por este espaço pode enviar o convite.</p> : null}
       {full ? (
         <div className="space-y-2">
           <Label htmlFor="relationship-start">Início do relacionamento</Label>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input id="relationship-start" type="datetime-local" value={startedAt} onChange={(event) => setStartedAt(event.target.value)} />
-            <Button variant="outline" disabled={busy || !startedAt || !isOwner} onClick={() => void saveRelationship()}>Salvar data</Button>
+            <Button variant="outline" disabled={busy || !startedAt} onClick={() => void saveRelationship()}>Salvar data</Button>
           </div>
         </div>
       ) : null}
