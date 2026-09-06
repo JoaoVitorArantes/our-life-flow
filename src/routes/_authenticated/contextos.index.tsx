@@ -7,6 +7,7 @@ import { PageHeader, Panel } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
+import { CreatedBy } from "@/components/common/created-by";
 import { Badge } from "@/components/ui/badge";
 import { ContextDialog } from "@/components/quick/context-dialog";
 import { useApp } from "@/features/app/app-context";
@@ -129,7 +130,7 @@ function Contextos() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex gap-2">
                   <Badge variant="outline">{contextStatusLabel(context.status)}</Badge>
-                  {context.visibility === "SHARED" ? <Badge variant="secondary">Nós</Badge> : null}
+                  <CreatedBy userId={context.owner_id} />
                 </div>
                 <span className="numeric text-sm">{formatCurrency(spent(context.id))}</span>
               </div>

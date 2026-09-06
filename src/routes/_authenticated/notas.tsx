@@ -7,6 +7,7 @@ import { PageHeader, Panel } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
+import { CreatedBy } from "@/components/common/created-by";
 import { Badge } from "@/components/ui/badge";
 import { SimpleRecordDialog } from "@/components/quick/simple-record-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,7 +75,7 @@ function Notas() {
               <div className="flex items-start justify-between gap-3">
                 <p className="min-w-0 flex-1 truncate font-medium">{note.title}</p>
                 <div className="flex items-center gap-2">
-                  {note.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                  <CreatedBy userId={note.owner_id} />
                   <RecordActions
                     onEdit={() => setEditing(note)}
                     onDelete={() => remove(note)}

@@ -96,7 +96,7 @@ function GoalDetail() {
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{goal.title}</h1>
             <p className="text-sm text-muted-foreground">
               {goal.due_date ? `até ${formatDateShort(goal.due_date)}` : "Sem prazo"}
-              {goal.visibility === "SHARED" ? " · meta compartilhada" : ""}
+              
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

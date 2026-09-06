@@ -8,6 +8,7 @@ import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CreatedBy } from "@/components/common/created-by";
 import { Badge } from "@/components/ui/badge";
 import { SimpleRecordDialog } from "@/components/quick/simple-record-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,7 +90,7 @@ function Tarefas() {
               <li key={task.id} className="flex items-center gap-3 py-3">
                 <Checkbox checked={false} onCheckedChange={() => toggle(task.id, true)} />
                 <span className="min-w-0 flex-1 truncate text-sm">{task.title}</span>
-                {task.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                <CreatedBy userId={task.owner_id} />
                 {task.due_date ? (
                   <span className="numeric shrink-0 text-xs text-muted-foreground">
                     {formatDateShort(task.due_date)}
