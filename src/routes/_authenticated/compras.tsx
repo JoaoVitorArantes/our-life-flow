@@ -103,8 +103,13 @@ function Compras() {
     const high = planned.filter((item) => item.priority === "HIGH").length;
     const under = planned.filter((item) => budgetDelta(item)?.under).length;
     const over = planned.filter((item) => budgetDelta(item)?.under === false).length;
-    return { count: planned.length, budget, price, high, under, over };
+    const saved = planned.reduce((sum, item) => {
+      const delta = budgetDelta(item);
+      return delta?.under ? sum + delta.diff : sum;
+    }, 0);
+    return { count: planned.length, budget, price, high, under, over, saved };
   }, [active]);
+
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
