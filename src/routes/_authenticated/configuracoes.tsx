@@ -13,6 +13,7 @@ import { useApp } from "@/features/app/app-context";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 import { clearDemoData, seedDemoData } from "@/features/demo/seed";
 import { AvatarMenu } from "@/components/profile/avatar-menu";
+import { MemberAvatar } from "@/components/profile/member-avatar";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
@@ -131,7 +132,10 @@ function Configuracoes() {
         <ul className="mt-3 divide-y divide-border">
           {memberProfiles.map((member) => (
             <li key={member.id} className="flex items-center justify-between gap-3 py-3 text-sm">
-              <span>{member.name || member.email}</span>
+              <span className="flex min-w-0 items-center gap-2.5">
+                <MemberAvatar name={member.name} email={member.email} src={member.avatar_url} className="size-8 shrink-0" fallbackClassName="text-[10px]" />
+                <span className="truncate">{member.name || member.email}</span>
+              </span>
               {member.id === userId ? <Badge variant="outline">Você</Badge> : null}
             </li>
           ))}

@@ -140,7 +140,7 @@ export function RelationshipTime() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><CalendarHeart className="size-5 text-primary" /> Tempo de Nós</DialogTitle>
-            <DialogDescription>João e Renifer · desde 17/09/2023 às 00:00</DialogDescription>
+            <DialogDescription>{names.join(" e ") || "Nossa história"} · desde 17/09/2023 às 00:00</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-3 gap-3 py-2">
             {[
