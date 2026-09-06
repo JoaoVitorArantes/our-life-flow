@@ -1358,6 +1358,11 @@ export type Database = {
       bootstrap_account: { Args: { _name?: string }; Returns: string }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
+      rebuild_settlements: { Args: { _workspace_id?: string }; Returns: number }
+      rebuild_transaction_settlement: {
+        Args: { _transaction_id: string }
+        Returns: undefined
+      }
       user_is_workspace_member: {
         Args: { _workspace_id: string }
         Returns: boolean
