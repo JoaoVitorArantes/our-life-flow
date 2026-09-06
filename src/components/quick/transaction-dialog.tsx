@@ -178,10 +178,24 @@ export function TransactionDialog({
       return;
     }
 
+    if (shared && partner && division2) {
+      const totalShares = division2.shares.reduce((sum, share) => sum + share.amount, 0);
+      if (Math.abs(totalShares - value) > 0.02) {
+        toast.error("A soma da divisão precisa ser igual ao valor da despesa.");
+        return;
+      }
+      const totalPaid = division2.payers.reduce((sum, payer) => sum + payer.amount, 0);
+      if (Math.abs(totalPaid - value) > 0.02) {
+        toast.error("A soma do que cada um pagou precisa ser igual ao valor da despesa.");
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const [source, id] = payment ? payment.split(":") : ["", ""];
       const linkedContext = contextId === NO_CONTEXT ? null : contextId;
+      let transactionId = transaction?.id ?? "";
 
       if (isEditing && transaction) {
         await updateTransaction(transaction.id, {
@@ -200,23 +214,7 @@ export function TransactionDialog({
           notes: notes.trim() || null,
         });
       } else {
-        const splits =
-          shared && splitAmounts && others.length
-            ? [
-                {
-                  userId,
-                  amount: splitAmounts.mine,
-                  percentage: value ? (splitAmounts.mine / value) * 100 : 0,
-                },
-                ...others.map((profile) => ({
-                  userId: profile.id,
-                  amount: splitAmounts.theirs / others.length,
-                  percentage: value ? (splitAmounts.theirs / others.length / value) * 100 : 0,
-                })),
-              ]
-            : undefined;
-
-        await createTransaction({
+        const created = await createTransaction({
           workspaceId,
           ownerId: userId,
           type: isExpense ? "EXPENSE" : "INCOME",
@@ -232,15 +230,36 @@ export function TransactionDialog({
           visibility: "SHARED",
           isShared: shared,
           notes: notes.trim() || null,
-          splits,
         });
+        transactionId = created.id;
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      // Divisão + quem pagou + acerto (histórico já pago é preservado).
+      if (shared && division2 && transactionId) {
+        await saveDivision({
+          workspaceId,
+          transactionId,
+          memberIds: memberProfiles.map((profile) => profile.id),
+          shares: division2.shares,
+          payers: division2.payers,
+          note: description.trim(),
+        });
+      } else if (transactionId) {
+        await clearDivision(transactionId);
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+        queryClient.invalidateQueries({ queryKey: ["settlements"] }),
+        queryClient.invalidateQueries({ queryKey: ["transaction_splits"] }),
+        queryClient.invalidateQueries({ queryKey: ["transaction_payers"] }),
+        queryClient.invalidateQueries({ queryKey: ["transaction_division"] }),
+      ]);
       toast.success(
         isEditing ? "Lançamento atualizado." : isExpense ? "Despesa registrada." : "Receita registrada.",
       );
       onOpenChange(false);
+
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");
     } finally {
