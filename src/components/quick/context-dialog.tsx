@@ -42,6 +42,9 @@ export function ContextDialog({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
+  const [budget, setBudget] = useState("");
+  const [color, setColor] = useState("#7C5CFC");
+  const [coverImage, setCoverImage] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
