@@ -119,6 +119,7 @@ function Financeiro() {
   const [sourceFilter, setSourceFilter] = useState(ALL);
   const [contextFilter, setContextFilter] = useState(ALL);
   const [originFilter, setOriginFilter] = useState(ALL);
+  const [ownerFilter, setOwnerFilter] = useState(ALL);
   const [search, setSearch] = useState("");
 
   const transactions = transactionsQuery.data ?? [];
