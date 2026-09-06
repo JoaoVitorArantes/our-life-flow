@@ -13,25 +13,32 @@ export type PurchaseStatus =
 export type PurchasePriority = "LOW" | "MEDIUM" | "HIGH";
 export type PersonScope = "JOAO" | "RENIFER" | "COUPLE";
 
-export const PURCHASE_STATUSES: { value: PurchaseStatus; label: string; dot: string }[] = [
-  { value: "WANT_TO_BUY", label: "Quero comprar", dot: "bg-primary" },
-  { value: "RESEARCHING", label: "Pesquisando", dot: "bg-sky-500" },
-  { value: "DECIDED", label: "Decidido", dot: "bg-amber-500" },
-  { value: "PURCHASED", label: "Comprado", dot: "bg-emerald-500" },
-  { value: "DISCARDED", label: "Desistimos", dot: "bg-muted-foreground" },
+export const PURCHASE_STATUSES: {
+  value: PurchaseStatus;
+  label: string;
+  emoji: string;
+  dot: string;
+  tone: string;
+}[] = [
+  { value: "WANT_TO_BUY", label: "Quero isso", emoji: "👀", dot: "bg-primary", tone: "border-primary/30 bg-primary/10 text-primary" },
+  { value: "RESEARCHING", label: "Pesquisando", emoji: "🔎", dot: "bg-sky-500", tone: "border-sky-500/30 bg-sky-500/10 text-sky-500" },
+  { value: "DECIDED", label: "Já decidimos", emoji: "😎", dot: "bg-amber-500", tone: "border-amber-500/30 bg-amber-500/10 text-amber-500" },
+  { value: "PURCHASED", label: "Compramos!", emoji: "🎉", dot: "bg-emerald-500", tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500" },
+  { value: "DISCARDED", label: "Deixamos pra lá", emoji: "🙃", dot: "bg-muted-foreground", tone: "border-border bg-muted text-muted-foreground" },
 ];
 
-export const PURCHASE_PRIORITIES: { value: PurchasePriority; label: string }[] = [
-  { value: "LOW", label: "Baixa" },
-  { value: "MEDIUM", label: "Média" },
-  { value: "HIGH", label: "Alta" },
+export const PURCHASE_PRIORITIES: { value: PurchasePriority; label: string; emoji: string }[] = [
+  { value: "LOW", label: "Pode esperar", emoji: "🌙" },
+  { value: "MEDIUM", label: "Queremos", emoji: "✨" },
+  { value: "HIGH", label: "Queremos muito", emoji: "🔥" },
 ];
 
-export const PERSON_SCOPES: { value: PersonScope; label: string }[] = [
-  { value: "COUPLE", label: "Nós" },
-  { value: "JOAO", label: "João" },
-  { value: "RENIFER", label: "Renifer" },
+export const PERSON_SCOPES: { value: PersonScope; label: string; emoji: string }[] = [
+  { value: "COUPLE", label: "Nós", emoji: "👥" },
+  { value: "JOAO", label: "João", emoji: "👤" },
+  { value: "RENIFER", label: "Renifer", emoji: "👤" },
 ];
+
 
 export const PURCHASE_CATEGORIES: { value: string; label: string; emoji: string }[] = [
   { value: "HOME", label: "Casa", emoji: "🏠" },
@@ -66,6 +73,21 @@ export function categoryLabel(category?: string | null) {
 export function categoryEmoji(category?: string | null) {
   return PURCHASE_CATEGORIES.find((item) => item.value === category)?.emoji ?? "🛍️";
 }
+export function statusEmoji(status: string) {
+  return PURCHASE_STATUSES.find((item) => item.value === status)?.emoji ?? "👀";
+}
+export function statusTone(status: string) {
+  return (
+    PURCHASE_STATUSES.find((item) => item.value === status)?.tone ??
+    "border-border bg-muted text-muted-foreground"
+  );
+}
+export function priorityEmoji(priority: string) {
+  return PURCHASE_PRIORITIES.find((item) => item.value === priority)?.emoji ?? "✨";
+}
+export function personEmoji(scope: string) {
+  return PERSON_SCOPES.find((item) => item.value === scope)?.emoji ?? "👤";
+}
 
 /** Diferença entre orçamento e melhor preço encontrado. */
 export function budgetDelta(purchase: Purchase) {
@@ -76,6 +98,24 @@ export function budgetDelta(purchase: Purchase) {
   if (Math.abs(diff) < 0.01) return null;
   return { diff, percent: (Math.abs(diff) / budget) * 100, under: diff > 0 };
 }
+
+/** Microtexto simpático derivado dos dados reais da compra. */
+export function purchaseVibe(purchase: Purchase): { text: string; tone: "good" | "warn" | "soft" } | null {
+  if (purchase.status === "PURCHASED") return { text: "🎉 Essa já saiu da wishlist!", tone: "good" };
+  if (purchase.status === "DISCARDED") return null;
+  const delta = budgetDelta(purchase);
+  if (delta?.under) {
+    return delta.percent >= 20
+      ? { text: "🔥 Achado! Bem abaixo do orçamento.", tone: "good" }
+      : { text: "🤑 Tá dentro do orçamento!", tone: "good" };
+  }
+  if (delta && !delta.under) return { text: "😬 Passou um pouco do limite.", tone: "warn" };
+  if (purchase.status === "DECIDED") return { text: "😎 Agora só falta comprar.", tone: "soft" };
+  if (purchase.found_price == null) return { text: "👀 Ainda estamos de olho.", tone: "soft" };
+  if (purchase.purchase_url) return { text: "🔗 Encontramos onde comprar.", tone: "soft" };
+  return null;
+}
+
 
 export function isValidUrl(value: string) {
   try {

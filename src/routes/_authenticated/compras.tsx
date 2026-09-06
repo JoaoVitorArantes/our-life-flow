@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { LayoutGrid, List, ShoppingBag } from "lucide-react";
+import { LayoutGrid, List } from "lucide-react";
 import { PageHeader, Panel } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +23,14 @@ import {
   budgetDelta,
   categoryEmoji,
   categoryLabel,
+  personEmoji,
   personLabel,
+  priorityEmoji,
   priorityLabel,
   statusDot,
+  statusEmoji,
   statusLabel,
+
   usePurchases,
   PERSON_SCOPES,
   PURCHASE_CATEGORIES,
@@ -61,14 +65,17 @@ const SORTS = [
 
 const PRIORITY_WEIGHT: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ emoji, label, value }: { emoji: string; label: string; value: string }) {
   return (
-    <Panel className="p-4">
-      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+    <Panel className="p-4 transition-colors hover:border-primary/30">
+      <p className="text-xs text-muted-foreground">
+        {emoji} {label}
+      </p>
       <p className="numeric mt-1 text-xl font-semibold">{value}</p>
     </Panel>
   );
 }
+
 
 function Compras() {
   const { workspaceId } = useApp();
@@ -100,8 +107,13 @@ function Compras() {
     const high = planned.filter((item) => item.priority === "HIGH").length;
     const under = planned.filter((item) => budgetDelta(item)?.under).length;
     const over = planned.filter((item) => budgetDelta(item)?.under === false).length;
-    return { count: planned.length, budget, price, high, under, over };
+    const saved = planned.reduce((sum, item) => {
+      const delta = budgetDelta(item);
+      return delta?.under ? sum + delta.diff : sum;
+    }, 0);
+    return { count: planned.length, budget, price, high, under, over, saved };
   }, [active]);
+
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -159,33 +171,42 @@ function Compras() {
     <div className="space-y-8">
       <PageHeader
         title="Compras"
-        subtitle="O que vocês estão pensando em comprar?"
+        subtitle="Desejos, achados e próximas compras 👀"
         action={
           <Button size="sm" onClick={openNew}>
-            Nova compra
+            Quero isso
           </Button>
         }
       />
 
       {purchases.length === 0 ? (
-        <EmptyState
-          icon={ShoppingBag}
-          title="Nenhuma compra ainda"
-          description="Registre o que vocês querem comprar, compare preços e decidam juntos."
-          action={
-            <Button size="sm" variant="outline" onClick={openNew}>
-              Nova compra
-            </Button>
-          }
-        />
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-border bg-[radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--primary)_12%,transparent),transparent_65%)] px-6 py-16 text-center">
+          <span className="grid size-16 place-items-center rounded-2xl border border-primary/25 bg-primary/10 text-3xl">
+            🛍️
+          </span>
+          <div className="space-y-1">
+            <p className="text-base font-semibold">Por enquanto, a wishlist está vazia 👀</p>
+            <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+              Tem alguma coisa que vocês estão namorando por aí?
+            </p>
+          </div>
+          <Button size="sm" onClick={openNew}>
+            Adicionar primeira coisa
+          </Button>
+        </div>
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat label="Planejadas" value={String(stats.count)} />
-            <Stat label="Em orçamentos" value={formatCurrency(stats.budget)} />
-            <Stat label="Melhores preços" value={formatCurrency(stats.price)} />
-            <Stat label="Alta prioridade" value={String(stats.high)} />
+            <Stat emoji="🛍️" label="Desejos" value={String(stats.count)} />
+            <Stat emoji="💰" label="Planejados" value={formatCurrency(stats.budget)} />
+            {stats.saved > 0 ? (
+              <Stat emoji="🤑" label="Economizados" value={formatCurrency(stats.saved)} />
+            ) : (
+              <Stat emoji="🔎" label="Melhores preços" value={formatCurrency(stats.price)} />
+            )}
+            <Stat emoji="🔥" label="Queremos muito" value={String(stats.high)} />
           </div>
+
 
           {summary.length ? (
             <Panel className="space-y-1 p-4 text-sm text-muted-foreground">
@@ -233,7 +254,7 @@ function Compras() {
                 <SelectContent>
                   <SelectItem value={ALL}>Todos os status</SelectItem>
                   {PURCHASE_STATUSES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                    <SelectItem key={item.value} value={item.value}>{item.emoji} {item.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -251,7 +272,7 @@ function Compras() {
                 <SelectContent>
                   <SelectItem value={ALL}>Todas as prioridades</SelectItem>
                   {PURCHASE_PRIORITIES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                    <SelectItem key={item.value} value={item.value}>{item.emoji} {item.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -260,7 +281,7 @@ function Compras() {
                 <SelectContent>
                   <SelectItem value={ALL}>Todas as pessoas</SelectItem>
                   {PERSON_SCOPES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                    <SelectItem key={item.value} value={item.value}>{item.emoji} {item.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -287,7 +308,8 @@ function Compras() {
           </div>
 
           {filtered.length === 0 ? (
-            <EmptyState title="Nada por aqui" description="Ajuste os filtros ou a busca." />
+            <EmptyState title="Nada por aqui 👀" description="Ajuste os filtros ou a busca." />
+
           ) : view === "cards" ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((purchase) => (
@@ -309,7 +331,11 @@ function Compras() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{purchase.title}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {[categoryLabel(purchase.category), priorityLabel(purchase.priority), personLabel(purchase.person_scope)]
+                      {[
+                        categoryLabel(purchase.category),
+                        `${priorityEmoji(purchase.priority)} ${priorityLabel(purchase.priority)}`,
+                        `${personEmoji(purchase.person_scope)} ${personLabel(purchase.person_scope)}`,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
@@ -322,11 +348,14 @@ function Compras() {
                       <p className="numeric font-medium text-foreground">
                         {formatCurrency(Number(purchase.found_price))}
                       </p>
-                    ) : null}
+                    ) : (
+                      <p>Preço a definir</p>
+                    )}
                   </div>
+
                   <Badge variant="outline" className="shrink-0 gap-1.5">
                     <span className={cn("size-1.5 rounded-full", statusDot(purchase.status))} />
-                    <span className="hidden sm:inline">{statusLabel(purchase.status)}</span>
+                    <span className="hidden sm:inline">{statusEmoji(purchase.status)} {statusLabel(purchase.status)}</span>
                   </Badge>
                   <span className="hidden lg:block">
                     <CreatedBy userId={purchase.created_by} />
