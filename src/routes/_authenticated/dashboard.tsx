@@ -100,7 +100,7 @@ function Money({ label, value, tone }: { label: string; value: number; tone?: st
 }
 
 function Dashboard() {
-  const { workspaceId, profile, loading, error, refetchWorkspace, openQuickAction, userId } =
+  const { workspaceId, profile, memberProfiles, loading, error, refetchWorkspace, openQuickAction, userId } =
     useApp();
   const queryClient = useQueryClient();
   const [busyTask, setBusyTask] = useState<string | null>(null);
@@ -692,12 +692,21 @@ function Dashboard() {
           <ul className="divide-y divide-border">
             {activity.map((item) => (
               <li key={item.key} className="flex items-center justify-between gap-3 py-3 text-sm">
-                <span className="truncate">
-                  <span className="font-medium">
-                    {nameOf(item.userId) ?? (item.userId === userId ? "Você" : "Alguém")}
-                  </span>{" "}
-                  {item.action} <span className="text-muted-foreground">{item.label}</span>
-                </span>
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <MemberAvatar
+                    name={memberProfiles.find((profile) => profile.id === item.userId)?.name}
+                    email={memberProfiles.find((profile) => profile.id === item.userId)?.email}
+                    src={memberProfiles.find((profile) => profile.id === item.userId)?.avatar_url}
+                    className="size-7 shrink-0"
+                    fallbackClassName="text-[9px]"
+                  />
+                  <span className="truncate">
+                    <span className="font-medium">
+                      {nameOf(item.userId) ?? (item.userId === userId ? "Você" : "Alguém")}
+                    </span>{" "}
+                    {item.action} <span className="text-muted-foreground">{item.label}</span>
+                  </span>
+                </div>
                 <span className="shrink-0 text-xs text-muted-foreground">
                   {relativeTime(item.at)}
                 </span>
