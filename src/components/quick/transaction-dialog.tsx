@@ -47,6 +47,8 @@ export function TransactionDialog({
   const { data: accounts = [] } = useAccounts(workspaceId);
   const { data: cards = [] } = useCards(workspaceId);
   const { data: categories = [] } = useCategories(workspaceId);
+  const division = useTransactionDivision(transaction?.id, open && !!transaction);
+
 
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
