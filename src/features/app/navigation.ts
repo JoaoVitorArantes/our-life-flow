@@ -50,7 +50,8 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Desenvolvimento",
     items: [
       { to: "/faculdade", label: "Faculdade", icon: GraduationCap, emoji: "🎓" },
-      { to: "/esporte", label: "Esporte", icon: Dumbbell, emoji: "🏃" },
+      { to: "/esporte", label: "Esporte & Atividades", icon: Dumbbell, emoji: "🏃" },
+
       { to: "/metas", label: "Metas", icon: Target, emoji: "🎯" },
     ],
   },
