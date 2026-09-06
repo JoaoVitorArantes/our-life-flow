@@ -15,11 +15,13 @@ import {
 import { useApp } from "@/features/app/app-context";
 import { ACCOUNT_TYPES } from "@/features/finance/constants";
 import { saveAccount, saveCard, saveCategory } from "@/features/finance/mutations";
-import type { Account, Card, Category } from "@/features/finance/queries";
+import { useAccounts, type Account, type Card, type Category } from "@/features/finance/queries";
 import { parseAmount } from "@/lib/format";
 import type { Enums } from "@/integrations/supabase/types";
 
 export type FinanceEntityKind = "account" | "card" | "category";
+
+const NO_ACCOUNT = "none";
 
 const TITLES: Record<FinanceEntityKind, [string, string]> = {
   account: ["Nova conta", "Editar conta"],
@@ -40,11 +42,16 @@ export function FinanceEntityDialog({
 }) {
   const { workspaceId, userId } = useApp();
   const queryClient = useQueryClient();
+  const accounts = useAccounts(workspaceId).data ?? [];
   const [name, setName] = useState("");
   const [institution, setInstitution] = useState("");
   const [accountType, setAccountType] = useState<Enums<"account_type">>("CHECKING");
   const [initialBalance, setInitialBalance] = useState("");
   const [creditLimit, setCreditLimit] = useState("");
+  const [closingDay, setClosingDay] = useState("");
+  const [dueDay, setDueDay] = useState("");
+  const [paymentAccountId, setPaymentAccountId] = useState(NO_ACCOUNT);
+  const [isActive, setIsActive] = useState(true);
   const [categoryType, setCategoryType] = useState<Enums<"category_type">>("EXPENSE");
   const [saving, setSaving] = useState(false);
 
@@ -58,6 +65,10 @@ export function FinanceEntityDialog({
     setAccountType((any?.account_type as Enums<"account_type">) ?? "CHECKING");
     setInitialBalance(any?.initial_balance ? String(Number(any.initial_balance)) : "");
     setCreditLimit(any?.credit_limit ? String(Number(any.credit_limit)) : "");
+    setClosingDay(any?.closing_day ? String(any.closing_day) : "");
+    setDueDay(any?.due_day ? String(any.due_day) : "");
+    setPaymentAccountId(any?.payment_account_id ?? NO_ACCOUNT);
+    setIsActive(any?.is_active ?? true);
     setCategoryType((any?.type as Enums<"category_type">) ?? "EXPENSE");
   }, [open, record]);
 
@@ -83,12 +94,30 @@ export function FinanceEntityDialog({
         });
         await queryClient.invalidateQueries({ queryKey: ["accounts"] });
       } else if (kind === "card") {
+        const day = (value: string) => {
+          const parsed = Number(value);
+          return Number.isFinite(parsed) && parsed >= 1 && parsed <= 31 ? Math.trunc(parsed) : null;
+        };
+        if (closingDay.trim() && day(closingDay) === null) {
+          toast.error("Dia de fechamento deve ficar entre 1 e 31.");
+          setSaving(false);
+          return;
+        }
+        if (dueDay.trim() && day(dueDay) === null) {
+          toast.error("Dia de vencimento deve ficar entre 1 e 31.");
+          setSaving(false);
+          return;
+        }
         await saveCard(id, {
           workspace_id: workspaceId,
           owner_id: userId,
           name: name.trim(),
           institution: institution.trim() || null,
           credit_limit: parseAmount(creditLimit),
+          closing_day: closingDay.trim() ? day(closingDay) : null,
+          due_day: dueDay.trim() ? day(dueDay) : null,
+          payment_account_id: paymentAccountId === NO_ACCOUNT ? null : paymentAccountId,
+          is_active: isActive,
         });
         await queryClient.invalidateQueries({ queryKey: ["cards"] });
       } else {
@@ -170,16 +199,74 @@ export function FinanceEntityDialog({
           ) : null}
 
           {kind === "card" ? (
-            <div className="space-y-2">
-              <Label htmlFor="entity-limit">Limite</Label>
-              <Input
-                id="entity-limit"
-                inputMode="decimal"
-                placeholder="R$ 0,00"
-                value={creditLimit}
-                onChange={(event) => setCreditLimit(event.target.value)}
-              />
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="entity-limit">Limite</Label>
+                <Input
+                  id="entity-limit"
+                  inputMode="decimal"
+                  placeholder="R$ 0,00"
+                  value={creditLimit}
+                  onChange={(event) => setCreditLimit(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="entity-closing">Fecha dia</Label>
+                  <Input
+                    id="entity-closing"
+                    inputMode="numeric"
+                    min={1}
+                    max={31}
+                    type="number"
+                    placeholder="15"
+                    value={closingDay}
+                    onChange={(event) => setClosingDay(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="entity-due">Vence dia</Label>
+                  <Input
+                    id="entity-due"
+                    inputMode="numeric"
+                    min={1}
+                    max={31}
+                    type="number"
+                    placeholder="22"
+                    value={dueDay}
+                    onChange={(event) => setDueDay(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Conta para pagamento</Label>
+                <Select value={paymentAccountId} onValueChange={setPaymentAccountId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sem conta definida" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_ACCOUNT}>Sem conta definida</SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Situação</Label>
+                <Select value={isActive ? "active" : "inactive"} onValueChange={(value) => setIsActive(value === "active")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Ativo</SelectItem>
+                    <SelectItem value="inactive">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           ) : null}
 
           {kind === "category" ? (

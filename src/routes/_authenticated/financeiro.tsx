@@ -9,6 +9,7 @@ import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
 import { CreatedBy } from "@/components/common/created-by";
 import { StatusBadge } from "@/components/finance/status-badge";
+import { CardPanel } from "@/components/finance/card-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1051,81 +1052,36 @@ function Financeiro() {
                 }
               />
             ) : (
-              <div className="space-y-6">
-                {cards.map((card) => {
-                  const range = cardInvoiceRange(card.closing_day ?? 1);
-                  const cardTx = transactions.filter((t) => t.card_id === card.id);
-                  const invoice = cardTx.filter(
-                    (t) => dueDateOf(t) >= range.start && dueDateOf(t) <= range.end,
-                  );
-                  const invoiceTotal = sumBy(invoice, (t) => Number(t.amount));
-                  const openTotal = sumBy(
-                    cardTx.filter((t) => t.status !== "PAID" && t.status !== "CANCELLED"),
-                    (t) => Number(t.amount),
-                  );
-                  const available = Number(card.credit_limit) - openTotal;
-                  return (
-                    <div key={card.id} className="rounded-xl border border-border p-4">
-                      <div className="mb-3 flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-medium">{card.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {card.institution ?? "—"} · fecha dia {card.closing_day ?? "—"} · vence
-                            dia {card.due_day ?? "—"}
-                          </p>
-                        </div>
-                        <RecordActions
-                          onEdit={() => setEntity({ kind: "card", record: card })}
-                          onDelete={() =>
-                            run(() => deleteCard(card.id), ["cards"], "Cartão excluído.")
-                          }
-                          confirmTitle="Excluir este cartão?"
-                          confirmDescription="Lançamentos vinculados continuam existindo, mas ficam sem cartão."
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                        <div className="rounded-lg bg-elevated p-2">
-                          <p className="text-muted-foreground">Limite</p>
-                          <p className="numeric text-sm">
-                            {formatCurrency(Number(card.credit_limit))}
-                          </p>
-                        </div>
-                        <div className="rounded-lg bg-elevated p-2">
-                          <p className="text-muted-foreground">Disponível</p>
-                          <p className="numeric text-sm text-success">
-                            {formatCurrency(available)}
-                          </p>
-                        </div>
-                        <div className="rounded-lg bg-elevated p-2">
-                          <p className="text-muted-foreground">Fatura atual</p>
-                          <p className="numeric text-sm">{formatCurrency(invoiceTotal)}</p>
-                        </div>
-                      </div>
-                      {invoice.length ? (
-                        <ul className="mt-3 divide-y divide-border">
-                          {invoice.map((item) => (
-                            <li
-                              key={item.id}
-                              className="flex items-center justify-between gap-3 py-2 text-sm"
-                            >
-                              <span className="truncate">{item.description}</span>
-                              <span className="flex items-center gap-2">
-                                <StatusBadge status={statusOf(item)} />
-                                <span className="numeric">
-                                  {formatCurrency(Number(item.amount))}
-                                </span>
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="mt-3 text-xs text-muted-foreground">
-                          Nenhuma compra nesta fatura.
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="grid gap-4 lg:grid-cols-2">
+                {cards.map((card) => (
+                  <CardPanel
+                    key={card.id}
+                    card={card}
+                    transactions={transactions.filter((t) => t.card_id === card.id)}
+                    plans={plans}
+                    categoryName={categoryName}
+                    contextLabel={(id) => {
+                      const context = contexts.find((item) => item.id === id);
+                      return context ? `${contextEmoji(context.type)} ${context.name}` : null;
+                    }}
+                    paymentAccountName={
+                      accounts.find((a) => a.id === card.payment_account_id)?.name ?? null
+                    }
+                    onEdit={() => setEntity({ kind: "card", record: card })}
+                    onDelete={() =>
+                      run(() => deleteCard(card.id), ["cards"], "Cartão excluído.")
+                    }
+                    onPayInvoice={(items) =>
+                      run(
+                        async () => {
+                          for (const item of items) await setTransactionStatus(item.id, "PAID");
+                        },
+                        ["transactions"],
+                        "Fatura paga.",
+                      )
+                    }
+                  />
+                ))}
               </div>
             )}
           </Panel>
