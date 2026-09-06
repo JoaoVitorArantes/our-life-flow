@@ -72,6 +72,8 @@ export type ContextInput = {
   end_date?: string | null;
   location?: string | null;
   color?: string | null;
+  cover_image?: string | null;
+  budget_amount?: number | null;
   visibility: Enums<"visibility">;
 };
 

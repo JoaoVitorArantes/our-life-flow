@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApp } from "@/features/app/app-context";
+import { parseAmount } from "@/lib/format";
 import {
   CONTEXT_STATUSES,
   CONTEXT_TYPES,
@@ -42,6 +43,9 @@ export function ContextDialog({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
+  const [budget, setBudget] = useState("");
+  const [color, setColor] = useState("#7C5CFC");
+  const [coverImage, setCoverImage] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -53,6 +57,13 @@ export function ContextDialog({
     setStartDate(context?.start_date ?? "");
     setEndDate(context?.end_date ?? "");
     setLocation(context?.location ?? "");
+    setBudget(
+      context?.budget_amount != null
+        ? String(Number(context.budget_amount)).replace(".", ",")
+        : "",
+    );
+    setColor(context?.color ?? "#7C5CFC");
+    setCoverImage(context?.cover_image ?? "");
   }, [open, context]);
 
   async function handleSubmit() {
@@ -71,6 +82,9 @@ export function ContextDialog({
         start_date: startDate || null,
         end_date: endDate || null,
         location: location.trim() || null,
+        budget_amount: budget.trim() ? parseAmount(budget) : null,
+        color: color || null,
+        cover_image: coverImage.trim() || null,
         visibility: "SHARED" as const,
       };
       if (context) {
@@ -169,6 +183,39 @@ export function ContextDialog({
               placeholder="Uberlândia"
               value={location}
               onChange={(event) => setLocation(event.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="context-budget">Orçamento (opcional)</Label>
+              <Input
+                id="context-budget"
+                inputMode="decimal"
+                placeholder="R$ 0,00"
+                value={budget}
+                onChange={(event) => setBudget(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="context-color">Cor</Label>
+              <Input
+                id="context-color"
+                type="color"
+                className="h-10 p-1"
+                value={color}
+                onChange={(event) => setColor(event.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="context-image">Imagem de capa (URL)</Label>
+            <Input
+              id="context-image"
+              placeholder="https://..."
+              value={coverImage}
+              onChange={(event) => setCoverImage(event.target.value)}
             />
           </div>
 
