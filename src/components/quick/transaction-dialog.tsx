@@ -58,8 +58,11 @@ export function TransactionDialog({
   const [shared, setShared] = useState(false);
   const [splitPreset, setSplitPreset] = useState<number>(50);
   const [ownerShare, setOwnerShare] = useState("");
+  const [payerMode, setPayerMode] = useState<"me" | "other" | "both">("me");
+  const [myPaid, setMyPaid] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
 
   const isEditing = !!transaction;
   const isExpense = transaction ? transaction.type !== "INCOME" : kind === "expense";
