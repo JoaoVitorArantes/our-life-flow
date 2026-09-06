@@ -42,6 +42,7 @@ import {
 import { useAccounts, useCards, useCategories, useTransactions } from "@/features/finance/queries";
 import { deleteTransaction, setTransactionStatus } from "@/features/finance/mutations";
 import { useEvents, useGoals, useNotes, useTasks } from "@/features/planner/queries";
+import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
 import { useAllContributions, goalProgress } from "@/features/planner/contributions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, formatDateShort, formatTime } from "@/lib/format";
