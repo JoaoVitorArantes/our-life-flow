@@ -9,6 +9,7 @@ import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
 import { CreatedBy } from "@/components/common/created-by";
 import { StatusBadge } from "@/components/finance/status-badge";
+import { CardPanel } from "@/components/finance/card-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
