@@ -27,6 +27,12 @@ import { useApp, type QuickActionKind } from "@/features/app/app-context";
 import { useAccounts, useTransactions } from "@/features/finance/queries";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
 import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
+import {
+  activityEmoji,
+  formatDistance,
+  formatDuration,
+  useActivities,
+} from "@/features/activities/queries";
 import { goalProgress, movementType, useAllContributions } from "@/features/planner/contributions";
 import { contextEmoji, useContexts } from "@/features/contexts/queries";
 import {
@@ -126,6 +132,15 @@ function Dashboard() {
   const contributions = contributionsQuery.data ?? [];
 
   const purchasesQuery = usePurchases(workspaceId);
+  const activitiesQuery = useActivities(workspaceId);
+  const weekActivities = useMemo(() => {
+    const from = new Date();
+    from.setHours(0, 0, 0, 0);
+    from.setDate(from.getDate() - 6);
+    return (activitiesQuery.data ?? []).filter(
+      (item) => parseDateOnly(item.activity_date) >= from,
+    );
+  }, [activitiesQuery.data]);
   const plannedPurchases = useMemo(
     () =>
       (purchasesQuery.data ?? [])
