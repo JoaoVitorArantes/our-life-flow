@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+
 import {
   Select,
   SelectContent,
@@ -44,7 +45,6 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
   const [categoryId, setCategoryId] = useState("");
   const [payment, setPayment] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
-  const [shared, setShared] = useState(false);
   const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -67,7 +67,6 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
             : "",
       );
       setContextId(record.context_id ?? NO_CONTEXT);
-      setShared(record.visibility === "SHARED");
       setActive(record.is_active);
     } else {
       setDescription("");
@@ -80,7 +79,6 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
       setCategoryId("");
       setPayment("");
       setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
-      setShared(false);
       setActive(true);
     }
   }, [open, record, defaultContextId, activeContextId]);
@@ -108,7 +106,7 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
         account_id: source === "account" ? (id ?? null) : null,
         card_id: source === "card" ? (id ?? null) : null,
         context_id: contextId === NO_CONTEXT ? null : contextId,
-        visibility: (shared ? "SHARED" : "PRIVATE") as "SHARED" | "PRIVATE",
+        visibility: "SHARED" as const,
         is_active: active,
       };
       await saveRecurring(record?.id ?? null, values);
@@ -264,10 +262,9 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
             <p className="text-sm font-medium">Ativa</p>
             <Switch checked={active} onCheckedChange={setActive} />
           </div>
-          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
-            <p className="text-sm font-medium">Compartilhada</p>
-            <Switch checked={shared} onCheckedChange={setShared} />
-          </div>
+
+
+
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar"}

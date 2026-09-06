@@ -7,6 +7,7 @@ import { PageHeader, Panel } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
+import { CreatedBy } from "@/components/common/created-by";
 import { Badge } from "@/components/ui/badge";
 import { SimpleRecordDialog } from "@/components/quick/simple-record-dialog";
 import { ContributionDialog } from "@/components/quick/contribution-dialog";
@@ -90,9 +91,8 @@ function Metas() {
                     ) : null}
                   </Link>
                   <div className="flex items-center gap-2">
-                    {goal.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                    <CreatedBy userId={goal.owner_id} />
                     <RecordActions
-                      canManage={goal.owner_id === userId}
                       onEdit={() => setEditing(goal)}
                       onDelete={() => remove(goal)}
                       confirmTitle="Excluir esta meta?"

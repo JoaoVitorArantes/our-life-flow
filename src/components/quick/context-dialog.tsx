@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -43,7 +42,6 @@ export function ContextDialog({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
-  const [shared, setShared] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -55,7 +53,6 @@ export function ContextDialog({
     setStartDate(context?.start_date ?? "");
     setEndDate(context?.end_date ?? "");
     setLocation(context?.location ?? "");
-    setShared(context?.visibility === "SHARED");
   }, [open, context]);
 
   async function handleSubmit() {
@@ -74,7 +71,7 @@ export function ContextDialog({
         start_date: startDate || null,
         end_date: endDate || null,
         location: location.trim() || null,
-        visibility: shared ? ("SHARED" as const) : ("PRIVATE" as const),
+        visibility: "SHARED" as const,
       };
       if (context) {
         await updateContext(context.id, payload);
@@ -185,13 +182,6 @@ export function ContextDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
-            <div>
-              <p className="text-sm font-medium">Compartilhado</p>
-              <p className="text-xs text-muted-foreground">Visível para o workspace</p>
-            </div>
-            <Switch checked={shared} onCheckedChange={setShared} />
-          </div>
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar"}

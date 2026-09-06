@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, CheckSquare, Heart, Target, Wallet } from "lucide-react";
 import { Panel, PanelTitle } from "@/components/common/page";
+import { useMemberName } from "@/components/common/created-by";
 import { StatCard } from "@/components/common/stat-card";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ function Dashboard() {
   const tasksQuery = useTasks(workspaceId);
   const goalsQuery = useGoals(workspaceId);
   const contextsQuery = useContexts(workspaceId);
+  const nameOf = useMemberName();
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState onRetry={refetchWorkspace} />;
@@ -53,6 +55,40 @@ function Dashboard() {
     .slice(0, 5);
   const sharedMonth = monthly.filter((t) => t.is_shared && t.type === "EXPENSE");
   const sharedTotal = sharedMonth.reduce((total, t) => total + Number(t.amount), 0);
+
+  const activity = [
+    ...transactions.map((t) => ({
+      key: `t-${t.id}`,
+      userId: t.owner_id,
+      action: t.type === "INCOME" ? "registrou uma receita" : "registrou uma despesa",
+      label: t.description,
+      at: t.created_at,
+    })),
+    ...(tasksQuery.data ?? []).map((t) => ({
+      key: `k-${t.id}`,
+      userId: t.owner_id,
+      action: "criou a tarefa",
+      label: t.title,
+      at: t.created_at,
+    })),
+    ...(eventsQuery.data ?? []).map((e) => ({
+      key: `e-${e.id}`,
+      userId: e.owner_id,
+      action: "agendou",
+      label: e.title,
+      at: e.created_at,
+    })),
+    ...(goalsQuery.data ?? []).map((g) => ({
+      key: `g-${g.id}`,
+      userId: g.owner_id,
+      action: "criou a meta",
+      label: g.title,
+      at: g.created_at,
+    })),
+  ]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+    .slice(0, 6);
+
 
   return (
     <div className="space-y-8">
@@ -290,6 +326,33 @@ function Dashboard() {
           </ul>
         )}
       </Panel>
+
+      <Panel>
+        <PanelTitle>Atividade recente do Nós</PanelTitle>
+        {activity.length === 0 ? (
+          <EmptyState
+            icon={Heart}
+            title="Nada por aqui ainda"
+            description="Tudo que vocês criarem aparece aqui, com o nome de quem registrou."
+          />
+        ) : (
+          <ul className="divide-y divide-border">
+            {activity.map((item) => (
+              <li key={item.key} className="flex items-center justify-between gap-3 py-3 text-sm">
+                <span className="truncate">
+                  <span className="font-medium">{nameOf(item.userId) ?? "Alguém"}</span>{" "}
+                  {item.action}{" "}
+                  <span className="text-muted-foreground">{item.label}</span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {formatDateShort(item.at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
     </div>
+
   );
 }

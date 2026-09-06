@@ -229,7 +229,6 @@ function Financeiro() {
             {formatCurrency(Number(transaction.amount))}
           </span>
           <RecordActions
-            canManage={transaction.owner_id === userId}
             onEdit={() => setEditingTransaction(transaction)}
             onDelete={() =>
               run(
@@ -581,7 +580,6 @@ function Financeiro() {
                           </p>
                         </div>
                         <RecordActions
-                          canManage={plan.owner_id === userId}
                           onDelete={() =>
                             run(
                               () => deleteInstallmentPlan(plan.id),
@@ -697,7 +695,6 @@ function Financeiro() {
                           Gerar
                         </Button>
                         <RecordActions
-                          canManage={item.owner_id === userId}
                           onEdit={() => {
                             setEditingRecurring(item);
                             setRecurringOpen(true);
@@ -763,7 +760,6 @@ function Financeiro() {
                           </p>
                         </div>
                         <RecordActions
-                          canManage={loan.owner_id === userId}
                           onDelete={() =>
                             run(
                               () => deleteLoan(loan.id),
@@ -876,7 +872,6 @@ function Financeiro() {
                           </p>
                         </div>
                         <RecordActions
-                          canManage={financing.owner_id === userId}
                           onDelete={() =>
                             run(
                               () => deleteFinancing(financing.id),
@@ -970,7 +965,6 @@ function Financeiro() {
                         {formatCurrency(accountBalance(account, transactions))}
                       </span>
                       <RecordActions
-                        canManage={account.owner_id === userId}
                         onEdit={() => setEntity({ kind: "account", record: account })}
                         onDelete={() =>
                           run(() => deleteAccount(account.id), ["accounts"], "Conta excluída.")
@@ -1041,7 +1035,6 @@ function Financeiro() {
                           </p>
                         </div>
                         <RecordActions
-                          canManage={card.owner_id === userId}
                           onEdit={() => setEntity({ kind: "card", record: card })}
                           onDelete={() =>
                             run(() => deleteCard(card.id), ["cards"], "Cartão excluído.")

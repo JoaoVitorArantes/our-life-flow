@@ -5,6 +5,7 @@ import { Panel, PanelTitle } from "@/components/common/page";
 import { StatCard } from "@/components/common/stat-card";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
+import { CreatedBy } from "@/components/common/created-by";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContextDialog } from "@/components/quick/context-dialog";
@@ -101,7 +102,7 @@ function ContextDetail() {
             <div className="flex flex-wrap gap-2 pt-1">
               <Badge variant="outline">{contextTypeLabel(context.type)}</Badge>
               <Badge variant="outline">{contextStatusLabel(context.status)}</Badge>
-              {context.visibility === "SHARED" ? <Badge variant="secondary">Nós</Badge> : null}
+              <CreatedBy userId={context.owner_id} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">

@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -40,7 +39,6 @@ export function InstallmentDialog({ open, onOpenChange, defaultContextId }: Prop
   const [categoryId, setCategoryId] = useState("");
   const [payment, setPayment] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
-  const [shared, setShared] = useState(false);
   const [firstPaid, setFirstPaid] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -53,7 +51,6 @@ export function InstallmentDialog({ open, onOpenChange, defaultContextId }: Prop
     setCategoryId("");
     setPayment("");
     setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
-    setShared(false);
     setFirstPaid(false);
   }, [open, defaultContextId, activeContextId]);
 
@@ -83,7 +80,7 @@ export function InstallmentDialog({ open, onOpenChange, defaultContextId }: Prop
         accountId: source === "account" ? (id ?? null) : null,
         cardId: source === "card" ? (id ?? null) : null,
         contextId: contextId === NO_CONTEXT ? null : contextId,
-        visibility: shared ? "SHARED" : "PRIVATE",
+        visibility:  "SHARED",
         firstPaid,
       });
       await queryClient.invalidateQueries({ queryKey: ["transactions"] });
@@ -204,21 +201,6 @@ export function InstallmentDialog({ open, onOpenChange, defaultContextId }: Prop
             <ContextSelect value={contextId} onChange={setContextId} />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
-            <div>
-              <p className="text-sm font-medium">Primeira parcela já paga</p>
-              <p className="text-xs text-muted-foreground">As demais ficam pendentes</p>
-            </div>
-            <Switch checked={firstPaid} onCheckedChange={setFirstPaid} />
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
-            <div>
-              <p className="text-sm font-medium">Compartilhada</p>
-              <p className="text-xs text-muted-foreground">Visível para o workspace</p>
-            </div>
-            <Switch checked={shared} onCheckedChange={setShared} />
-          </div>
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Criando parcelas..." : "Criar parcelamento"}

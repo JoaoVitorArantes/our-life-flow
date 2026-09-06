@@ -7,6 +7,7 @@ import { PageHeader, Panel, PanelTitle } from "@/components/common/page";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
 import { Button } from "@/components/ui/button";
+import { CreatedBy } from "@/components/common/created-by";
 import { Badge } from "@/components/ui/badge";
 import { SimpleRecordDialog } from "@/components/quick/simple-record-dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,9 +86,8 @@ function Agenda() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  {event.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
+                  <CreatedBy userId={event.owner_id} />
                   <RecordActions
-                    canManage={event.owner_id === userId}
                     onEdit={() => setEditing(event)}
                     onDelete={() => remove(event)}
                     confirmTitle="Excluir este evento?"
@@ -112,7 +112,6 @@ function Agenda() {
                     {formatDateShort(new Date(event.starts_at))}
                   </span>
                   <RecordActions
-                    canManage={event.owner_id === userId}
                     onEdit={() => setEditing(event)}
                     onDelete={() => remove(event)}
                     confirmTitle="Excluir este evento?"

@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -36,7 +35,6 @@ export function LoanDialog({ open, onOpenChange }: Props) {
   const [startDate, setStartDate] = useState(toDateInput());
   const [accountId, setAccountId] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
-  const [shared, setShared] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -49,7 +47,6 @@ export function LoanDialog({ open, onOpenChange }: Props) {
     setStartDate(toDateInput());
     setAccountId("");
     setContextId(activeContextId ?? NO_CONTEXT);
-    setShared(false);
   }, [open, activeContextId]);
 
   const totalValue = parseAmount(total);
@@ -78,7 +75,7 @@ export function LoanDialog({ open, onOpenChange }: Props) {
         dueDay: Number(startDate.split("-")[2]),
         accountId: accountId || null,
         contextId: contextId === NO_CONTEXT ? null : contextId,
-        visibility: shared ? "SHARED" : "PRIVATE",
+        visibility:  "SHARED",
       });
       await queryClient.invalidateQueries({ queryKey: ["loans"] });
       await queryClient.invalidateQueries({ queryKey: ["transactions"] });
@@ -191,10 +188,6 @@ export function LoanDialog({ open, onOpenChange }: Props) {
 
           <ContextSelect value={contextId} onChange={setContextId} />
 
-          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
-            <p className="text-sm font-medium">Compartilhado</p>
-            <Switch checked={shared} onCheckedChange={setShared} />
-          </div>
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar empréstimo"}
