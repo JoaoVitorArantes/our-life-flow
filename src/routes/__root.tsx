@@ -137,12 +137,23 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    let active = true;
+    const pending = new Set<ReturnType<typeof setTimeout>>();
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      const timer = setTimeout(() => {
+        pending.delete(timer);
+        if (!active) return;
+        void router.invalidate();
+        if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
+      }, 0);
+      pending.add(timer);
     });
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      pending.forEach(clearTimeout);
+      sub.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
 
   return (
