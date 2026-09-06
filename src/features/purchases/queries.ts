@@ -73,6 +73,21 @@ export function categoryLabel(category?: string | null) {
 export function categoryEmoji(category?: string | null) {
   return PURCHASE_CATEGORIES.find((item) => item.value === category)?.emoji ?? "🛍️";
 }
+export function statusEmoji(status: string) {
+  return PURCHASE_STATUSES.find((item) => item.value === status)?.emoji ?? "👀";
+}
+export function statusTone(status: string) {
+  return (
+    PURCHASE_STATUSES.find((item) => item.value === status)?.tone ??
+    "border-border bg-muted text-muted-foreground"
+  );
+}
+export function priorityEmoji(priority: string) {
+  return PURCHASE_PRIORITIES.find((item) => item.value === priority)?.emoji ?? "✨";
+}
+export function personEmoji(scope: string) {
+  return PERSON_SCOPES.find((item) => item.value === scope)?.emoji ?? "👤";
+}
 
 /** Diferença entre orçamento e melhor preço encontrado. */
 export function budgetDelta(purchase: Purchase) {
@@ -83,6 +98,24 @@ export function budgetDelta(purchase: Purchase) {
   if (Math.abs(diff) < 0.01) return null;
   return { diff, percent: (Math.abs(diff) / budget) * 100, under: diff > 0 };
 }
+
+/** Microtexto simpático derivado dos dados reais da compra. */
+export function purchaseVibe(purchase: Purchase): { text: string; tone: "good" | "warn" | "soft" } | null {
+  if (purchase.status === "PURCHASED") return { text: "🎉 Essa já saiu da wishlist!", tone: "good" };
+  if (purchase.status === "DISCARDED") return null;
+  const delta = budgetDelta(purchase);
+  if (delta?.under) {
+    return delta.percent >= 20
+      ? { text: "🔥 Achado! Bem abaixo do orçamento.", tone: "good" }
+      : { text: "🤑 Tá dentro do orçamento!", tone: "good" };
+  }
+  if (delta && !delta.under) return { text: "😬 Passou um pouco do limite.", tone: "warn" };
+  if (purchase.status === "DECIDED") return { text: "😎 Agora só falta comprar.", tone: "soft" };
+  if (purchase.found_price == null) return { text: "👀 Ainda estamos de olho.", tone: "soft" };
+  if (purchase.purchase_url) return { text: "🔗 Encontramos onde comprar.", tone: "soft" };
+  return null;
+}
+
 
 export function isValidUrl(value: string) {
   try {
