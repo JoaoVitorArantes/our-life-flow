@@ -98,9 +98,32 @@ export function TransactionDialog({
       setShared(false);
       setSplitPreset(50);
       setOwnerShare("");
+      setPayerMode("me");
+      setMyPaid("");
       setNotes("");
     }
   }, [open, transaction, defaultContextId, activeContextId]);
+
+  // Carrega a divisão e o pagamento já registrados ao editar uma despesa.
+  useEffect(() => {
+    if (!open || !transaction || !division.data || !userId) return;
+    const total = Number(transaction.amount) || 0;
+    const mineShare = division.data.splits.find((split) => split.user_id === userId);
+    if (mineShare) {
+      const mine = Number(mineShare.amount);
+      const percentage = total ? Math.round((mine / total) * 100) : 50;
+      setSplitPreset(percentage === 50 || percentage === 70 ? percentage : -1);
+      setOwnerShare(String(mine).replace(".", ","));
+    }
+    const payers = division.data.payers;
+    if (payers.length === 1) {
+      setPayerMode(payers[0]!.user_id === userId ? "me" : "other");
+    } else if (payers.length > 1) {
+      setPayerMode("both");
+      const mine = payers.find((payer) => payer.user_id === userId);
+      setMyPaid(String(Number(mine?.amount ?? 0)).replace(".", ","));
+    }
+  }, [open, transaction, division.data, userId]);
 
   const splitAmounts = useMemo(() => {
     if (!shared || !value) return null;
@@ -111,6 +134,30 @@ export function TransactionDialog({
     const mine = (value * splitPreset) / 100;
     return { mine, theirs: value - mine };
   }, [shared, value, splitPreset, ownerShare]);
+
+  const partner = others[0];
+
+  /** Divisão (responsabilidade) e pagamento efetivo desta despesa. */
+  const division2 = useMemo(() => {
+    if (!shared || !splitAmounts || !userId || !partner) return null;
+    const shares: Party[] = [
+      { userId, amount: splitAmounts.mine },
+      { userId: partner.id, amount: splitAmounts.theirs },
+    ];
+    const mineePaid = payerMode === "both" ? parseAmount(myPaid) : payerMode === "me" ? value : 0;
+    const payers: Party[] = [
+      { userId, amount: mineePaid },
+      { userId: partner.id, amount: Math.max(value - mineePaid, 0) },
+    ].filter((party) => party.amount > 0);
+    return { shares, payers, transfer: computeTransfer(shares, payers) };
+  }, [shared, splitAmounts, userId, partner, payerMode, myPaid, value]);
+
+  const paidSettlement = division.data?.settlements.find((item) => item.status === "PAID") ?? null;
+  const nameOf = (id: string) =>
+    id === userId
+      ? "Você"
+      : (memberProfiles.find((profile) => profile.id === id)?.name ?? "Parceiro(a)");
+
 
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
