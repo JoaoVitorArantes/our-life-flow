@@ -209,7 +209,7 @@ function Financeiro() {
           <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {formatDateShort(dueDateOf(transaction))} · {categoryName(transaction.category_id)}
             <StatusBadge status={status} />
-            {transaction.is_shared ? <Badge variant="outline">Compartilhado</Badge> : null}
+            {transaction.is_shared ? <Badge variant="outline" className="border-primary/40 text-primary">Dividida entre nós</Badge> : null}
             {transaction.is_demo ? <Badge variant="secondary">Demo</Badge> : null}
           </p>
         </div>
