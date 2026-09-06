@@ -52,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export const PRIMARY_NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, emoji: "🏠" },
+  { to: "/financeiro", label: "Financeiro", icon: Wallet, emoji: "💰" },
   { to: "/agenda", label: "Agenda", icon: CalendarDays, emoji: "📅" },
   { to: "/tarefas", label: "Tarefas", icon: CheckSquare, emoji: "✅" },
 ];

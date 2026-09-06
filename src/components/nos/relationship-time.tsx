@@ -69,10 +69,11 @@ export function RelationshipTime() {
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => setOpen(true)}
-        className="group relative w-full overflow-hidden rounded-2xl border border-primary/20 bg-surface/90 p-5 text-left shadow-lift backdrop-blur-xl transition-all duration-300 hover:border-primary/45 sm:p-7"
+        className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border border-primary/20 bg-surface/90 p-5 text-left text-foreground shadow-lift backdrop-blur-xl transition-all duration-300 hover:border-primary/45 hover:bg-surface sm:p-7"
       >
         <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,var(--color-primary)/0.13,transparent_65%)]" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -124,7 +125,7 @@ export function RelationshipTime() {
             <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
           </div>
         </div>
-      </button>
+      </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">

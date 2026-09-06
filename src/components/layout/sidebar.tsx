@@ -9,7 +9,7 @@ import { eventOccurrences } from "@/features/agenda/queries";
 import { isOpen } from "@/features/finance/calc";
 import { AvatarMenu } from "@/components/profile/avatar-menu";
 
-function NavLink({ item, collapsed, badge }: { item: NavItem; collapsed: boolean; badge?: number }) {
+function NavLink({ item, collapsed, badge }: { item: NavItem; collapsed: boolean; badge?: number | undefined }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const active = pathname === item.to;
   return (
@@ -72,7 +72,7 @@ export function Sidebar({
       )}
     >
       <div className={cn("flex items-center gap-3 px-5 py-6", collapsed && "justify-center px-0")}>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-[0_0_24px_var(--color-primary)/0.22]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-lift">
           L
         </span>
         {collapsed ? null : (

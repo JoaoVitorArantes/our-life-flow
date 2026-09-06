@@ -2,14 +2,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 type MemberAvatarProps = {
-  name?: string | null;
-  email?: string | null;
-  src?: string | null;
+  name?: string | null | undefined;
+  email?: string | null | undefined;
+  src?: string | null | undefined;
   className?: string;
   fallbackClassName?: string;
 };
 
-export function initialsOf(name?: string | null, email?: string | null) {
+export function initialsOf(name?: string | null | undefined, email?: string | null | undefined) {
   const source = (name || email || "?").trim();
   const parts = source.split(/\s+/).filter(Boolean);
   return (parts.length > 1 ? `${parts[0]?.[0] ?? ""}${parts.at(-1)?.[0] ?? ""}` : source.slice(0, 2)).toUpperCase();
