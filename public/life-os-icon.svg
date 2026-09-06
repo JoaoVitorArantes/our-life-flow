@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Life OS">
+  <rect width="512" height="512" rx="112" fill="#0B0D10"/>
+  <path
+    d="M256 116h-72c-45 0-68 23-68 68v72h104"
+    fill="none"
+    stroke="#7C5CFC"
+    stroke-width="44"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M256 396h72c45 0 68-23 68-68v-72H292"
+    fill="none"
+    stroke="#7C5CFC"
+    stroke-width="44"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path d="M220 256h72" stroke="#EAE7FF" stroke-width="44" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="13" fill="#0B0D10"/>
+</svg>
