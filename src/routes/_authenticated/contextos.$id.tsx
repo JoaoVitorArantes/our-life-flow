@@ -794,6 +794,37 @@ function ContextDetail() {
         </TabsContent>
       </Tabs>
 
+      {contextPurchases.length > 0 ? (
+        <Panel>
+          <PanelTitle
+            action={
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/compras">Ver compras</Link>
+              </Button>
+            }
+          >
+            Compras relacionadas
+          </PanelTitle>
+          <ul className="space-y-2">
+            {contextPurchases.map((purchase) => (
+              <li key={purchase.id} className="flex items-center gap-3 text-sm">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted">
+                  {categoryEmoji(purchase.category)}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{purchase.title}</span>
+                <span className="numeric shrink-0 text-muted-foreground">
+                  {purchase.found_price != null
+                    ? formatCurrency(Number(purchase.found_price))
+                    : purchase.budget_amount != null
+                      ? formatCurrency(Number(purchase.budget_amount))
+                      : "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+
       <ContextDialog open={editOpen} onOpenChange={setEditOpen} context={context} />
 
       {txEdit ? (
