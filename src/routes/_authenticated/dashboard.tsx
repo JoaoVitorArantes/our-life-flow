@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp, type QuickActionKind } from "@/features/app/app-context";
 import { useAccounts, useTransactions } from "@/features/finance/queries";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
+import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
 import { goalProgress, movementType, useAllContributions } from "@/features/planner/contributions";
 import { contextEmoji, useContexts } from "@/features/contexts/queries";
 import {
