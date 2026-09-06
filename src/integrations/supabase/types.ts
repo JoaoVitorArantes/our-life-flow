@@ -827,6 +827,78 @@ export type Database = {
           },
         ]
       }
+      physical_activities: {
+        Row: {
+          activity_date: string
+          activity_type: string
+          context_id: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          distance_km: number | null
+          duration_minutes: number | null
+          id: string
+          location: string | null
+          notes: string | null
+          person_scope: string
+          start_time: string | null
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_type?: string
+          context_id?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          distance_km?: number | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          person_scope?: string
+          start_time?: string | null
+          title: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_type?: string
+          context_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          distance_km?: number | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          person_scope?: string
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "physical_activities_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "physical_activities_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active_workspace_id: string | null
