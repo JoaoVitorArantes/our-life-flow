@@ -165,6 +165,7 @@ function Financeiro() {
     sourceFilter,
     contextFilter,
     originFilter,
+    ownerFilter,
     search,
   ]);
 
