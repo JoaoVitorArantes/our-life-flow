@@ -133,7 +133,7 @@ function Configuracoes() {
         {availableWorkspaces.length > 1 ? (
           <div className="mb-4 space-y-2">
             <Label>Espaço ativo</Label>
-            <Select value={workspaceId} onValueChange={(value) => void switchWorkspace(value)}>
+            <Select value={workspaceId ?? ""} onValueChange={(value) => void switchWorkspace(value)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{availableWorkspaces.map((workspace) => <SelectItem key={workspace.id} value={workspace.id}>{workspace.name}</SelectItem>)}</SelectContent>
             </Select>

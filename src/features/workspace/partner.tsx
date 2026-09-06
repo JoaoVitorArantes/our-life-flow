@@ -31,7 +31,11 @@ export function InvitationInbox() {
   const queryClient = useQueryClient();
   const invitations = useIncomingInvitations(!!userId);
   const [busy, setBusy] = useState(false);
-  const invitation = invitations.data?.[0];
+  const [storedToken, setStoredToken] = useState<string | null>(null);
+  useEffect(() => {
+    setStoredToken(window.sessionStorage.getItem("lifeos-invite"));
+  }, []);
+  const invitation = invitations.data?.find((item) => !storedToken || item.token === storedToken) ?? invitations.data?.[0];
 
   async function respond(accept: boolean) {
     if (!invitation) return;
@@ -46,6 +50,7 @@ export function InvitationInbox() {
       return;
     }
     await queryClient.invalidateQueries();
+    window.sessionStorage.removeItem("lifeos-invite");
     refetchWorkspace();
     toast.success(accept ? "Convite aceito. Este é agora o seu espaço ativo." : "Convite recusado.");
   }
