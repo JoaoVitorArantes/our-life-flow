@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApp } from "@/features/app/app-context";
+import { parseAmount } from "@/lib/format";
 import {
   CONTEXT_STATUSES,
   CONTEXT_TYPES,
