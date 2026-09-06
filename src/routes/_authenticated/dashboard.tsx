@@ -290,6 +290,33 @@ function Dashboard() {
           </ul>
         )}
       </Panel>
+
+      <Panel>
+        <PanelTitle>Atividade recente do Nós</PanelTitle>
+        {activity.length === 0 ? (
+          <EmptyState
+            icon={Heart}
+            title="Nada por aqui ainda"
+            description="Tudo que vocês criarem aparece aqui, com o nome de quem registrou."
+          />
+        ) : (
+          <ul className="divide-y divide-border">
+            {activity.map((item) => (
+              <li key={item.key} className="flex items-center justify-between gap-3 py-3 text-sm">
+                <span className="truncate">
+                  <span className="font-medium">{nameOf(item.userId) ?? "Alguém"}</span>{" "}
+                  {item.action}{" "}
+                  <span className="text-muted-foreground">{item.label}</span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {formatDateShort(item.at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
     </div>
+
   );
 }
