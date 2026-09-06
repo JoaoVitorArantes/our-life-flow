@@ -945,9 +945,12 @@ export type Database = {
           created_at: string
           from_user_id: string
           id: string
+          note: string | null
           settled_at: string | null
           status: Database["public"]["Enums"]["settlement_status"]
           to_user_id: string
+          transaction_id: string | null
+          updated_at: string
           workspace_id: string
         }
         Insert: {
@@ -955,9 +958,12 @@ export type Database = {
           created_at?: string
           from_user_id: string
           id?: string
+          note?: string | null
           settled_at?: string | null
           status?: Database["public"]["Enums"]["settlement_status"]
           to_user_id: string
+          transaction_id?: string | null
+          updated_at?: string
           workspace_id: string
         }
         Update: {
@@ -965,12 +971,22 @@ export type Database = {
           created_at?: string
           from_user_id?: string
           id?: string
+          note?: string | null
           settled_at?: string | null
           status?: Database["public"]["Enums"]["settlement_status"]
           to_user_id?: string
+          transaction_id?: string | null
+          updated_at?: string
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "settlements_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "settlements_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -1036,6 +1052,38 @@ export type Database = {
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transaction_payers: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          transaction_id: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          transaction_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          transaction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_payers_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]

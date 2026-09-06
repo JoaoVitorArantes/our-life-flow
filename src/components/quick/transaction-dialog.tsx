@@ -24,6 +24,12 @@ import {
 } from "@/features/finance/queries";
 import { updateTransaction } from "@/features/finance/mutations";
 import { SPLIT_PRESETS, PAYMENT_STATUSES, type PaymentStatus } from "@/features/finance/constants";
+import {
+  computeTransfer,
+  useTransactionDivision,
+  type Party,
+} from "@/features/nos/settlements";
+import { clearDivision, saveDivision } from "@/features/nos/mutations";
 import { parseAmount, toDateInput, formatCurrency } from "@/lib/format";
 import { ContextSelect, NO_CONTEXT } from "./context-select";
 
@@ -47,6 +53,8 @@ export function TransactionDialog({
   const { data: accounts = [] } = useAccounts(workspaceId);
   const { data: cards = [] } = useCards(workspaceId);
   const { data: categories = [] } = useCategories(workspaceId);
+  const division = useTransactionDivision(transaction?.id, open && !!transaction);
+
 
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -58,8 +66,11 @@ export function TransactionDialog({
   const [shared, setShared] = useState(false);
   const [splitPreset, setSplitPreset] = useState<number>(50);
   const [ownerShare, setOwnerShare] = useState("");
+  const [payerMode, setPayerMode] = useState<"me" | "other" | "both">("me");
+  const [myPaid, setMyPaid] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
 
   const isEditing = !!transaction;
   const isExpense = transaction ? transaction.type !== "INCOME" : kind === "expense";
@@ -95,9 +106,32 @@ export function TransactionDialog({
       setShared(false);
       setSplitPreset(50);
       setOwnerShare("");
+      setPayerMode("me");
+      setMyPaid("");
       setNotes("");
     }
   }, [open, transaction, defaultContextId, activeContextId]);
+
+  // Carrega a divisão e o pagamento já registrados ao editar uma despesa.
+  useEffect(() => {
+    if (!open || !transaction || !division.data || !userId) return;
+    const total = Number(transaction.amount) || 0;
+    const mineShare = division.data.splits.find((split) => split.user_id === userId);
+    if (mineShare) {
+      const mine = Number(mineShare.amount);
+      const percentage = total ? Math.round((mine / total) * 100) : 50;
+      setSplitPreset(percentage === 50 || percentage === 70 ? percentage : -1);
+      setOwnerShare(String(mine).replace(".", ","));
+    }
+    const payers = division.data.payers;
+    if (payers.length === 1) {
+      setPayerMode(payers[0]!.user_id === userId ? "me" : "other");
+    } else if (payers.length > 1) {
+      setPayerMode("both");
+      const mine = payers.find((payer) => payer.user_id === userId);
+      setMyPaid(String(Number(mine?.amount ?? 0)).replace(".", ","));
+    }
+  }, [open, transaction, division.data, userId]);
 
   const splitAmounts = useMemo(() => {
     if (!shared || !value) return null;
@@ -108,6 +142,30 @@ export function TransactionDialog({
     const mine = (value * splitPreset) / 100;
     return { mine, theirs: value - mine };
   }, [shared, value, splitPreset, ownerShare]);
+
+  const partner = others[0];
+
+  /** Divisão (responsabilidade) e pagamento efetivo desta despesa. */
+  const division2 = useMemo(() => {
+    if (!shared || !splitAmounts || !userId || !partner) return null;
+    const shares: Party[] = [
+      { userId, amount: splitAmounts.mine },
+      { userId: partner.id, amount: splitAmounts.theirs },
+    ];
+    const mineePaid = payerMode === "both" ? parseAmount(myPaid) : payerMode === "me" ? value : 0;
+    const payers: Party[] = [
+      { userId, amount: mineePaid },
+      { userId: partner.id, amount: Math.max(value - mineePaid, 0) },
+    ].filter((party) => party.amount > 0);
+    return { shares, payers, transfer: computeTransfer(shares, payers) };
+  }, [shared, splitAmounts, userId, partner, payerMode, myPaid, value]);
+
+  const paidSettlement = division.data?.settlements.find((item) => item.status === "SETTLED") ?? null;
+  const nameOf = (id: string) =>
+    id === userId
+      ? "Você"
+      : (memberProfiles.find((profile) => profile.id === id)?.name ?? "Parceiro(a)");
+
 
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
@@ -120,10 +178,24 @@ export function TransactionDialog({
       return;
     }
 
+    if (shared && partner && division2) {
+      const totalShares = division2.shares.reduce((sum, share) => sum + share.amount, 0);
+      if (Math.abs(totalShares - value) > 0.02) {
+        toast.error("A soma da divisão precisa ser igual ao valor da despesa.");
+        return;
+      }
+      const totalPaid = division2.payers.reduce((sum, payer) => sum + payer.amount, 0);
+      if (Math.abs(totalPaid - value) > 0.02) {
+        toast.error("A soma do que cada um pagou precisa ser igual ao valor da despesa.");
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const [source, id] = payment ? payment.split(":") : ["", ""];
       const linkedContext = contextId === NO_CONTEXT ? null : contextId;
+      let transactionId = transaction?.id ?? "";
 
       if (isEditing && transaction) {
         await updateTransaction(transaction.id, {
@@ -142,23 +214,7 @@ export function TransactionDialog({
           notes: notes.trim() || null,
         });
       } else {
-        const splits =
-          shared && splitAmounts && others.length
-            ? [
-                {
-                  userId,
-                  amount: splitAmounts.mine,
-                  percentage: value ? (splitAmounts.mine / value) * 100 : 0,
-                },
-                ...others.map((profile) => ({
-                  userId: profile.id,
-                  amount: splitAmounts.theirs / others.length,
-                  percentage: value ? (splitAmounts.theirs / others.length / value) * 100 : 0,
-                })),
-              ]
-            : undefined;
-
-        await createTransaction({
+        const created = await createTransaction({
           workspaceId,
           ownerId: userId,
           type: isExpense ? "EXPENSE" : "INCOME",
@@ -174,15 +230,36 @@ export function TransactionDialog({
           visibility: "SHARED",
           isShared: shared,
           notes: notes.trim() || null,
-          splits,
         });
+        transactionId = created.id;
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      // Divisão + quem pagou + acerto (histórico já pago é preservado).
+      if (shared && division2 && transactionId) {
+        await saveDivision({
+          workspaceId,
+          transactionId,
+          memberIds: memberProfiles.map((profile) => profile.id),
+          shares: division2.shares,
+          payers: division2.payers,
+          note: description.trim(),
+        });
+      } else if (transactionId) {
+        await clearDivision(transactionId);
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+        queryClient.invalidateQueries({ queryKey: ["settlements"] }),
+        queryClient.invalidateQueries({ queryKey: ["transaction_splits"] }),
+        queryClient.invalidateQueries({ queryKey: ["transaction_payers"] }),
+        queryClient.invalidateQueries({ queryKey: ["transaction_division"] }),
+      ]);
       toast.success(
         isEditing ? "Lançamento atualizado." : isExpense ? "Despesa registrada." : "Receita registrada.",
       );
       onOpenChange(false);
+
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");
     } finally {
@@ -309,61 +386,146 @@ export function TransactionDialog({
           <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
             <div>
               <p className="text-sm font-medium">Dividir entre nós</p>
-              <p className="text-xs text-muted-foreground">Visível para o workspace e dividida</p>
+              <p className="text-xs text-muted-foreground">
+                Define a responsabilidade de cada um e gera o acerto
+              </p>
             </div>
             <Switch checked={shared} onCheckedChange={setShared} />
           </div>
 
-          {shared && !isEditing ? (
-            <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
-              <div className="flex flex-wrap gap-2">
-                {SPLIT_PRESETS.map((preset) => (
-                  <Button
-                    key={preset.label}
-                    type="button"
-                    size="sm"
-                    variant={splitPreset === preset.value ? "default" : "outline"}
-                    onClick={() => setSplitPreset(preset.value)}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
-              </div>
-              {splitPreset === -1 ? (
-                <div className="space-y-2">
-                  <Label htmlFor="ownerShare">Sua parte</Label>
-                  <Input
-                    id="ownerShare"
-                    inputMode="decimal"
-                    placeholder="R$ 0,00"
-                    value={ownerShare}
-                    onChange={(event) => setOwnerShare(event.target.value)}
-                  />
-                </div>
-              ) : null}
-              {splitAmounts ? (
-                <div className="space-y-1 text-sm">
-                  <p className="flex justify-between">
-                    <span className="text-muted-foreground">Você</span>
-                    <span className="numeric">{formatCurrency(splitAmounts.mine)}</span>
-                  </p>
-                  {others.map((profile) => (
-                    <p key={profile.id} className="flex justify-between">
-                      <span className="text-muted-foreground">{profile.name || profile.email}</span>
-                      <span className="numeric">
-                        {formatCurrency(splitAmounts.theirs / others.length)}
-                      </span>
-                    </p>
-                  ))}
-                  {others.length === 0 ? (
+          {shared ? (
+            <div className="space-y-4 rounded-xl border border-border bg-surface p-4">
+              {!partner ? (
+                <p className="text-xs text-muted-foreground">
+                  Convide a outra pessoa para o espaço Nós para dividir os valores.
+                </p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>Divisão</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {SPLIT_PRESETS.map((preset) => (
+                        <Button
+                          key={preset.label}
+                          type="button"
+                          size="sm"
+                          variant={splitPreset === preset.value ? "default" : "outline"}
+                          onClick={() => setSplitPreset(preset.value)}
+                        >
+                          {preset.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {splitPreset === -1 ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="ownerShare">Sua parte</Label>
+                      <Input
+                        id="ownerShare"
+                        inputMode="decimal"
+                        placeholder="R$ 0,00"
+                        value={ownerShare}
+                        onChange={(event) => setOwnerShare(event.target.value)}
+                        className="numeric"
+                      />
+                    </div>
+                  ) : null}
+
+                  {splitAmounts ? (
+                    <div className="space-y-1 rounded-lg bg-elevated p-3 text-sm">
+                      <p className="flex justify-between">
+                        <span className="text-muted-foreground">Você</span>
+                        <span className="numeric">
+                          {value ? Math.round((splitAmounts.mine / value) * 100) : 0}% ·{" "}
+                          {formatCurrency(splitAmounts.mine)}
+                        </span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {partner.name || partner.email}
+                        </span>
+                        <span className="numeric">
+                          {value ? Math.round((splitAmounts.theirs / value) * 100) : 0}% ·{" "}
+                          {formatCurrency(splitAmounts.theirs)}
+                        </span>
+                      </p>
+                    </div>
+                  ) : null}
+
+                  <div className="space-y-2">
+                    <Label>Quem pagou?</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {(
+                        [
+                          { value: "me", label: "Você" },
+                          { value: "other", label: partner.name || partner.email || "Parceiro(a)" },
+                          { value: "both", label: "Ambos" },
+                        ] as const
+                      ).map((option) => (
+                        <Button
+                          key={option.value}
+                          type="button"
+                          size="sm"
+                          variant={payerMode === option.value ? "default" : "outline"}
+                          onClick={() => setPayerMode(option.value)}
+                        >
+                          {option.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {payerMode === "both" ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="myPaid">Você pagou</Label>
+                        <Input
+                          id="myPaid"
+                          inputMode="decimal"
+                          placeholder="R$ 0,00"
+                          value={myPaid}
+                          onChange={(event) => setMyPaid(event.target.value)}
+                          className="numeric"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{partner.name || partner.email} pagou</Label>
+                        <p className="numeric flex h-9 items-center text-sm text-muted-foreground">
+                          {formatCurrency(Math.max(value - parseAmount(myPaid), 0))}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm">
+                    {division2?.transfer ? (
+                      <p>
+                        💜 <strong>{nameOf(division2.transfer.fromUserId)}</strong> deve passar{" "}
+                        <strong className="numeric">
+                          {formatCurrency(division2.transfer.amount)}
+                        </strong>{" "}
+                        para <strong>{nameOf(division2.transfer.toUserId)}</strong>.
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground">
+                        Nenhum acerto necessário: cada um pagou a própria parte.
+                      </p>
+                    )}
+                  </div>
+
+                  {paidSettlement ? (
                     <p className="text-xs text-muted-foreground">
-                      Convide outra pessoa para o workspace para dividir os valores.
+                      Já existe um acerto pago de{" "}
+                      {formatCurrency(Number(paidSettlement.amount))} nesta despesa. Ao alterar
+                      valores, o histórico é mantido e só a diferença vira um novo acerto.
                     </p>
                   ) : null}
-                </div>
-              ) : null}
+                </>
+              )}
             </div>
           ) : null}
+
 
           <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>

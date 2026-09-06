@@ -14,6 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
+import { BalanceCard } from "@/components/nos/balance-card";
 import { Panel, PanelTitle } from "@/components/common/page";
 import { useMemberName } from "@/components/common/created-by";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/states";
@@ -438,6 +439,10 @@ function Dashboard() {
           />
         </div>
       </Panel>
+
+      <BalanceCard />
+
+
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
