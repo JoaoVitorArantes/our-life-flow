@@ -238,7 +238,12 @@ function Financeiro() {
               )
             }
             confirmTitle="Excluir este lançamento?"
-            confirmDescription="Divisões vinculadas também serão removidas."
+            confirmDescription={
+              transaction.is_shared
+                ? "A divisão entre vocês e o acerto pendente ligado a esta despesa também serão removidos."
+                : "Divisões vinculadas também serão removidas."
+            }
+
           />
         </div>
       </li>
