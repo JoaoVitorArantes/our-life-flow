@@ -92,12 +92,30 @@ export function FinanceEntityDialog({
         });
         await queryClient.invalidateQueries({ queryKey: ["accounts"] });
       } else if (kind === "card") {
+        const day = (value: string) => {
+          const parsed = Number(value);
+          return Number.isFinite(parsed) && parsed >= 1 && parsed <= 31 ? Math.trunc(parsed) : null;
+        };
+        if (closingDay.trim() && day(closingDay) === null) {
+          toast.error("Dia de fechamento deve ficar entre 1 e 31.");
+          setSaving(false);
+          return;
+        }
+        if (dueDay.trim() && day(dueDay) === null) {
+          toast.error("Dia de vencimento deve ficar entre 1 e 31.");
+          setSaving(false);
+          return;
+        }
         await saveCard(id, {
           workspace_id: workspaceId,
           owner_id: userId,
           name: name.trim(),
           institution: institution.trim() || null,
           credit_limit: parseAmount(creditLimit),
+          closing_day: closingDay.trim() ? day(closingDay) : null,
+          due_day: dueDay.trim() ? day(dueDay) : null,
+          payment_account_id: paymentAccountId === NO_ACCOUNT ? null : paymentAccountId,
+          is_active: isActive,
         });
         await queryClient.invalidateQueries({ queryKey: ["cards"] });
       } else {
