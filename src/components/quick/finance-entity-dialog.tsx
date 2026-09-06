@@ -15,11 +15,13 @@ import {
 import { useApp } from "@/features/app/app-context";
 import { ACCOUNT_TYPES } from "@/features/finance/constants";
 import { saveAccount, saveCard, saveCategory } from "@/features/finance/mutations";
-import type { Account, Card, Category } from "@/features/finance/queries";
+import { useAccounts, type Account, type Card, type Category } from "@/features/finance/queries";
 import { parseAmount } from "@/lib/format";
 import type { Enums } from "@/integrations/supabase/types";
 
 export type FinanceEntityKind = "account" | "card" | "category";
+
+const NO_ACCOUNT = "none";
 
 const TITLES: Record<FinanceEntityKind, [string, string]> = {
   account: ["Nova conta", "Editar conta"],
