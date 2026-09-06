@@ -117,12 +117,13 @@ export function AvatarMenu({ compact = false }: { compact?: boolean }) {
     if (!userId || !profile?.avatar_url) return;
     setBusy(true);
     try {
-      const storedPath = profile.avatar_url.split("#avatar-path=")[1] ?? `${userId}/profile.jpg`;
-      const [{ error: storageError }, { error: profileError }] = await Promise.all([
-        supabase.storage.from("avatars").remove([storedPath]),
-        supabase.from("profiles").update({ avatar_url: null }).eq("id", userId),
-      ]);
-      if (storageError) throw storageError;
+      const storedPath = profile.avatar_url.split("#avatar-path=")[1]
+        ?? (profile.avatar_url.startsWith("http") ? null : profile.avatar_url);
+      if (storedPath) {
+        const { error: storageError } = await supabase.storage.from("avatars").remove([storedPath]);
+        if (storageError) throw storageError;
+      }
+      const { error: profileError } = await supabase.from("profiles").update({ avatar_url: null }).eq("id", userId);
       if (profileError) throw profileError;
       await queryClient.invalidateQueries({ queryKey: ["workspace"] });
       refetchWorkspace();
