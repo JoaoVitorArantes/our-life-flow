@@ -170,16 +170,74 @@ export function FinanceEntityDialog({
           ) : null}
 
           {kind === "card" ? (
-            <div className="space-y-2">
-              <Label htmlFor="entity-limit">Limite</Label>
-              <Input
-                id="entity-limit"
-                inputMode="decimal"
-                placeholder="R$ 0,00"
-                value={creditLimit}
-                onChange={(event) => setCreditLimit(event.target.value)}
-              />
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="entity-limit">Limite</Label>
+                <Input
+                  id="entity-limit"
+                  inputMode="decimal"
+                  placeholder="R$ 0,00"
+                  value={creditLimit}
+                  onChange={(event) => setCreditLimit(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="entity-closing">Fecha dia</Label>
+                  <Input
+                    id="entity-closing"
+                    inputMode="numeric"
+                    min={1}
+                    max={31}
+                    type="number"
+                    placeholder="15"
+                    value={closingDay}
+                    onChange={(event) => setClosingDay(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="entity-due">Vence dia</Label>
+                  <Input
+                    id="entity-due"
+                    inputMode="numeric"
+                    min={1}
+                    max={31}
+                    type="number"
+                    placeholder="22"
+                    value={dueDay}
+                    onChange={(event) => setDueDay(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Conta para pagamento</Label>
+                <Select value={paymentAccountId} onValueChange={setPaymentAccountId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sem conta definida" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_ACCOUNT}>Sem conta definida</SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Situação</Label>
+                <Select value={isActive ? "active" : "inactive"} onValueChange={(value) => setIsActive(value === "active")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Ativo</SelectItem>
+                    <SelectItem value="inactive">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           ) : null}
 
           {kind === "category" ? (
