@@ -13,25 +13,32 @@ export type PurchaseStatus =
 export type PurchasePriority = "LOW" | "MEDIUM" | "HIGH";
 export type PersonScope = "JOAO" | "RENIFER" | "COUPLE";
 
-export const PURCHASE_STATUSES: { value: PurchaseStatus; label: string; dot: string }[] = [
-  { value: "WANT_TO_BUY", label: "Quero comprar", dot: "bg-primary" },
-  { value: "RESEARCHING", label: "Pesquisando", dot: "bg-sky-500" },
-  { value: "DECIDED", label: "Decidido", dot: "bg-amber-500" },
-  { value: "PURCHASED", label: "Comprado", dot: "bg-emerald-500" },
-  { value: "DISCARDED", label: "Desistimos", dot: "bg-muted-foreground" },
+export const PURCHASE_STATUSES: {
+  value: PurchaseStatus;
+  label: string;
+  emoji: string;
+  dot: string;
+  tone: string;
+}[] = [
+  { value: "WANT_TO_BUY", label: "Quero isso", emoji: "👀", dot: "bg-primary", tone: "border-primary/30 bg-primary/10 text-primary" },
+  { value: "RESEARCHING", label: "Pesquisando", emoji: "🔎", dot: "bg-sky-500", tone: "border-sky-500/30 bg-sky-500/10 text-sky-500" },
+  { value: "DECIDED", label: "Já decidimos", emoji: "😎", dot: "bg-amber-500", tone: "border-amber-500/30 bg-amber-500/10 text-amber-500" },
+  { value: "PURCHASED", label: "Compramos!", emoji: "🎉", dot: "bg-emerald-500", tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500" },
+  { value: "DISCARDED", label: "Deixamos pra lá", emoji: "🙃", dot: "bg-muted-foreground", tone: "border-border bg-muted text-muted-foreground" },
 ];
 
-export const PURCHASE_PRIORITIES: { value: PurchasePriority; label: string }[] = [
-  { value: "LOW", label: "Baixa" },
-  { value: "MEDIUM", label: "Média" },
-  { value: "HIGH", label: "Alta" },
+export const PURCHASE_PRIORITIES: { value: PurchasePriority; label: string; emoji: string }[] = [
+  { value: "LOW", label: "Pode esperar", emoji: "🌙" },
+  { value: "MEDIUM", label: "Queremos", emoji: "✨" },
+  { value: "HIGH", label: "Queremos muito", emoji: "🔥" },
 ];
 
-export const PERSON_SCOPES: { value: PersonScope; label: string }[] = [
-  { value: "COUPLE", label: "Nós" },
-  { value: "JOAO", label: "João" },
-  { value: "RENIFER", label: "Renifer" },
+export const PERSON_SCOPES: { value: PersonScope; label: string; emoji: string }[] = [
+  { value: "COUPLE", label: "Nós", emoji: "👥" },
+  { value: "JOAO", label: "João", emoji: "👤" },
+  { value: "RENIFER", label: "Renifer", emoji: "👤" },
 ];
+
 
 export const PURCHASE_CATEGORIES: { value: string; label: string; emoji: string }[] = [
   { value: "HOME", label: "Casa", emoji: "🏠" },
