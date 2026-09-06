@@ -9,3 +9,4 @@
 - [ ] Ativar envio automático por e-mail após configurar o domínio remetente
 - [x] Validar usuário isolado, acesso direto, módulos existentes e interface
 - [x] Executar compilação e produzir relatório final
+- [x] Adicionar menu mobile completo pelo avatar sem alterar a navegação desktop
