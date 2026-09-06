@@ -386,61 +386,146 @@ export function TransactionDialog({
           <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
             <div>
               <p className="text-sm font-medium">Dividir entre nós</p>
-              <p className="text-xs text-muted-foreground">Visível para o workspace e dividida</p>
+              <p className="text-xs text-muted-foreground">
+                Define a responsabilidade de cada um e gera o acerto
+              </p>
             </div>
             <Switch checked={shared} onCheckedChange={setShared} />
           </div>
 
-          {shared && !isEditing ? (
-            <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
-              <div className="flex flex-wrap gap-2">
-                {SPLIT_PRESETS.map((preset) => (
-                  <Button
-                    key={preset.label}
-                    type="button"
-                    size="sm"
-                    variant={splitPreset === preset.value ? "default" : "outline"}
-                    onClick={() => setSplitPreset(preset.value)}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
-              </div>
-              {splitPreset === -1 ? (
-                <div className="space-y-2">
-                  <Label htmlFor="ownerShare">Sua parte</Label>
-                  <Input
-                    id="ownerShare"
-                    inputMode="decimal"
-                    placeholder="R$ 0,00"
-                    value={ownerShare}
-                    onChange={(event) => setOwnerShare(event.target.value)}
-                  />
-                </div>
-              ) : null}
-              {splitAmounts ? (
-                <div className="space-y-1 text-sm">
-                  <p className="flex justify-between">
-                    <span className="text-muted-foreground">Você</span>
-                    <span className="numeric">{formatCurrency(splitAmounts.mine)}</span>
-                  </p>
-                  {others.map((profile) => (
-                    <p key={profile.id} className="flex justify-between">
-                      <span className="text-muted-foreground">{profile.name || profile.email}</span>
-                      <span className="numeric">
-                        {formatCurrency(splitAmounts.theirs / others.length)}
-                      </span>
-                    </p>
-                  ))}
-                  {others.length === 0 ? (
+          {shared ? (
+            <div className="space-y-4 rounded-xl border border-border bg-surface p-4">
+              {!partner ? (
+                <p className="text-xs text-muted-foreground">
+                  Convide a outra pessoa para o espaço Nós para dividir os valores.
+                </p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>Divisão</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {SPLIT_PRESETS.map((preset) => (
+                        <Button
+                          key={preset.label}
+                          type="button"
+                          size="sm"
+                          variant={splitPreset === preset.value ? "default" : "outline"}
+                          onClick={() => setSplitPreset(preset.value)}
+                        >
+                          {preset.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {splitPreset === -1 ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="ownerShare">Sua parte</Label>
+                      <Input
+                        id="ownerShare"
+                        inputMode="decimal"
+                        placeholder="R$ 0,00"
+                        value={ownerShare}
+                        onChange={(event) => setOwnerShare(event.target.value)}
+                        className="numeric"
+                      />
+                    </div>
+                  ) : null}
+
+                  {splitAmounts ? (
+                    <div className="space-y-1 rounded-lg bg-elevated p-3 text-sm">
+                      <p className="flex justify-between">
+                        <span className="text-muted-foreground">Você</span>
+                        <span className="numeric">
+                          {value ? Math.round((splitAmounts.mine / value) * 100) : 0}% ·{" "}
+                          {formatCurrency(splitAmounts.mine)}
+                        </span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {partner.name || partner.email}
+                        </span>
+                        <span className="numeric">
+                          {value ? Math.round((splitAmounts.theirs / value) * 100) : 0}% ·{" "}
+                          {formatCurrency(splitAmounts.theirs)}
+                        </span>
+                      </p>
+                    </div>
+                  ) : null}
+
+                  <div className="space-y-2">
+                    <Label>Quem pagou?</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {(
+                        [
+                          { value: "me", label: "Você" },
+                          { value: "other", label: partner.name || partner.email || "Parceiro(a)" },
+                          { value: "both", label: "Ambos" },
+                        ] as const
+                      ).map((option) => (
+                        <Button
+                          key={option.value}
+                          type="button"
+                          size="sm"
+                          variant={payerMode === option.value ? "default" : "outline"}
+                          onClick={() => setPayerMode(option.value)}
+                        >
+                          {option.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {payerMode === "both" ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="myPaid">Você pagou</Label>
+                        <Input
+                          id="myPaid"
+                          inputMode="decimal"
+                          placeholder="R$ 0,00"
+                          value={myPaid}
+                          onChange={(event) => setMyPaid(event.target.value)}
+                          className="numeric"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{partner.name || partner.email} pagou</Label>
+                        <p className="numeric flex h-9 items-center text-sm text-muted-foreground">
+                          {formatCurrency(Math.max(value - parseAmount(myPaid), 0))}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm">
+                    {division2?.transfer ? (
+                      <p>
+                        💜 <strong>{nameOf(division2.transfer.fromUserId)}</strong> deve passar{" "}
+                        <strong className="numeric">
+                          {formatCurrency(division2.transfer.amount)}
+                        </strong>{" "}
+                        para <strong>{nameOf(division2.transfer.toUserId)}</strong>.
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground">
+                        Nenhum acerto necessário: cada um pagou a própria parte.
+                      </p>
+                    )}
+                  </div>
+
+                  {paidSettlement ? (
                     <p className="text-xs text-muted-foreground">
-                      Convide outra pessoa para o workspace para dividir os valores.
+                      Já existe um acerto pago de{" "}
+                      {formatCurrency(Number(paidSettlement.amount))} nesta despesa. Ao alterar
+                      valores, o histórico é mantido e só a diferença vira um novo acerto.
                     </p>
                   ) : null}
-                </div>
-              ) : null}
+                </>
+              )}
             </div>
           ) : null}
+
 
           <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
