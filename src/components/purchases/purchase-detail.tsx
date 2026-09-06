@@ -39,10 +39,14 @@ import {
   categoryEmoji,
   categoryLabel,
   deletePurchase,
+  personEmoji,
   personLabel,
+  priorityEmoji,
   priorityLabel,
-  statusDot,
+  purchaseVibe,
+  statusEmoji,
   statusLabel,
+  statusTone,
   updatePurchase,
   PURCHASE_STATUSES,
   type Purchase,
@@ -91,6 +95,7 @@ export function PurchaseDetail({
 
   if (!purchase) return null;
   const delta = budgetDelta(purchase);
+  const vibe = purchaseVibe(purchase);
   const context = contexts.find((item) => item.id === purchase.context_id) ?? null;
   const financeCategory = categories.find(
     (item) => item.name === FINANCE_CATEGORY[purchase.category ?? ""],
@@ -244,13 +249,13 @@ export function PurchaseDetail({
             {purchase.purchase_url ? (
               <Button asChild variant="outline" size="sm">
                 <a href={purchase.purchase_url} target="_blank" rel="noreferrer noopener">
-                  <ExternalLink className="size-4" /> Ver produto
+                  <ExternalLink className="size-4" /> Ver compra
                 </a>
               </Button>
             ) : null}
             {purchase.status === "PURCHASED" ? (
               <Button size="sm" onClick={openExpense}>
-                {purchase.transaction_id ? "Registrado no Financeiro" : "Registrar no Financeiro"}
+                {purchase.transaction_id ? "Registrado no Financeiro" : "🛒 Registrar no Financeiro"}
               </Button>
             ) : null}
             {purchase.transaction_id ? (
