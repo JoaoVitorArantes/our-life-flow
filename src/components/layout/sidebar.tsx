@@ -8,6 +8,7 @@ import { useTransactions } from "@/features/finance/queries";
 import { eventOccurrences } from "@/features/agenda/queries";
 import { isOpen } from "@/features/finance/calc";
 import { AvatarMenu } from "@/components/profile/avatar-menu";
+import { WorkspaceAvatarMenu } from "@/components/profile/workspace-avatar-menu";
 
 function NavLink({ item, collapsed, badge }: { item: NavItem; collapsed: boolean; badge?: number | undefined }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -72,9 +73,7 @@ export function Sidebar({
       )}
     >
       <div className={cn("flex items-center gap-3 px-5 py-6", collapsed && "justify-center px-0")}>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-lift">
-          L
-        </span>
+        <WorkspaceAvatarMenu collapsed={collapsed} />
         {collapsed ? null : (
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">Life OS</p>

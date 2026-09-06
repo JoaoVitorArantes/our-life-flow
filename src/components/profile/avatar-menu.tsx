@@ -25,35 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/lib/theme";
-
-async function compressAvatar(file: File) {
-  const bitmap = await createImageBitmap(file);
-  const side = Math.min(bitmap.width, bitmap.height);
-  const canvas = document.createElement("canvas");
-  canvas.width = 640;
-  canvas.height = 640;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Não foi possível preparar a imagem.");
-  context.drawImage(
-    bitmap,
-    (bitmap.width - side) / 2,
-    (bitmap.height - side) / 2,
-    side,
-    side,
-    0,
-    0,
-    640,
-    640,
-  );
-  bitmap.close();
-  return new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("Não foi possível comprimir a imagem."))),
-      "image/jpeg",
-      0.84,
-    ),
-  );
-}
+import { compressSquareImage } from "@/components/profile/image-utils";
 
 export function AvatarMenu({ compact = false }: { compact?: boolean }) {
   const { profile, userId, refetchWorkspace } = useApp();
@@ -91,7 +63,7 @@ export function AvatarMenu({ compact = false }: { compact?: boolean }) {
     if (!selected || !userId) return;
     setBusy(true);
     try {
-      const blob = await compressAvatar(selected);
+      const blob = await compressSquareImage(selected);
       const path = `${userId}/profile.jpg`;
       const { error: uploadError } = await supabase.storage
         .from("avatars")
