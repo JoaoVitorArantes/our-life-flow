@@ -252,7 +252,13 @@ export type Database = {
           is_demo: boolean
           location: string | null
           owner_id: string
+          participants: string[]
+          recurrence: Database["public"]["Enums"]["event_recurrence"] | null
+          recurrence_exceptions: string[]
+          recurrence_until: string | null
+          reminder_minutes: number | null
           starts_at: string
+          status: Database["public"]["Enums"]["event_status"]
           title: string
           updated_at: string
           visibility: Database["public"]["Enums"]["visibility"]
@@ -267,7 +273,13 @@ export type Database = {
           is_demo?: boolean
           location?: string | null
           owner_id: string
+          participants?: string[]
+          recurrence?: Database["public"]["Enums"]["event_recurrence"] | null
+          recurrence_exceptions?: string[]
+          recurrence_until?: string | null
+          reminder_minutes?: number | null
           starts_at: string
+          status?: Database["public"]["Enums"]["event_status"]
           title: string
           updated_at?: string
           visibility?: Database["public"]["Enums"]["visibility"]
@@ -282,7 +294,13 @@ export type Database = {
           is_demo?: boolean
           location?: string | null
           owner_id?: string
+          participants?: string[]
+          recurrence?: Database["public"]["Enums"]["event_recurrence"] | null
+          recurrence_exceptions?: string[]
+          recurrence_until?: string | null
+          reminder_minutes?: number | null
           starts_at?: string
+          status?: Database["public"]["Enums"]["event_status"]
           title?: string
           updated_at?: string
           visibility?: Database["public"]["Enums"]["visibility"]
@@ -739,6 +757,7 @@ export type Database = {
           created_at: string
           id: string
           is_demo: boolean
+          note_date: string | null
           owner_id: string
           title: string
           updated_at: string
@@ -751,6 +770,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_demo?: boolean
+          note_date?: string | null
           owner_id: string
           title: string
           updated_at?: string
@@ -763,6 +783,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_demo?: boolean
+          note_date?: string | null
           owner_id?: string
           title?: string
           updated_at?: string
@@ -1306,6 +1327,8 @@ export type Database = {
         | "PERSONAL"
         | "COUPLE"
         | "OTHER"
+      event_recurrence: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY"
+      event_status: "SCHEDULED" | "DONE" | "CANCELLED"
       goal_movement_type: "CONTRIBUTION" | "WITHDRAWAL"
       goal_status: "ACTIVE" | "PAUSED" | "DONE"
       loan_type: "LENT" | "BORROWED"
@@ -1456,6 +1479,8 @@ export const Constants = {
         "COUPLE",
         "OTHER",
       ],
+      event_recurrence: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
+      event_status: ["SCHEDULED", "DONE", "CANCELLED"],
       goal_movement_type: ["CONTRIBUTION", "WITHDRAWAL"],
       goal_status: ["ACTIVE", "PAUSED", "DONE"],
       loan_type: ["LENT", "BORROWED"],
