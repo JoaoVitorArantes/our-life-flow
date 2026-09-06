@@ -110,6 +110,9 @@ function ContextDetail() {
   );
   const { data: contributions = [] } = useAllContributions(contextGoals.map((goal) => goal.id));
 
+  const { data: purchases = [] } = usePurchases(workspaceId);
+  const contextPurchases = purchases.filter((purchase) => purchase.context_id === id);
+
   const contextTransactions = transactions.filter((t) => t.context_id === id);
   const contextEvents = events.filter((event) => event.context_id === id);
   const contextTasks = tasks.filter((task) => task.context_id === id);
