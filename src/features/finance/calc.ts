@@ -13,7 +13,38 @@ export function sumBy<T>(items: T[], pick: (item: T) => number) {
 export const isSettled = (t: Transaction) => t.status === "PAID";
 export const isOpen = (t: Transaction) => t.status === "PENDING" || t.status === "OVERDUE";
 
-export const dueDateOf = (t: Transaction) => t.due_date ?? t.transaction_date;
+/**
+ * Registro leve dos ciclos de cartão (fechamento/vencimento) para que o
+ * vencimento de uma compra no crédito seja o da FATURA, não o da compra.
+ */
+type CardCycleInfo = { closingDay: number | null; dueDay: number | null };
+const cardCycleIndex = new Map<string, CardCycleInfo>();
+
+export function registerCardCycles(
+  cards: { id: string; closing_day: number | null; due_day: number | null }[],
+) {
+  for (const card of cards) {
+    cardCycleIndex.set(card.id, { closingDay: card.closing_day, dueDay: card.due_day });
+  }
+}
+
+/** Vencimento da fatura que contém uma compra feita em `purchaseISO`. */
+export function invoiceDueDateFor(purchaseISO: string, closingDay: number, dueDay: number) {
+  const [y, m, d] = purchaseISO.split("-").map(Number);
+  const reference = new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
+  const closingISO = cardCycles(closingDay, reference).current.end;
+  return cardDueDate(closingISO, dueDay);
+}
+
+export const dueDateOf = (t: Transaction) => {
+  if (t.card_id) {
+    const cycle = cardCycleIndex.get(t.card_id);
+    if (cycle?.closingDay && cycle.dueDay) {
+      return invoiceDueDateFor(t.transaction_date, cycle.closingDay, cycle.dueDay);
+    }
+  }
+  return t.due_date ?? t.transaction_date;
+};
 
 export function statusOf(t: Transaction): PaymentStatus {
   return effectiveStatus(t.status, dueDateOf(t));
