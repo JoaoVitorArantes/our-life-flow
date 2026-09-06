@@ -304,7 +304,8 @@ function Compras() {
           </div>
 
           {filtered.length === 0 ? (
-            <EmptyState title="Nada por aqui" description="Ajuste os filtros ou a busca." />
+            <EmptyState title="Nada por aqui 👀" description="Ajuste os filtros ou a busca." />
+
           ) : view === "cards" ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((purchase) => (
