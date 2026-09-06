@@ -8,6 +8,7 @@ import { StatCard } from "@/components/common/stat-card";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MemberAvatar } from "@/components/profile/member-avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +76,7 @@ function Nos() {
       : (memberProfiles.find((profile) => profile.id === id)?.name ??
         memberProfiles.find((profile) => profile.id === id)?.email ??
         "Parceiro(a)");
+  const profileOf = (id: string) => memberProfiles.find((profile) => profile.id === id);
 
   const balance = netBalance(settlements, userId);
   const shared = useMemo(() => transactions.filter((t) => t.is_shared), [transactions]);
@@ -261,14 +263,22 @@ function Nos() {
                   key={settlement.id}
                   className="flex flex-wrap items-center justify-between gap-3 py-3"
                 >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">
-                      {nameOf(settlement.from_user_id)} → {nameOf(settlement.to_user_id)}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {source?.description ?? settlement.note ?? "Acerto entre vocês"} ·{" "}
-                      {formatDateShort(settlement.created_at.slice(0, 10))}
-                    </p>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="flex shrink-0 items-center">
+                      {[settlement.from_user_id, settlement.to_user_id].map((id, index) => {
+                        const profile = profileOf(id);
+                        return <MemberAvatar key={id} name={profile?.name} email={profile?.email} src={profile?.avatar_url} className={cn("size-7", index > 0 && "-ml-2")} fallbackClassName="text-[9px]" />;
+                      })}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">
+                        {nameOf(settlement.from_user_id)} → {nameOf(settlement.to_user_id)}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {source?.description ?? settlement.note ?? "Acerto entre vocês"} ·{" "}
+                        {formatDateShort(settlement.created_at.slice(0, 10))}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <span className="numeric text-sm font-semibold">
@@ -424,13 +434,21 @@ function Nos() {
                 : null;
               return (
                 <li key={settlement.id} className="flex items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {source?.description ?? settlement.note ?? "Acerto entre vocês"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {nameOf(settlement.from_user_id)} → {nameOf(settlement.to_user_id)}
-                    </p>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="flex shrink-0 items-center">
+                      {[settlement.from_user_id, settlement.to_user_id].map((id, index) => {
+                        const profile = profileOf(id);
+                        return <MemberAvatar key={id} name={profile?.name} email={profile?.email} src={profile?.avatar_url} className={cn("size-7", index > 0 && "-ml-2")} fallbackClassName="text-[9px]" />;
+                      })}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {source?.description ?? settlement.note ?? "Acerto entre vocês"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {nameOf(settlement.from_user_id)} → {nameOf(settlement.to_user_id)}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <span className="numeric text-sm">
@@ -548,11 +566,10 @@ function Nos() {
         </PanelTitle>
         <ul className="divide-y divide-border">
           {memberProfiles.map((profile) => (
-            <li key={profile.id} className="py-3 text-sm">
-              {profile.name || profile.email}
-              {profile.id === userId ? (
-                <span className="ml-2 text-xs text-muted-foreground">(você)</span>
-              ) : null}
+            <li key={profile.id} className="flex items-center gap-2.5 py-3 text-sm">
+              <MemberAvatar name={profile.name} email={profile.email} src={profile.avatar_url} className="size-8" fallbackClassName="text-[10px]" />
+              <span>{profile.name || profile.email}</span>
+              {profile.id === userId ? <span className="text-xs text-muted-foreground">(você)</span> : null}
             </li>
           ))}
         </ul>
