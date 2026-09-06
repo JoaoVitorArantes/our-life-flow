@@ -406,6 +406,7 @@ export type Database = {
           goal_id: string
           id: string
           is_demo: boolean
+          movement_type: Database["public"]["Enums"]["goal_movement_type"]
           updated_at: string
           user_id: string
         }
@@ -417,6 +418,7 @@ export type Database = {
           goal_id: string
           id?: string
           is_demo?: boolean
+          movement_type?: Database["public"]["Enums"]["goal_movement_type"]
           updated_at?: string
           user_id: string
         }
@@ -428,6 +430,7 @@ export type Database = {
           goal_id?: string
           id?: string
           is_demo?: boolean
+          movement_type?: Database["public"]["Enums"]["goal_movement_type"]
           updated_at?: string
           user_id?: string
         }
@@ -1300,6 +1303,7 @@ export type Database = {
         | "PERSONAL"
         | "COUPLE"
         | "OTHER"
+      goal_movement_type: "CONTRIBUTION" | "WITHDRAWAL"
       goal_status: "ACTIVE" | "PAUSED" | "DONE"
       loan_type: "LENT" | "BORROWED"
       member_role: "OWNER" | "MEMBER"
@@ -1449,6 +1453,7 @@ export const Constants = {
         "COUPLE",
         "OTHER",
       ],
+      goal_movement_type: ["CONTRIBUTION", "WITHDRAWAL"],
       goal_status: ["ACTIVE", "PAUSED", "DONE"],
       loan_type: ["LENT", "BORROWED"],
       member_role: ["OWNER", "MEMBER"],
