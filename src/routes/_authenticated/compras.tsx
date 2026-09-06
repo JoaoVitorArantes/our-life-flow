@@ -327,7 +327,11 @@ function Compras() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{purchase.title}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {[categoryLabel(purchase.category), priorityLabel(purchase.priority), personLabel(purchase.person_scope)]
+                      {[
+                        categoryLabel(purchase.category),
+                        `${priorityEmoji(purchase.priority)} ${priorityLabel(purchase.priority)}`,
+                        `${personEmoji(purchase.person_scope)} ${personLabel(purchase.person_scope)}`,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
@@ -340,8 +344,11 @@ function Compras() {
                       <p className="numeric font-medium text-foreground">
                         {formatCurrency(Number(purchase.found_price))}
                       </p>
-                    ) : null}
+                    ) : (
+                      <p>Preço a definir</p>
+                    )}
                   </div>
+
                   <Badge variant="outline" className="shrink-0 gap-1.5">
                     <span className={cn("size-1.5 rounded-full", statusDot(purchase.status))} />
                     <span className="hidden sm:inline">{statusLabel(purchase.status)}</span>
