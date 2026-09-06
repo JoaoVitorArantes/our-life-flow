@@ -27,6 +27,12 @@ import { useApp, type QuickActionKind } from "@/features/app/app-context";
 import { useAccounts, useTransactions } from "@/features/finance/queries";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
 import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
+import {
+  activityEmoji,
+  formatDistance,
+  formatDuration,
+  useActivities,
+} from "@/features/activities/queries";
 import { goalProgress, movementType, useAllContributions } from "@/features/planner/contributions";
 import { contextEmoji, useContexts } from "@/features/contexts/queries";
 import {
@@ -126,6 +132,15 @@ function Dashboard() {
   const contributions = contributionsQuery.data ?? [];
 
   const purchasesQuery = usePurchases(workspaceId);
+  const activitiesQuery = useActivities(workspaceId);
+  const weekActivities = useMemo(() => {
+    const from = new Date();
+    from.setHours(0, 0, 0, 0);
+    from.setDate(from.getDate() - 6);
+    return (activitiesQuery.data ?? []).filter(
+      (item) => parseDateOnly(item.activity_date) >= from,
+    );
+  }, [activitiesQuery.data]);
   const plannedPurchases = useMemo(
     () =>
       (purchasesQuery.data ?? [])
@@ -720,6 +735,38 @@ function Dashboard() {
           </ul>
         </Panel>
       ) : null}
+
+      {weekActivities.length > 0 ? (
+        <Panel>
+          <PanelTitle
+            action={
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/esporte">Ver atividades</Link>
+              </Button>
+            }
+          >
+            🏃 Movimento
+          </PanelTitle>
+          <p className="text-sm text-muted-foreground">
+            Vocês fizeram {weekActivities.length}{" "}
+            {weekActivities.length === 1 ? "atividade" : "atividades"} nos últimos 7 dias.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {weekActivities.slice(0, 3).map((item) => (
+              <li key={item.id} className="flex items-center gap-3 text-sm">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted">
+                  {activityEmoji(item.activity_type)}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                <span className="numeric shrink-0 text-muted-foreground">
+                  {formatDuration(item.duration_minutes) ?? formatDistance(item.distance_km) ?? "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+
 
       <Panel>
         <PanelTitle>Atividade recente</PanelTitle>
