@@ -40,11 +40,16 @@ export function FinanceEntityDialog({
 }) {
   const { workspaceId, userId } = useApp();
   const queryClient = useQueryClient();
+  const accounts = useAccounts(workspaceId).data ?? [];
   const [name, setName] = useState("");
   const [institution, setInstitution] = useState("");
   const [accountType, setAccountType] = useState<Enums<"account_type">>("CHECKING");
   const [initialBalance, setInitialBalance] = useState("");
   const [creditLimit, setCreditLimit] = useState("");
+  const [closingDay, setClosingDay] = useState("");
+  const [dueDay, setDueDay] = useState("");
+  const [paymentAccountId, setPaymentAccountId] = useState(NO_ACCOUNT);
+  const [isActive, setIsActive] = useState(true);
   const [categoryType, setCategoryType] = useState<Enums<"category_type">>("EXPENSE");
   const [saving, setSaving] = useState(false);
 
@@ -58,6 +63,10 @@ export function FinanceEntityDialog({
     setAccountType((any?.account_type as Enums<"account_type">) ?? "CHECKING");
     setInitialBalance(any?.initial_balance ? String(Number(any.initial_balance)) : "");
     setCreditLimit(any?.credit_limit ? String(Number(any.credit_limit)) : "");
+    setClosingDay(any?.closing_day ? String(any.closing_day) : "");
+    setDueDay(any?.due_day ? String(any.due_day) : "");
+    setPaymentAccountId(any?.payment_account_id ?? NO_ACCOUNT);
+    setIsActive(any?.is_active ?? true);
     setCategoryType((any?.type as Enums<"category_type">) ?? "EXPENSE");
   }, [open, record]);
 
