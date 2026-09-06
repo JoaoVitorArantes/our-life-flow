@@ -3,10 +3,7 @@ import { PanelLeftClose, PanelLeftOpen, Repeat2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FOOTER_NAV, NAV_GROUPS, type NavItem } from "@/features/app/navigation";
 import { useApp } from "@/features/app/app-context";
-import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
-import { useTransactions } from "@/features/finance/queries";
-import { eventOccurrences } from "@/features/agenda/queries";
-import { isOpen } from "@/features/finance/calc";
+import { useNavigationIndicators } from "@/features/app/use-navigation-indicators";
 import { AvatarMenu } from "@/components/profile/avatar-menu";
 import { WorkspaceAvatarMenu } from "@/components/profile/workspace-avatar-menu";
 
@@ -48,22 +45,7 @@ export function Sidebar({
   workspaceName: string;
 }) {
   const { workspaceId, profile, availableWorkspaces, switchWorkspace } = useApp();
-  const { data: tasks = [] } = useTasks(workspaceId);
-  const { data: transactions = [] } = useTransactions(workspaceId);
-  const { data: events = [] } = useEvents(workspaceId);
-  const { data: goals = [] } = useGoals(workspaceId);
-  const from = new Date();
-  from.setHours(0, 0, 0, 0);
-  const to = new Date(from);
-  to.setDate(to.getDate() + 7);
-  const goalLimit = new Date(from);
-  goalLimit.setDate(goalLimit.getDate() + 30);
-  const indicators: Record<string, number> = {
-    "/tarefas": tasks.filter((task) => task.status !== "DONE").length,
-    "/financeiro": transactions.filter((transaction) => transaction.type === "EXPENSE" && isOpen(transaction)).length,
-    "/agenda": events.filter((event) => event.status !== "CANCELLED" && eventOccurrences(event, from, to).length > 0).length,
-    "/metas": goals.filter((goal) => goal.status === "ACTIVE" && goal.due_date && new Date(`${goal.due_date}T00:00:00`) <= goalLimit).length,
-  };
+  const indicators = useNavigationIndicators(workspaceId);
 
   return (
     <aside
