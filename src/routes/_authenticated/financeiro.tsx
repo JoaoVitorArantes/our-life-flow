@@ -152,6 +152,7 @@ function Financeiro() {
       if (originFilter === "financing" && !t.financing_id) return false;
       if (originFilter === "single" && (t.installment_plan_id || t.recurring_id || t.loan_id || t.financing_id))
         return false;
+      if (ownerFilter !== ALL && t.owner_id !== ownerFilter) return false;
       if (search && !t.description.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
