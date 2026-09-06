@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from 
 import { cn } from "@/lib/utils";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 
-function MobileNavLink({ item, badge, active, close }: { item: NavItem; badge?: number; active: boolean; close: () => void }) {
+function MobileNavLink({ item, badge, active, close }: { item: NavItem; badge?: number | undefined; active: boolean; close: () => void }) {
   return (
     <Link
       to={item.to}
