@@ -1,6 +1,6 @@
 # Roadmap
 
 - [x] Definir foto compartilhada no workspace
-- [ ] Permitir troca e remoção pelos membros
-- [ ] Exibir a foto no lugar do “L”
-- [ ] Validar acesso, persistência e compilação
+- [x] Permitir troca e remoção pelos membros
+- [x] Exibir a foto no lugar do “L”
+- [x] Validar acesso, persistência e compilação
