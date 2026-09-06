@@ -32,7 +32,7 @@ export function ContributionDialog({
   mode?: "add" | "withdraw";
   balance?: number;
 }) {
-  const { userId } = useApp();
+  const { userId, workspaceId } = useApp();
   const queryClient = useQueryClient();
   const [type, setType] = useState<GoalMovementType>("CONTRIBUTION");
   const [amount, setAmount] = useState("");
@@ -55,7 +55,7 @@ export function ContributionDialog({
   }, [open, contribution, mode]);
 
   async function handleSubmit() {
-    if (!userId) return;
+    if (!userId || !workspaceId) return;
     if (!goalId) {
       toast.error("Movimentação sem meta relacionada.");
       return;
@@ -89,6 +89,7 @@ export function ContributionDialog({
         });
       } else {
         await addContribution({
+          workspaceId,
           goalId,
           userId,
           amount: value,

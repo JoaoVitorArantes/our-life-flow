@@ -70,6 +70,7 @@ export function goalProgress(goal: { id: string }, contributions: GoalContributi
 }
 
 export async function addContribution(input: {
+  workspaceId: string;
   goalId: string;
   userId: string;
   amount: number;
@@ -81,6 +82,7 @@ export async function addContribution(input: {
   const amount = Math.abs(input.amount);
   if (!amount || !Number.isFinite(amount)) throw new Error("Informe um valor maior que zero.");
   const { error } = await supabase.from("goal_contributions").insert({
+    workspace_id: input.workspaceId,
     goal_id: input.goalId,
     user_id: input.userId,
     amount,

@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { useSession } from "@/features/auth/session";
-import { useWorkspace, type Profile, type Relationship, type Workspace } from "@/features/workspace/queries";
+import { useWorkspace, type Member, type Profile, type Relationship, type Workspace } from "@/features/workspace/queries";
 
 export type QuickActionKind =
   | "expense"
@@ -23,6 +23,7 @@ type AppContextValue = {
   workspace: Workspace | null;
   profile: Profile | null;
   memberProfiles: Profile[];
+  members: Member[];
   relationship: Relationship | null;
   availableWorkspaces: Workspace[];
   switchWorkspace: (workspaceId: string) => Promise<void>;
@@ -58,6 +59,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       workspace: workspaceQuery.data?.workspace ?? null,
       profile: workspaceQuery.data?.profile ?? null,
       memberProfiles: workspaceQuery.data?.memberProfiles ?? [],
+      members: workspaceQuery.data?.members ?? [],
       relationship: workspaceQuery.data?.relationship ?? null,
       availableWorkspaces: workspaceQuery.data?.availableWorkspaces ?? [],
       switchWorkspace: async (workspaceId) => {

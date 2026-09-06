@@ -121,8 +121,8 @@ export function useSplits(workspaceId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("transaction_splits")
-        .select("*, transactions!inner(workspace_id)")
-        .eq("transactions.workspace_id", workspaceId!);
+        .select("*")
+        .eq("workspace_id", workspaceId!);
       if (error) throw error;
       return (data ?? []) as unknown as Split[];
     },
@@ -136,8 +136,8 @@ export function usePayers(workspaceId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("transaction_payers")
-        .select("*, transactions!inner(workspace_id)")
-        .eq("transactions.workspace_id", workspaceId!);
+        .select("*")
+        .eq("workspace_id", workspaceId!);
       if (error) throw error;
       return (data ?? []) as unknown as Payer[];
     },
