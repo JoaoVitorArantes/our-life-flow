@@ -439,6 +439,10 @@ function Dashboard() {
         </div>
       </Panel>
 
+      <BalanceCard />
+
+
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
           <PanelTitle
