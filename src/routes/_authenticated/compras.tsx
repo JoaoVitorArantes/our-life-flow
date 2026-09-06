@@ -254,7 +254,7 @@ function Compras() {
                 <SelectContent>
                   <SelectItem value={ALL}>Todos os status</SelectItem>
                   {PURCHASE_STATUSES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                    <SelectItem key={item.value} value={item.value}>{item.emoji} {item.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -272,7 +272,7 @@ function Compras() {
                 <SelectContent>
                   <SelectItem value={ALL}>Todas as prioridades</SelectItem>
                   {PURCHASE_PRIORITIES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                    <SelectItem key={item.value} value={item.value}>{item.emoji} {item.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -281,7 +281,7 @@ function Compras() {
                 <SelectContent>
                   <SelectItem value={ALL}>Todas as pessoas</SelectItem>
                   {PERSON_SCOPES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                    <SelectItem key={item.value} value={item.value}>{item.emoji} {item.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -355,7 +355,7 @@ function Compras() {
 
                   <Badge variant="outline" className="shrink-0 gap-1.5">
                     <span className={cn("size-1.5 rounded-full", statusDot(purchase.status))} />
-                    <span className="hidden sm:inline">{statusLabel(purchase.status)}</span>
+                    <span className="hidden sm:inline">{statusEmoji(purchase.status)} {statusLabel(purchase.status)}</span>
                   </Badge>
                   <span className="hidden lg:block">
                     <CreatedBy userId={purchase.created_by} />
