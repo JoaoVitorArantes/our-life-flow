@@ -19,25 +19,38 @@ export function useWorkspace(enabled: boolean) {
     enabled,
     queryFn: async () => {
       const workspaceId = await bootstrapAccount();
-      const [{ data: workspace }, { data: profile }, { data: members }] = await Promise.all([
+      if (!workspaceId) throw new Error("Não foi possível identificar o workspace.");
+
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) throw authError ?? new Error("Usuário não autenticado.");
+
+      const [workspaceResult, profileResult, membersResult] = await Promise.all([
         supabase.from("workspaces").select("*").eq("id", workspaceId).maybeSingle(),
-        supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
-          .maybeSingle(),
+        supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle(),
         supabase.from("workspace_members").select("*").eq("workspace_id", workspaceId),
       ]);
 
+      if (workspaceResult.error) throw workspaceResult.error;
+      if (profileResult.error) throw profileResult.error;
+      if (membersResult.error) throw membersResult.error;
+
+      const workspace = workspaceResult.data;
+      const profile = profileResult.data;
+      const members = membersResult.data;
+      if (!workspace) throw new Error("Workspace não encontrado.");
+
       const memberIds = (members ?? []).map((m) => m.user_id);
-      const { data: profiles } = await supabase.from("profiles").select("*").in("id", memberIds);
+      const profilesResult = memberIds.length
+        ? await supabase.from("profiles").select("*").in("id", memberIds)
+        : { data: [], error: null };
+      if (profilesResult.error) throw profilesResult.error;
 
       return {
         workspaceId,
         workspace: workspace as Workspace | null,
         profile: profile as Profile | null,
         members: (members ?? []) as Member[],
-        memberProfiles: (profiles ?? []) as Profile[],
+        memberProfiles: (profilesResult.data ?? []) as Profile[],
       };
     },
   });
