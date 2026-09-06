@@ -11,7 +11,10 @@ async function withAvatarUrls(profiles: Profile[]) {
     profiles.map(async (profile) => {
       if (!profile.avatar_url || profile.avatar_url.startsWith("http")) return profile;
       const { data } = await supabase.storage.from("avatars").createSignedUrl(profile.avatar_url, 60 * 60);
-      return { ...profile, avatar_url: data?.signedUrl ?? null };
+      return {
+        ...profile,
+        avatar_url: data?.signedUrl ? `${data.signedUrl}#avatar-path=${profile.avatar_url}` : null,
+      };
     }),
   );
 }

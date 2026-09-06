@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Camera, LogOut, Settings, Trash2, UserRound } from "lucide-react";
+import { Camera, LogOut, Monitor, Moon, Settings, Sun, Trash2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/features/app/app-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/theme";
 
 async function compressAvatar(file: File) {
   const bitmap = await createImageBitmap(file);
@@ -62,6 +63,7 @@ export function AvatarMenu({ compact = false }: { compact?: boolean }) {
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { mode, setMode } = useTheme();
 
   useEffect(() => () => {
     if (preview) URL.revokeObjectURL(preview);
@@ -185,6 +187,17 @@ export function AvatarMenu({ compact = false }: { compact?: boolean }) {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate({ to: "/configuracoes" })}>
             <Settings className="size-4" /> Configurações
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Aparência</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => setMode("dark")}>
+            <Moon className="size-4" /> Escuro {mode === "dark" ? "•" : ""}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setMode("light")}>
+            <Sun className="size-4" /> Claro {mode === "light" ? "•" : ""}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setMode("system")}>
+            <Monitor className="size-4" /> Sistema {mode === "system" ? "•" : ""}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => void signOut()}>
