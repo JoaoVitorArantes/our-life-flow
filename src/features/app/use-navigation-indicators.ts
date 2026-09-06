@@ -15,10 +15,11 @@ export function useNavigationIndicators(workspaceId?: string) {
   const goalLimit = new Date(from);
   goalLimit.setDate(goalLimit.getDate() + 30);
 
-  return {
+  const indicators: Record<string, number> = {
     "/tarefas": tasks.filter((task) => task.status !== "DONE").length,
     "/financeiro": transactions.filter((transaction) => transaction.type === "EXPENSE" && isOpen(transaction)).length,
     "/agenda": events.filter((event) => event.status !== "CANCELLED" && eventOccurrences(event, from, to).length > 0).length,
     "/metas": goals.filter((goal) => goal.status === "ACTIVE" && goal.due_date && new Date(`${goal.due_date}T00:00:00`) <= goalLimit).length,
-  } satisfies Record<string, number>;
+  };
+  return indicators;
 }
