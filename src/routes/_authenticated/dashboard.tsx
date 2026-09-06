@@ -100,7 +100,7 @@ function Money({ label, value, tone }: { label: string; value: number; tone?: st
 }
 
 function Dashboard() {
-  const { workspaceId, profile, loading, error, refetchWorkspace, openQuickAction, userId } =
+  const { workspaceId, profile, memberProfiles, loading, error, refetchWorkspace, openQuickAction, userId } =
     useApp();
   const queryClient = useQueryClient();
   const [busyTask, setBusyTask] = useState<string | null>(null);
