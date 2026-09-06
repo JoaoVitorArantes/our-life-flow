@@ -187,7 +187,6 @@ function GoalDetail() {
                     </p>
                   </div>
                   <RecordActions
-                    canManage={contribution.user_id === userId}
                     onEdit={() => setEditing(contribution)}
                     onDelete={() => removeContribution(contribution)}
                     confirmTitle="Remover esta contribuição?"

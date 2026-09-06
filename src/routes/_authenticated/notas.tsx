@@ -76,7 +76,6 @@ function Notas() {
                 <div className="flex items-center gap-2">
                   {note.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
                   <RecordActions
-                    canManage={note.owner_id === userId}
                     onEdit={() => setEditing(note)}
                     onDelete={() => remove(note)}
                     confirmTitle="Excluir esta nota?"

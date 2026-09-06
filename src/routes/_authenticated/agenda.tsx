@@ -87,7 +87,6 @@ function Agenda() {
                 <div className="flex shrink-0 items-center gap-2">
                   {event.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
                   <RecordActions
-                    canManage={event.owner_id === userId}
                     onEdit={() => setEditing(event)}
                     onDelete={() => remove(event)}
                     confirmTitle="Excluir este evento?"
@@ -112,7 +111,6 @@ function Agenda() {
                     {formatDateShort(new Date(event.starts_at))}
                   </span>
                   <RecordActions
-                    canManage={event.owner_id === userId}
                     onEdit={() => setEditing(event)}
                     onDelete={() => remove(event)}
                     confirmTitle="Excluir este evento?"

@@ -58,7 +58,7 @@ export function TransferDialog({ open, onOpenChange }: Props) {
         status: "PAID",
         sourceAccountId: from,
         destinationAccountId: to,
-        visibility: "PRIVATE",
+        visibility: "SHARED",
         isShared: false,
       });
       await queryClient.invalidateQueries({ queryKey: ["transactions"] });

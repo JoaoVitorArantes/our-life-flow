@@ -96,7 +96,6 @@ function Tarefas() {
                   </span>
                 ) : null}
                 <RecordActions
-                  canManage={task.owner_id === userId}
                   onEdit={() => setEditing(task)}
                   onDelete={() => remove(task)}
                   confirmTitle="Excluir esta tarefa?"
@@ -117,7 +116,6 @@ function Tarefas() {
                 <Checkbox checked onCheckedChange={() => toggle(task.id, false)} />
                 <span className="min-w-0 flex-1 truncate text-sm line-through">{task.title}</span>
                 <RecordActions
-                  canManage={task.owner_id === userId}
                   onEdit={() => setEditing(task)}
                   onDelete={() => remove(task)}
                   confirmTitle="Excluir esta tarefa?"

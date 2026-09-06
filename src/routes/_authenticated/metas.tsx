@@ -92,7 +92,6 @@ function Metas() {
                   <div className="flex items-center gap-2">
                     {goal.visibility === "SHARED" ? <Badge variant="outline">Nós</Badge> : null}
                     <RecordActions
-                      canManage={goal.owner_id === userId}
                       onEdit={() => setEditing(goal)}
                       onDelete={() => remove(goal)}
                       confirmTitle="Excluir esta meta?"

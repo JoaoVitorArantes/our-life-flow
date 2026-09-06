@@ -117,7 +117,6 @@ function Contextos() {
                   </p>
                 </Link>
                 <RecordActions
-                  canManage={context.owner_id === userId}
                   onEdit={() => {
                     setEditing(context);
                     setDialogOpen(true);

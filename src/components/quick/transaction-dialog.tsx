@@ -137,7 +137,7 @@ export function TransactionDialog({
           account_id: source === "account" ? (id ?? null) : null,
           card_id: source === "card" ? (id ?? null) : null,
           context_id: linkedContext,
-          visibility: shared ? "SHARED" : "PRIVATE",
+          visibility: "SHARED",
           is_shared: shared,
           notes: notes.trim() || null,
         });
@@ -171,7 +171,7 @@ export function TransactionDialog({
           accountId: source === "account" ? (id ?? null) : null,
           cardId: source === "card" ? (id ?? null) : null,
           contextId: linkedContext,
-          visibility: shared ? "SHARED" : "PRIVATE",
+          visibility: "SHARED",
           isShared: shared,
           notes: notes.trim() || null,
           splits,
@@ -308,7 +308,7 @@ export function TransactionDialog({
 
           <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
             <div>
-              <p className="text-sm font-medium">Compartilhada</p>
+              <p className="text-sm font-medium">Dividir entre nós</p>
               <p className="text-xs text-muted-foreground">Visível para o workspace e dividida</p>
             </div>
             <Switch checked={shared} onCheckedChange={setShared} />
