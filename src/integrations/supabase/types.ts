@@ -865,6 +865,97 @@ export type Database = {
           },
         ]
       }
+      purchases: {
+        Row: {
+          budget_amount: number | null
+          category: string | null
+          context_id: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          desired_date: string | null
+          found_price: number | null
+          id: string
+          image_url: string | null
+          notes: string | null
+          person_scope: string
+          priority: string
+          purchase_url: string | null
+          purchased_at: string | null
+          status: string
+          title: string
+          transaction_id: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          budget_amount?: number | null
+          category?: string | null
+          context_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          desired_date?: string | null
+          found_price?: number | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          person_scope?: string
+          priority?: string
+          purchase_url?: string | null
+          purchased_at?: string | null
+          status?: string
+          title: string
+          transaction_id?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          budget_amount?: number | null
+          category?: string | null
+          context_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          desired_date?: string | null
+          found_price?: number | null
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          person_scope?: string
+          priority?: string
+          purchase_url?: string | null
+          purchased_at?: string | null
+          status?: string
+          title?: string
+          transaction_id?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_transactions: {
         Row: {
           account_id: string | null
