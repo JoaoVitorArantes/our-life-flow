@@ -256,6 +256,13 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
 
           <ContextSelect value={contextId} onChange={setContextId} />
 
+          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
+            <p className="text-sm font-medium">Ativa</p>
+            <Switch checked={active} onCheckedChange={setActive} />
+          </div>
+
+
+
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar"}
