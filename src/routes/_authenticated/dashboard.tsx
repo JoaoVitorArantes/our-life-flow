@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { BalanceCard } from "@/components/nos/balance-card";
+import { RelationshipTime } from "@/components/nos/relationship-time";
+import { MemberAvatar } from "@/components/profile/member-avatar";
 import { Panel, PanelTitle } from "@/components/common/page";
 import { useMemberName } from "@/components/common/created-by";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/states";
@@ -363,13 +365,16 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          {greeting(profile?.name)}
-        </h1>
-        <p className="text-sm text-muted-foreground">Nossa vida, em um só lugar.</p>
-        <p className="text-xs capitalize text-muted-foreground/80">{formatDateLong()}</p>
+      <header className="flex items-center gap-4">
+        <MemberAvatar name={profile?.name} email={profile?.email} src={profile?.avatar_url} className="size-12 ring-primary/20" />
+        <div className="min-w-0 space-y-0.5">
+          <h1 className="truncate text-2xl font-semibold sm:text-3xl">{greeting(profile?.name)}</h1>
+          <p className="text-sm text-muted-foreground">Nossa vida, em um só lugar.</p>
+          <p className="text-xs capitalize text-muted-foreground/80">{formatDateLong()}</p>
+        </div>
       </header>
+
+      <RelationshipTime />
 
       <div className="flex flex-wrap gap-2">
         {QUICK_ACTIONS.map((action) => (

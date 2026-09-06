@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/features/app/app-context";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 import { clearDemoData, seedDemoData } from "@/features/demo/seed";
+import { AvatarMenu } from "@/components/profile/avatar-menu";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
@@ -93,6 +94,10 @@ function Configuracoes() {
 
       <Panel className="space-y-4">
         <PanelTitle>Perfil</PanelTitle>
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-background/40 p-3">
+          <AvatarMenu />
+          <div><p className="text-sm font-medium">Foto de perfil</p><p className="text-xs text-muted-foreground">Clique na foto para alterar ou remover.</p></div>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="name">Nome</Label>
           <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
