@@ -721,6 +721,38 @@ function Dashboard() {
         </Panel>
       ) : null}
 
+      {weekActivities.length > 0 ? (
+        <Panel>
+          <PanelTitle
+            action={
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/esporte">Ver atividades</Link>
+              </Button>
+            }
+          >
+            🏃 Movimento
+          </PanelTitle>
+          <p className="text-sm text-muted-foreground">
+            Vocês fizeram {weekActivities.length}{" "}
+            {weekActivities.length === 1 ? "atividade" : "atividades"} nos últimos 7 dias.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {weekActivities.slice(0, 3).map((item) => (
+              <li key={item.id} className="flex items-center gap-3 text-sm">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted">
+                  {activityEmoji(item.activity_type)}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                <span className="numeric shrink-0 text-muted-foreground">
+                  {formatDuration(item.duration_minutes) ?? formatDistance(item.distance_km) ?? "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+
+
       <Panel>
         <PanelTitle>Atividade recente</PanelTitle>
         {activity.length === 0 ? (
