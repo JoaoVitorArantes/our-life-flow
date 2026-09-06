@@ -124,3 +124,43 @@ export function cardInvoiceRange(closingDay: number, reference = new Date()) {
   const start = new Date(year, month - 1, closingDay + 1);
   return { start: toISO(start), end: toISO(end) };
 }
+
+const clampDay = (year: number, month: number, day: number) =>
+  Math.min(Math.max(day, 1), new Date(year, month + 1, 0).getDate());
+
+const dayAfter = (date: Date) =>
+  toISO(new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1));
+
+/** Current (open) and next invoice cycles of a card, based on its closing day. */
+export function cardCycles(closingDay: number, reference = new Date()) {
+  const year = reference.getFullYear();
+  const month = reference.getMonth();
+  const offset = reference.getDate() <= clampDay(year, month, closingDay) ? 0 : 1;
+  const closingOf = (shift: number) =>
+    new Date(year, month + offset + shift, clampDay(year, month + offset + shift, closingDay));
+  const previous = closingOf(-1);
+  const current = closingOf(0);
+  const next = closingOf(1);
+  return {
+    current: { start: dayAfter(previous), end: toISO(current) },
+    next: { start: dayAfter(current), end: toISO(next) },
+  };
+}
+
+/** Due date of the invoice that closes on `closingISO`. */
+export function cardDueDate(closingISO: string, dueDay: number) {
+  const [y, m, d] = closingISO.split("-").map(Number);
+  const year = y ?? 1970;
+  const month = (m ?? 1) - 1;
+  const shift = dueDay >= (d ?? 1) ? 0 : 1;
+  return toISO(new Date(year, month + shift, clampDay(year, month + shift, dueDay)));
+}
+
+/** Whole days between two ISO dates (b - a). */
+export function daysBetween(fromISO: string, toISODate: string) {
+  const parse = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return Date.UTC(y ?? 1970, (m ?? 1) - 1, d ?? 1);
+  };
+  return Math.round((parse(toISODate) - parse(fromISO)) / 86400000);
+}
