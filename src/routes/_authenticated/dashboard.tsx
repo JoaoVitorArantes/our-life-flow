@@ -54,6 +54,40 @@ function Dashboard() {
   const sharedMonth = monthly.filter((t) => t.is_shared && t.type === "EXPENSE");
   const sharedTotal = sharedMonth.reduce((total, t) => total + Number(t.amount), 0);
 
+  const activity = [
+    ...transactions.map((t) => ({
+      key: `t-${t.id}`,
+      userId: t.owner_id,
+      action: t.type === "INCOME" ? "registrou uma receita" : "registrou uma despesa",
+      label: t.description,
+      at: t.created_at,
+    })),
+    ...(tasksQuery.data ?? []).map((t) => ({
+      key: `k-${t.id}`,
+      userId: t.owner_id,
+      action: "criou a tarefa",
+      label: t.title,
+      at: t.created_at,
+    })),
+    ...(eventsQuery.data ?? []).map((e) => ({
+      key: `e-${e.id}`,
+      userId: e.owner_id,
+      action: "agendou",
+      label: e.title,
+      at: e.created_at,
+    })),
+    ...(goalsQuery.data ?? []).map((g) => ({
+      key: `g-${g.id}`,
+      userId: g.owner_id,
+      action: "criou a meta",
+      label: g.title,
+      at: g.created_at,
+    })),
+  ]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+    .slice(0, 6);
+
+
   return (
     <div className="space-y-8">
       <header className="space-y-1">
