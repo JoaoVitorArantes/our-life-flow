@@ -2,6 +2,7 @@ import { Search, Plus } from "lucide-react";
 import { useApp } from "@/features/app/app-context";
 import { Button } from "@/components/ui/button";
 import { AvatarMenu } from "@/components/profile/avatar-menu";
+import { MobileMenu } from "./mobile-menu";
 
 export function Header() {
   const { setCommandOpen, setQuickMenuOpen } = useApp();
@@ -29,7 +30,8 @@ export function Header() {
         Novo
       </Button>
 
-      <AvatarMenu compact />
+      <div className="md:hidden"><MobileMenu /></div>
+      <div className="hidden md:block"><AvatarMenu compact /></div>
     </header>
   );
 }
