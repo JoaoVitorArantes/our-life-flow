@@ -38,7 +38,6 @@ export function FinancingDialog({ open, onOpenChange }: Props) {
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
-  const [shared, setShared] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -54,7 +53,6 @@ export function FinancingDialog({ open, onOpenChange }: Props) {
     setAccountId("");
     setCategoryId("");
     setContextId(activeContextId ?? NO_CONTEXT);
-    setShared(false);
   }, [open, activeContextId]);
 
   const parcels = Math.max(1, Math.min(480, Number(count) || 1));
@@ -82,7 +80,7 @@ export function FinancingDialog({ open, onOpenChange }: Props) {
         accountId: accountId || null,
         categoryId: categoryId || null,
         contextId: contextId === NO_CONTEXT ? null : contextId,
-        visibility: shared ? "SHARED" : "PRIVATE",
+        visibility:  "SHARED",
         paidInstallments: paid,
       });
       await queryClient.invalidateQueries({ queryKey: ["financings"] });
@@ -237,10 +235,6 @@ export function FinancingDialog({ open, onOpenChange }: Props) {
             <ContextSelect value={contextId} onChange={setContextId} />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
-            <p className="text-sm font-medium">Compartilhado</p>
-            <Switch checked={shared} onCheckedChange={setShared} />
-          </div>
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar financiamento"}

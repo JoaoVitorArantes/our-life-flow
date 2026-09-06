@@ -71,7 +71,6 @@ export function SimpleRecordDialog({
   const [target, setTarget] = useState("");
   const [content, setContent] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
-  const [shared, setShared] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const config = CONFIG[kind];
@@ -84,7 +83,6 @@ export function SimpleRecordDialog({
       setContent(record.content ?? "");
       setTarget(record.target_amount ? String(Number(record.target_amount)).replace(".", ",") : "");
       setContextId(record.context_id ?? NO_CONTEXT);
-      setShared(record.visibility === "SHARED");
       if (record.starts_at) {
         const start = new Date(record.starts_at);
         setDate(toDateInput(start));
@@ -100,7 +98,6 @@ export function SimpleRecordDialog({
       setTarget("");
       setDate(toDateInput());
       setTime("19:00");
-      setShared(false);
       setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
     }
   }, [open, record, defaultContextId, activeContextId]);
@@ -114,7 +111,7 @@ export function SimpleRecordDialog({
     setSaving(true);
     const shape = {
       title: title.trim(),
-      visibility: shared ? ("SHARED" as const) : ("PRIVATE" as const),
+      visibility: "SHARED" as const,
       context_id: contextId === NO_CONTEXT ? null : contextId,
     };
     const owner = { workspace_id: workspaceId, owner_id: userId };
@@ -222,13 +219,6 @@ export function SimpleRecordDialog({
 
           <ContextSelect value={contextId} onChange={setContextId} />
 
-          <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
-            <div>
-              <p className="text-sm font-medium">Compartilhado</p>
-              <p className="text-xs text-muted-foreground">Visível para o workspace</p>
-            </div>
-            <Switch checked={shared} onCheckedChange={setShared} />
-          </div>
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar"}
