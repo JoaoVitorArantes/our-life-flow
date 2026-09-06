@@ -252,7 +252,7 @@ function Esporte() {
             <ul className="space-y-1.5 text-sm text-muted-foreground">
               <li>
                 {stats.count} {stats.count === 1 ? "atividade" : "atividades"} em {stats.days}{" "}
-                {stats.days === 1 ? "dia" : "dias"} ativos.
+                {stats.days === 1 ? "dia ativo" : "dias ativos"}.
               </li>
               {formatDuration(stats.minutes) ? (
                 <li>Tempo em movimento: {formatDuration(stats.minutes)}.</li>
