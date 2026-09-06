@@ -39,6 +39,14 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   transaction?: Transaction | null;
   defaultContextId?: string | null;
+  /** Valores pré-preenchidos ao criar (usado pelo módulo Compras). */
+  defaults?: {
+    description?: string;
+    amount?: number | null;
+    date?: string | null;
+    categoryId?: string | null;
+  } | null;
+  onCreated?: (transactionId: string) => void | Promise<void>;
 };
 
 export function TransactionDialog({
@@ -47,7 +55,10 @@ export function TransactionDialog({
   onOpenChange,
   transaction,
   defaultContextId,
+  defaults,
+  onCreated,
 }: Props) {
+
   const { workspaceId, userId, memberProfiles, activeContextId } = useApp();
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useAccounts(workspaceId);
@@ -96,12 +107,13 @@ export function TransactionDialog({
       setShared(!!transaction.is_shared);
       setNotes(transaction.notes ?? "");
     } else {
-      setAmount("");
-      setDescription("");
-      setCategoryId("");
+      setAmount(defaults?.amount ? String(Number(defaults.amount)).replace(".", ",") : "");
+      setDescription(defaults?.description ?? "");
+      setCategoryId(defaults?.categoryId ?? "");
       setPayment("");
       setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
-      setDate(toDateInput());
+      setDate(defaults?.date ?? toDateInput());
+
       setStatus("PAID");
       setShared(false);
       setSplitPreset(50);
@@ -255,10 +267,12 @@ export function TransactionDialog({
         queryClient.invalidateQueries({ queryKey: ["transaction_payers"] }),
         queryClient.invalidateQueries({ queryKey: ["transaction_division"] }),
       ]);
+      if (!isEditing && transactionId && onCreated) await onCreated(transactionId);
       toast.success(
         isEditing ? "Lançamento atualizado." : isExpense ? "Despesa registrada." : "Receita registrada.",
       );
       onOpenChange(false);
+
 
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");

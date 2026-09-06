@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp, type QuickActionKind } from "@/features/app/app-context";
 import { useAccounts, useTransactions } from "@/features/finance/queries";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
+import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
 import { goalProgress, movementType, useAllContributions } from "@/features/planner/contributions";
 import { contextEmoji, useContexts } from "@/features/contexts/queries";
 import {
@@ -123,6 +124,15 @@ function Dashboard() {
   const tasks = useMemo(() => tasksQuery.data ?? [], [tasksQuery.data]);
   const contexts = useMemo(() => contextsQuery.data ?? [], [contextsQuery.data]);
   const contributions = contributionsQuery.data ?? [];
+
+  const purchasesQuery = usePurchases(workspaceId);
+  const plannedPurchases = useMemo(
+    () =>
+      (purchasesQuery.data ?? [])
+        .filter((item) => item.status !== "PURCHASED" && item.status !== "DISCARDED")
+        .slice(0, 4),
+    [purchasesQuery.data],
+  );
 
   const finance = useMemo(() => {
     const monthly = transactions.filter((t) => inMonth(t.transaction_date));
@@ -679,6 +689,37 @@ function Dashboard() {
           </ul>
         )}
       </Panel>
+
+      {plannedPurchases.length > 0 ? (
+        <Panel>
+          <PanelTitle
+            action={
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/compras">Ver compras</Link>
+              </Button>
+            }
+          >
+            Compras planejadas
+          </PanelTitle>
+          <ul className="space-y-2">
+            {plannedPurchases.map((purchase) => (
+              <li key={purchase.id} className="flex items-center gap-3 text-sm">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted">
+                  {categoryEmoji(purchase.category)}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{purchase.title}</span>
+                <span className="numeric shrink-0 text-muted-foreground">
+                  {purchase.found_price != null
+                    ? formatCurrency(Number(purchase.found_price))
+                    : purchase.budget_amount != null
+                      ? formatCurrency(Number(purchase.budget_amount))
+                      : "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
 
       <Panel>
         <PanelTitle>Atividade recente</PanelTitle>

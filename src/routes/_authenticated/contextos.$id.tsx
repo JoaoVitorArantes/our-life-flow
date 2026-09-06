@@ -42,6 +42,7 @@ import {
 import { useAccounts, useCards, useCategories, useTransactions } from "@/features/finance/queries";
 import { deleteTransaction, setTransactionStatus } from "@/features/finance/mutations";
 import { useEvents, useGoals, useNotes, useTasks } from "@/features/planner/queries";
+import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
 import { useAllContributions, goalProgress } from "@/features/planner/contributions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, formatDateShort, formatTime } from "@/lib/format";
@@ -109,6 +110,9 @@ function ContextDetail() {
     [goals, id],
   );
   const { data: contributions = [] } = useAllContributions(contextGoals.map((goal) => goal.id));
+
+  const { data: purchases = [] } = usePurchases(workspaceId);
+  const contextPurchases = purchases.filter((purchase) => purchase.context_id === id);
 
   const contextTransactions = transactions.filter((t) => t.context_id === id);
   const contextEvents = events.filter((event) => event.context_id === id);
@@ -793,6 +797,37 @@ function ContextDetail() {
           </Panel>
         </TabsContent>
       </Tabs>
+
+      {contextPurchases.length > 0 ? (
+        <Panel>
+          <PanelTitle
+            action={
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/compras">Ver compras</Link>
+              </Button>
+            }
+          >
+            Compras relacionadas
+          </PanelTitle>
+          <ul className="space-y-2">
+            {contextPurchases.map((purchase) => (
+              <li key={purchase.id} className="flex items-center gap-3 text-sm">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted">
+                  {categoryEmoji(purchase.category)}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{purchase.title}</span>
+                <span className="numeric shrink-0 text-muted-foreground">
+                  {purchase.found_price != null
+                    ? formatCurrency(Number(purchase.found_price))
+                    : purchase.budget_amount != null
+                      ? formatCurrency(Number(purchase.budget_amount))
+                      : "—"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
 
       <ContextDialog open={editOpen} onOpenChange={setEditOpen} context={context} />
 

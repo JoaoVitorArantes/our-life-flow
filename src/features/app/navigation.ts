@@ -9,6 +9,7 @@ import {
   Target,
   StickyNote,
   Compass,
+  ShoppingBag,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -38,7 +39,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/contextos", label: "Contextos", icon: Compass, emoji: "🧭" },
     ],
   },
-  { label: "Dinheiro", items: [{ to: "/financeiro", label: "Financeiro", icon: Wallet, emoji: "💰" }] },
+  {
+    label: "Dinheiro",
+    items: [
+      { to: "/financeiro", label: "Financeiro", icon: Wallet, emoji: "💰" },
+      { to: "/compras", label: "Compras", icon: ShoppingBag, emoji: "🛍️" },
+    ],
+  },
   {
     label: "Desenvolvimento",
     items: [
@@ -64,6 +71,7 @@ export const SECONDARY_NAV: NavItem[] = [
   { to: "/metas", label: "Metas", icon: Target, emoji: "🎯" },
   { to: "/notas", label: "Notas", icon: StickyNote, emoji: "📝" },
   { to: "/contextos", label: "Contextos", icon: Compass, emoji: "🧭" },
+  { to: "/compras", label: "Compras", icon: ShoppingBag, emoji: "🛍️" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [
