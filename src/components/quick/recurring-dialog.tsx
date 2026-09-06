@@ -106,7 +106,7 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
         account_id: source === "account" ? (id ?? null) : null,
         card_id: source === "card" ? (id ?? null) : null,
         context_id: contextId === NO_CONTEXT ? null : contextId,
-        visibility:  "SHARED",
+        visibility: "SHARED" as const,
         is_active: active,
       };
       await saveRecurring(record?.id ?? null, values);
