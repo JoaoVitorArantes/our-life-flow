@@ -145,9 +145,65 @@ export function PurchaseDetail({
             <img
               src={purchase.image_url}
               alt={purchase.title}
-              className="max-h-56 w-full rounded-xl border border-border object-cover"
+              className="max-h-60 w-full rounded-2xl border border-border object-cover"
             />
-          ) : null}
+          ) : (
+            <div className="grid h-32 w-full place-items-center rounded-2xl border border-dashed border-border bg-[radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--primary)_12%,transparent),transparent_70%)] text-4xl">
+              {categoryEmoji(purchase.category)}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-xs font-medium",
+                statusTone(purchase.status),
+              )}
+            >
+              {statusEmoji(purchase.status)} {statusLabel(purchase.status)}
+            </span>
+            <Badge variant="outline" className="gap-1.5">
+              {priorityEmoji(purchase.priority)} {priorityLabel(purchase.priority)}
+            </Badge>
+            <Badge variant="outline" className="gap-1.5">
+              {personEmoji(purchase.person_scope)} {personLabel(purchase.person_scope)}
+            </Badge>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-muted/40 p-4">
+            {purchase.found_price != null ? (
+              <p className="numeric text-2xl font-semibold tracking-tight">
+                {formatCurrency(Number(purchase.found_price))}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">Preço ainda não definido</p>
+            )}
+            {purchase.budget_amount != null ? (
+              <p className="numeric text-xs text-muted-foreground">
+                Orçamento {formatCurrency(Number(purchase.budget_amount))}
+              </p>
+            ) : null}
+            {delta ? (
+              <p className={cn("mt-1 text-sm font-medium", delta.under ? "text-emerald-500" : "text-destructive")}>
+                {formatCurrency(Math.abs(delta.diff))} {delta.under ? "abaixo" : "acima"} do orçamento ·{" "}
+                {delta.percent.toFixed(1).replace(".", ",")}%
+              </p>
+            ) : null}
+            {vibe ? (
+              <p
+                className={cn(
+                  "mt-1 text-xs",
+                  vibe.tone === "good"
+                    ? "text-emerald-500"
+                    : vibe.tone === "warn"
+                      ? "text-destructive"
+                      : "text-muted-foreground",
+                )}
+              >
+                {vibe.text}
+              </p>
+            ) : null}
+          </div>
 
           <div className="space-y-2">
             <Select value={purchase.status} onValueChange={(value) => void changeStatus(value as PurchaseStatus)}>
@@ -157,39 +213,15 @@ export function PurchaseDetail({
               <SelectContent>
                 {PURCHASE_STATUSES.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
-                    {item.label}
+                    {item.emoji} {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Badge variant="outline" className="gap-1.5">
-              <span className={cn("size-1.5 rounded-full", statusDot(purchase.status))} />
-              {statusLabel(purchase.status)}
-            </Badge>
           </div>
 
           <div>
             {purchase.category ? <Row label="Categoria">{categoryLabel(purchase.category)}</Row> : null}
-            <Row label="Prioridade">{priorityLabel(purchase.priority)}</Row>
-            <Row label="Pessoa">{personLabel(purchase.person_scope)}</Row>
-            {purchase.budget_amount != null ? (
-              <Row label="Orçamento">
-                <span className="numeric">{formatCurrency(Number(purchase.budget_amount))}</span>
-              </Row>
-            ) : null}
-            {purchase.found_price != null ? (
-              <Row label="Melhor preço">
-                <span className="numeric">{formatCurrency(Number(purchase.found_price))}</span>
-              </Row>
-            ) : null}
-            {delta ? (
-              <Row label="Diferença">
-                <span className={delta.under ? "text-emerald-500" : "text-destructive"}>
-                  {formatCurrency(Math.abs(delta.diff))} {delta.under ? "abaixo" : "acima"} ·{" "}
-                  {delta.percent.toFixed(1).replace(".", ",")}%
-                </span>
-              </Row>
-            ) : null}
             {purchase.desired_date ? (
               <Row label="Data desejada">{formatDateShort(purchase.desired_date)}</Row>
             ) : null}
@@ -205,8 +237,8 @@ export function PurchaseDetail({
             <Row label="Adicionado por">
               <CreatedBy userId={purchase.created_by} />
             </Row>
-            <Row label="Criado em">{formatDateShort(purchase.created_at)}</Row>
           </div>
+
 
           <div className="flex flex-wrap gap-2">
             {purchase.purchase_url ? (
