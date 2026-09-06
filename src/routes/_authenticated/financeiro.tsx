@@ -95,7 +95,7 @@ type EntityEdit =
 const ALL = "all";
 
 function Financeiro() {
-  const { workspaceId, userId, openQuickAction } = useApp();
+  const { workspaceId, userId, memberProfiles, openQuickAction } = useApp();
   const transactionsQuery = useTransactions(workspaceId);
   const accountsQuery = useAccounts(workspaceId);
   const cardsQuery = useCards(workspaceId);
