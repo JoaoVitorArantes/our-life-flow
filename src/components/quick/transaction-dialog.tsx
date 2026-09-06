@@ -245,7 +245,7 @@ export function TransactionDialog({
           note: description.trim(),
         });
       } else if (transactionId) {
-        await clearDivision(transactionId);
+        await clearDivision(transactionId, workspaceId);
       }
 
       await Promise.all([

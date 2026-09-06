@@ -81,7 +81,7 @@ export function ContributionDialog({
     setSaving(true);
     try {
       if (contribution) {
-        await updateContribution(contribution.id, {
+        await updateContribution(contribution.id, workspaceId, {
           amount: value,
           movementType: type,
           contribution_date: date,

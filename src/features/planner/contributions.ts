@@ -95,6 +95,7 @@ export async function addContribution(input: {
 
 export async function updateContribution(
   id: string,
+  workspaceId: string,
   input: {
     amount: number;
     movementType: GoalMovementType;
@@ -112,11 +113,12 @@ export async function updateContribution(
       contribution_date: input.contribution_date,
       description: input.description ?? null,
     })
+    .eq("workspace_id", workspaceId)
     .eq("id", id);
   if (error) throw error;
 }
 
-export async function deleteContribution(id: string) {
-  const { error } = await supabase.from("goal_contributions").delete().eq("id", id);
+export async function deleteContribution(id: string, workspaceId: string) {
+  const { error } = await supabase.from("goal_contributions").delete().eq("workspace_id", workspaceId).eq("id", id);
   if (error) throw error;
 }

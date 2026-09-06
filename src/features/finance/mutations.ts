@@ -9,12 +9,12 @@ export async function updateTransaction(id: string, values: TablesUpdate<"transa
   if (error) throw error;
 }
 
-export async function deleteTransaction(id: string) {
-  await supabase.from("transaction_splits").delete().eq("transaction_id", id);
-  await supabase.from("transaction_payers").delete().eq("transaction_id", id);
+export async function deleteTransaction(id: string, workspaceId: string) {
+  await supabase.from("transaction_splits").delete().eq("workspace_id", workspaceId).eq("transaction_id", id);
+  await supabase.from("transaction_payers").delete().eq("workspace_id", workspaceId).eq("transaction_id", id);
   // Acertos ainda pendentes deixam de existir junto com a despesa; os pagos viram histórico.
-  await supabase.from("settlements").delete().eq("transaction_id", id).eq("status", "PENDING");
-  const { error } = await supabase.from("transactions").delete().eq("id", id);
+  await supabase.from("settlements").delete().eq("workspace_id", workspaceId).eq("transaction_id", id).eq("status", "PENDING");
+  const { error } = await supabase.from("transactions").delete().eq("workspace_id", workspaceId).eq("id", id);
   if (error) throw error;
 }
 
