@@ -7,6 +7,7 @@ import { PageHeader, Panel, PanelTitle } from "@/components/common/page";
 import { StatCard } from "@/components/common/stat-card";
 import { EmptyState, LoadingState } from "@/components/common/states";
 import { RecordActions } from "@/components/common/record-actions";
+import { CreatedBy } from "@/components/common/created-by";
 import { StatusBadge } from "@/components/finance/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,7 +95,7 @@ type EntityEdit =
 const ALL = "all";
 
 function Financeiro() {
-  const { workspaceId, userId, openQuickAction } = useApp();
+  const { workspaceId, userId, memberProfiles, openQuickAction } = useApp();
   const transactionsQuery = useTransactions(workspaceId);
   const accountsQuery = useAccounts(workspaceId);
   const cardsQuery = useCards(workspaceId);
@@ -118,6 +119,7 @@ function Financeiro() {
   const [sourceFilter, setSourceFilter] = useState(ALL);
   const [contextFilter, setContextFilter] = useState(ALL);
   const [originFilter, setOriginFilter] = useState(ALL);
+  const [ownerFilter, setOwnerFilter] = useState(ALL);
   const [search, setSearch] = useState("");
 
   const transactions = transactionsQuery.data ?? [];
@@ -150,6 +152,7 @@ function Financeiro() {
       if (originFilter === "financing" && !t.financing_id) return false;
       if (originFilter === "single" && (t.installment_plan_id || t.recurring_id || t.loan_id || t.financing_id))
         return false;
+      if (ownerFilter !== ALL && t.owner_id !== ownerFilter) return false;
       if (search && !t.description.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
@@ -162,6 +165,7 @@ function Financeiro() {
     sourceFilter,
     contextFilter,
     originFilter,
+    ownerFilter,
     search,
   ]);
 
@@ -208,6 +212,7 @@ function Financeiro() {
           <p className="truncate text-sm font-medium">{transaction.description}</p>
           <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {formatDateShort(dueDateOf(transaction))} · {categoryName(transaction.category_id)}
+            <CreatedBy userId={transaction.owner_id} />
             <StatusBadge status={status} />
             {transaction.is_shared ? <Badge variant="outline" className="border-primary/40 text-primary">Dividida entre nós</Badge> : null}
             {transaction.is_demo ? <Badge variant="secondary">Demo</Badge> : null}
@@ -371,9 +376,10 @@ function Financeiro() {
                   <li key={t.id} className="flex items-center justify-between gap-3 py-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">✓ {t.description}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         {formatDateShort(t.paid_at ?? t.transaction_date)} ·{" "}
                         {categoryName(t.category_id)} · {sourceName(t)}
+                        <CreatedBy userId={t.owner_id} />
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -384,11 +390,23 @@ function Financeiro() {
                       >
                         {formatCurrency(Number(t.amount))}
                       </span>
-                      {t.owner_id === userId ? (
-                        <Button size="sm" variant="ghost" onClick={() => markPending(t.id)}>
-                          Desfazer
-                        </Button>
-                      ) : null}
+                      <Button size="sm" variant="ghost" onClick={() => markPending(t.id)}>
+                        Desfazer
+                      </Button>
+                      <RecordActions
+                        onEdit={() => setEditingTransaction(t)}
+                        onDelete={() =>
+                          run(
+                            () => deleteTransaction(t.id, workspaceId ?? ""),
+                            ["transactions", "settlements"],
+                            "Lançamento excluído.",
+                          )
+                        }
+                        confirmTitle={
+                          t.type === "INCOME" ? "Excluir esta receita?" : "Excluir esta despesa?"
+                        }
+                        confirmDescription="Essa ação não poderá ser desfeita."
+                      />
                     </div>
                   </li>
                 ))}
@@ -511,6 +529,23 @@ function Financeiro() {
                     <SelectItem value="recurring">Recorrentes</SelectItem>
                     <SelectItem value="loan">Empréstimos</SelectItem>
                     <SelectItem value="financing">Financiamentos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Pessoa</Label>
+                <Select value={ownerFilter} onValueChange={setOwnerFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL}>Todos</SelectItem>
+                    {memberProfiles.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {profile.name || profile.email || "Membro"}
+                        {profile.id === userId ? " (você)" : ""}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
