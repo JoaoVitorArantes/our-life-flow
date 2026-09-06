@@ -35,7 +35,7 @@ export async function syncTransactionSettlement(input: SyncInput) {
   const existing = (data ?? []) as Settlement[];
   const pending = existing.find((item) => item.status === "PENDING") ?? null;
   const paidSigned = existing
-    .filter((item) => item.status === "PAID")
+    .filter((item) => item.status === "SETTLED")
     .reduce(
       (total, item) =>
         total +
@@ -61,7 +61,7 @@ export async function syncTransactionSettlement(input: SyncInput) {
         .eq("id", pending.id);
       if (deleteError) throw deleteError;
     }
-    return { settlement: null, paidHistory: existing.filter((i) => i.status === "PAID") };
+    return { settlement: null, paidHistory: existing.filter((i) => i.status === "SETTLED") };
   }
 
   if (pending) {
@@ -142,7 +142,7 @@ export async function clearDivision(transactionId: string) {
 export async function markSettlementPaid(id: string) {
   const { error } = await supabase
     .from("settlements")
-    .update({ status: "PAID", settled_at: new Date().toISOString() })
+    .update({ status: "SETTLED", settled_at: new Date().toISOString() })
     .eq("id", id);
   if (error) throw error;
 }
@@ -177,7 +177,7 @@ export async function createManualSettlement(input: {
     from_user_id: input.fromUserId,
     to_user_id: input.toUserId,
     amount: round2(input.amount),
-    status: input.paid ? "PAID" : "PENDING",
+    status: input.paid ? "SETTLED" : "PENDING",
     settled_at: input.paid ? new Date().toISOString() : null,
     note: input.note ?? null,
   });

@@ -160,7 +160,7 @@ export function TransactionDialog({
     return { shares, payers, transfer: computeTransfer(shares, payers) };
   }, [shared, splitAmounts, userId, partner, payerMode, myPaid, value]);
 
-  const paidSettlement = division.data?.settlements.find((item) => item.status === "PAID") ?? null;
+  const paidSettlement = division.data?.settlements.find((item) => item.status === "SETTLED") ?? null;
   const nameOf = (id: string) =>
     id === userId
       ? "Você"
