@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/features/app/app-context";
 import { useAccounts, useTransactions } from "@/features/finance/queries";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
+import { goalProgress, useAllContributions } from "@/features/planner/contributions";
 import { contextEmoji, useContexts } from "@/features/contexts/queries";
 import { inMonth, netWorth, totalExpense, totalIncome } from "@/features/finance/calc";
 import { formatCurrency, formatDateLong, formatDateShort, formatTime, greeting } from "@/lib/format";
@@ -50,6 +51,9 @@ function Dashboard() {
     .slice(0, 4);
   const openTasks = (tasksQuery.data ?? []).filter((task) => task.status !== "DONE").slice(0, 5);
   const goals = (goalsQuery.data ?? []).slice(0, 3);
+  const { data: goalContributions = [] } = useAllContributions(
+    (goalsQuery.data ?? []).map((goal) => goal.id),
+  );
   const activeContexts = (contextsQuery.data ?? [])
     .filter((context) => context.status === "ACTIVE" || context.status === "PLANNED")
     .slice(0, 5);
@@ -304,7 +308,7 @@ function Dashboard() {
           <ul className="space-y-4">
             {goals.map((goal) => {
               const target = Number(goal.target_amount ?? 0);
-              const current = Number(goal.current_amount ?? 0);
+              const current = goalProgress(goal, goalContributions);
               const progress = target ? Math.min((current / target) * 100, 100) : 0;
               return (
                 <li key={goal.id} className="space-y-2">
