@@ -347,11 +347,11 @@ function Agenda() {
             </Button>
             {view !== "list" ? (
               <>
-                <Button variant="ghost" size="icon" className="size-8" onClick={() => step(-1)}>
+                <Button variant="ghost" size="icon" className="size-8" aria-label="Período anterior" onClick={() => step(-1)}>
                   <ChevronLeft className="size-4" />
                 </Button>
                 <span className="min-w-[130px] text-center text-sm capitalize">{periodLabel}</span>
-                <Button variant="ghost" size="icon" className="size-8" onClick={() => step(1)}>
+                <Button variant="ghost" size="icon" className="size-8" aria-label="Próximo período" onClick={() => step(1)}>
                   <ChevronRight className="size-4" />
                 </Button>
               </>

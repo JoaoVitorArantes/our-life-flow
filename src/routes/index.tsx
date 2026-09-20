@@ -65,7 +65,7 @@ function Landing() {
         <div className="grid gap-4 sm:grid-cols-3">
           {PILLARS.map((pillar) => (
             <div key={pillar.title} className="rounded-2xl border border-border bg-surface p-5">
-              <p className="text-sm font-medium">{pillar.title}</p>
+              <h2 className="text-sm font-medium">{pillar.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{pillar.text}</p>
             </div>
           ))}

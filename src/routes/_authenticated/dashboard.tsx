@@ -393,7 +393,10 @@ function Dashboard() {
       <header className="flex items-center gap-4">
         <MemberAvatar name={profile?.name} email={profile?.email} src={profile?.avatar_url} className="size-12 ring-primary/20" />
         <div className="min-w-0 space-y-0.5">
-          <h1 className="truncate text-2xl font-semibold sm:text-3xl">{greeting(profile?.name)}</h1>
+          <h1 className="truncate text-2xl font-semibold sm:text-3xl">
+            <span className="sr-only">Dashboard — </span>
+            {greeting(profile?.name)}
+          </h1>
           <p className="text-sm text-muted-foreground">Nossa vida, em um só lugar.</p>
           <p className="text-xs capitalize text-muted-foreground/80">{formatDateLong()}</p>
         </div>
