@@ -107,7 +107,7 @@ function AuthPage() {
           <span className="mx-auto flex size-10 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground">
             L
           </span>
-          <h1 className="text-2xl font-semibold tracking-tight">Life OS</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Entrar no Life OS</h1>
           <p className="text-sm text-muted-foreground">Sua vida, organizada em um só lugar.</p>
         </div>
 
