@@ -92,6 +92,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0B0D10" },
+      {
+        name: "google-site-verification",
+        content: "nqJC2nU2RTu8Y204YA2BTb_NkB_TYVdCdJtO_itklh0",
+      },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "Life OS" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
