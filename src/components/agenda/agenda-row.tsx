@@ -128,7 +128,7 @@ export function AgendaRow({
             {contextEmoji(context.type)} {context.name}
           </Link>
         ) : null}
-        {item.kind === "finance" && !item.done && onPay ? (
+        {item.kind === "finance" && !item.done && !item.id.startsWith("proj-") && onPay ? (
           <Button size="sm" variant="outline" className="h-7" onClick={() => onPay(item)}>
             Pagar
           </Button>
