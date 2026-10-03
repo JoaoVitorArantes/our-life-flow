@@ -1,4 +1,7 @@
 {
+  "id": "/dashboard",
+  "lang": "pt-BR",
+  "dir": "ltr",
   "name": "Life OS",
   "short_name": "Life OS",
   "description": "Finanças, agenda, tarefas e metas em um só lugar.",
@@ -9,9 +12,34 @@
   "background_color": "#0B0D10",
   "theme_color": "#0B0D10",
   "icons": [
-    { "src": "/life-os-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/life-os-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "finance",
+    "productivity",
+    "lifestyle"
   ]
 }
