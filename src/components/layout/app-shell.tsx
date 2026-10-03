@@ -27,7 +27,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         {workspace?.is_demo ? (
           <div role="status" className="sticky top-0 z-30 bg-warning px-4 py-1.5 text-center text-xs font-medium text-warning-foreground">
-            Ambiente de demonstração — todos os dados são fictícios
+            Ambiente de demonstração — todos os dados são fictícios ·{" "}
+            {syncStatus === "connected" ? "Sincronização ao vivo ativa" : syncStatus === "connecting" ? "Conectando sincronização…" : "Sincronização pausada (requer internet)"}
           </div>
         ) : null}
         <Header />
