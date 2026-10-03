@@ -120,7 +120,7 @@ export function RelationshipTime() {
             </div>
           </div>
 
-          <div className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:gap-7">
+          <div className="grid w-full grid-cols-3 gap-2 sm:w-fit sm:self-start sm:gap-10 xl:self-auto xl:gap-7">
             {[
               [duration.years, "anos"],
               [duration.months, "meses"],
