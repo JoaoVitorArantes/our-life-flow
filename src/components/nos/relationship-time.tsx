@@ -44,7 +44,7 @@ export function relationshipDuration(start: Date, now: Date) {
 const pad = (value: number) => String(value).padStart(2, "0");
 
 export function RelationshipTime() {
-  const { memberProfiles, workspace, relationship } = useApp();
+  const { memberProfiles, relationship } = useApp();
   const [now, setNow] = useState(() => new Date());
   const [open, setOpen] = useState(false);
   useEffect(() => {
