@@ -37,6 +37,7 @@ const SECTIONS = [
     { value: "orcamento", label: "Orçamento" },
     { value: "fluxo", label: "Projeção" },
     { value: "relatorios", label: "Relatórios" },
+    { value: "simular", label: "E se...?" },
   ] },
   { id: "contas", label: "Contas e cartões", subs: [
     { value: "contas", label: "Contas" },
@@ -102,6 +103,9 @@ import {
 import { PAYMENT_STATUSES } from "@/features/finance/constants";
 import { useContexts, contextEmoji } from "@/features/contexts/queries";
 import { formatCurrency, formatDateShort } from "@/lib/format";
+import { WhatIf } from "@/components/finance/what-if";
+
+type FinanceSearchParams = { sim?: 1; title?: string; amount?: number; category?: string; context?: string; person?: string };
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
@@ -115,6 +119,14 @@ export const Route = createFileRoute("/_authenticated/financeiro")({
       { property: "og:title", content: "Financeiro — Life OS" },
       { property: "og:description", content: "Suas contas e lançamentos no Life OS." },
     ],
+  }),
+  validateSearch: (s: Record<string, unknown>): FinanceSearchParams => ({
+    sim: s.sim ? 1 : undefined,
+    title: typeof s.title === "string" ? s.title.slice(0, 120) : undefined,
+    amount: Number.isFinite(Number(s.amount)) && Number(s.amount) > 0 ? Number(s.amount) : undefined,
+    category: typeof s.category === "string" ? s.category : undefined,
+    context: typeof s.context === "string" ? s.context : undefined,
+    person: typeof s.person === "string" ? s.person : undefined,
   }),
   component: Financeiro,
 });
@@ -156,7 +168,8 @@ function Financeiro() {
   const [originFilter, setOriginFilter] = useState(ALL);
   const [ownerFilter, setOwnerFilter] = useState(ALL);
   const [search, setSearch] = useState("");
-  const [sub, setSub] = useState("visao");
+  const simSearch = Route.useSearch();
+  const [sub, setSub] = useState(simSearch.sim ? "simular" : "visao");
   const section = SECTIONS.find((sec) => sec.subs.some((item) => item.value === sub)) ?? SECTIONS[0]!;
 
   const transactions = transactionsQuery.data ?? [];
