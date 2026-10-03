@@ -1,4 +1,4 @@
-import type { Account, Recurring, Transaction } from "./queries";
+import type { Account, InvoicePayment, Recurring, Transaction } from "./queries";
 import type { Database } from "@/integrations/supabase/types";
 type RecurrenceFrequency = Database["public"]["Enums"]["recurrence_frequency"];
 import { accountBalance, addMonths, dueDateOf, isOpen, shiftDate, sumBy, todayISO } from "./calc";
@@ -66,12 +66,49 @@ export function getProjectedRecurring(
  * Usa apenas lançamentos reais: limite de cartão, patrimônio investido e acertos
  * entre o casal não entram, e cada parcela/fatura/recorrência conta uma única vez.
  */
+/** Chave da fatura: cartão + vencimento calculado pelo motor de cartão. */
+export const invoiceKey = (cardId: string, dueISO: string) => `${cardId}|${dueISO}`;
+
+/** Total já pago (parcialmente) por fatura. */
+export function paidByInvoice(payments: InvoicePayment[]) {
+  const map = new Map<string, number>();
+  for (const p of payments) {
+    const k = invoiceKey(p.card_id, p.due_date);
+    map.set(k, (map.get(k) ?? 0) + Number(p.amount));
+  }
+  return map;
+}
+
+/**
+ * Abate pagamentos parciais das compras em aberto de cada fatura: as compras da
+ * fatura viram um único compromisso com o valor que ainda falta pagar.
+ */
+export function applyInvoicePayments(open: Transaction[], payments: InvoicePayment[]): Transaction[] {
+  if (!payments.length) return open;
+  const paid = paidByInvoice(payments);
+  const groups = new Map<string, Transaction[]>();
+  const rest: Transaction[] = [];
+  for (const t of open) {
+    const k = t.type === "EXPENSE" && t.card_id ? invoiceKey(t.card_id, dueDateOf(t)) : null;
+    if (k && paid.has(k)) groups.set(k, [...(groups.get(k) ?? []), t]);
+    else rest.push(t);
+  }
+  for (const [k, items] of groups) {
+    const remaining = Math.round((sumBy(items, (t) => Number(t.amount)) - paid.get(k)!) * 100) / 100;
+    if (remaining <= 0) continue;
+    const first = items[0]!;
+    rest.push({ ...first, id: `invoice-${k}`, amount: remaining, description: "Fatura do cartão (restante)", installment_plan_id: null } as Transaction);
+  }
+  return rest;
+}
+
 export function calculateSafeToSpend(
   accounts: Account[],
   transactions: Transaction[],
   horizonDays = 30,
   today = todayISO(),
   recurrences: Recurring[] = [],
+  payments: InvoicePayment[] = [],
 ) {
   const [y, m, d] = today.split("-").map(Number);
   const horizonDate = new Date(y!, m! - 1, d! + horizonDays);
@@ -80,7 +117,10 @@ export function calculateSafeToSpend(
   const available = sumBy(liquid, (a) => accountBalance(a, transactions));
   const projected = getProjectedRecurring(recurrences, transactions, today, horizon);
   const open: Projected[] = [
-    ...transactions.filter((t) => t.status !== "CANCELLED" && isOpen(t) && dueDateOf(t) <= horizon),
+    ...applyInvoicePayments(
+      transactions.filter((t) => t.status !== "CANCELLED" && isOpen(t) && dueDateOf(t) <= horizon),
+      payments,
+    ),
     ...projected.filter((t) => dueDateOf(t) <= horizon),
   ];
   const incomes = open.filter((t) => t.type === "INCOME");

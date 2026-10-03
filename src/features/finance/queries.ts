@@ -61,6 +61,25 @@ export function useFinancings(workspaceId?: string) {
   return useQuery(listQuery<Financing>("financings", "financings", workspaceId));
 }
 
+export type InvoicePayment = Tables<"card_invoice_payments">;
+
+/** Pagamentos (inclusive parciais) de faturas de cartão. */
+export function useInvoicePayments(workspaceId?: string) {
+  return useQuery({
+    queryKey: ["card_invoice_payments", workspaceId],
+    enabled: !!workspaceId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("card_invoice_payments")
+        .select("*")
+        .eq("workspace_id", workspaceId!)
+        .order("paid_at");
+      if (error) throw error;
+      return data as InvoicePayment[];
+    },
+  });
+}
+
 export function useRecurring(workspaceId?: string) {
   return useQuery(
     listQuery<Recurring>("recurring_transactions", "recurring_transactions", workspaceId),

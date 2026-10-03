@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp, type QuickActionKind } from "@/features/app/app-context";
 import { useAccounts, useTransactions } from "@/features/finance/queries";
+import { useSafeToSpend } from "@/features/finance/use-safe-to-spend";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
 import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
 import {
@@ -115,6 +116,7 @@ function Dashboard() {
 
   const transactionsQuery = useTransactions(workspaceId);
   const accountsQuery = useAccounts(workspaceId);
+  const safe = useSafeToSpend(workspaceId);
   const eventsQuery = useEvents(workspaceId);
   const tasksQuery = useTasks(workspaceId);
   const goalsQuery = useGoals(workspaceId);
@@ -477,7 +479,19 @@ function Dashboard() {
 
 
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {safe ? (
+        <Link to="/financeiro" className="block rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Dinheiro livre</p>
+          <p className={cn("numeric mt-1 text-3xl font-semibold", safe.spendable <= 0 && "text-destructive")}>{formatCurrency(safe.spendable)}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {safe.lowest < 0
+              ? `Vocês podem ficar ${formatCurrency(-safe.lowest)} abaixo do necessário antes da próxima entrada.`
+              : `Entradas previstas ${formatCurrency(safe.income)} · compromissos ${formatCurrency(safe.commitments)} nos próximos 30 dias.`}
+          </p>
+        </Link>
+      ) : null}
+
+      <div className="grid grid-cols-1 gap-4 [&>*]:min-w-0 lg:grid-cols-2">
         <Panel>
           <PanelTitle
             action={

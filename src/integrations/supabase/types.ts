@@ -70,6 +70,54 @@ export type Database = {
           },
         ]
       }
+      card_invoice_payments: {
+        Row: {
+          amount: number
+          card_id: string
+          created_at: string
+          created_by: string
+          due_date: string
+          id: string
+          paid_at: string
+          workspace_id: string
+        }
+        Insert: {
+          amount: number
+          card_id: string
+          created_at?: string
+          created_by?: string
+          due_date: string
+          id?: string
+          paid_at?: string
+          workspace_id: string
+        }
+        Update: {
+          amount?: number
+          card_id?: string
+          created_at?: string
+          created_by?: string
+          due_date?: string
+          id?: string
+          paid_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_invoice_payments_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_invoice_payments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cards: {
         Row: {
           closing_day: number | null

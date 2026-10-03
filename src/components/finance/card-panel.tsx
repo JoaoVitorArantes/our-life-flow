@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CalendarDays, CreditCard, Receipt } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RecordActions } from "@/components/common/record-actions";
 import { CreatedBy } from "@/components/common/created-by";
 import { StatusBadge } from "@/components/finance/status-badge";
@@ -27,6 +28,9 @@ type Props = {
   onEdit: () => void;
   onDelete: () => void;
   onPayInvoice: (items: Transaction[]) => void;
+  /** Pagamentos já registrados por vencimento de fatura (YYYY-MM-DD → valor). */
+  paidFor?: (dueISO: string) => number;
+  onPartialPay?: (amount: number, dueISO: string) => void;
 };
 
 function relativeLabel(dateISO: string, today: string, verb: string) {
@@ -47,8 +51,12 @@ export function CardPanel({
   onEdit,
   onDelete,
   onPayInvoice,
+  paidFor,
+  onPartialPay,
 }: Props) {
   const [showPurchases, setShowPurchases] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
+  const [payValue, setPayValue] = useState("");
   const today = todayISO();
   const hasClosing = !!card.closing_day;
   const hasDue = !!card.due_day;
@@ -68,7 +76,7 @@ export function CardPanel({
     sumBy(
       active.filter((t) => t.status !== "PAID"),
       (t) => Number(t.amount),
-    ),
+    ) - (hasDue && paidFor ? paidFor(cardDueDate(cycles.current.end, card.due_day!)) : 0),
   );
   const limit = Number(card.credit_limit) || 0;
   const available = Math.max(0, limit - used);
@@ -77,10 +85,12 @@ export function CardPanel({
   const closingISO = cycles.current.end;
   const dueISO = hasDue ? cardDueDate(closingISO, card.due_day!) : null;
   const openItems = invoice.filter((t) => t.status !== "PAID");
+  const partialPaid = dueISO && paidFor ? paidFor(dueISO) : 0;
+  const openTotal = Math.max(0, Math.round((sumBy(openItems, (t) => Number(t.amount)) - partialPaid) * 100) / 100);
 
   const invoiceStatus = !invoice.length
     ? "Sem compras"
-    : !openItems.length
+    : !openItems.length || openTotal <= 0
       ? "Paga"
       : today <= closingISO
         ? "Aberta"
@@ -152,6 +162,11 @@ export function CardPanel({
         <div className="rounded-lg bg-elevated p-2">
           <p className="text-muted-foreground">Fatura atual</p>
           <p className="numeric text-sm">{formatCurrency(invoiceTotal)}</p>
+          {partialPaid > 0 ? (
+            <p className="text-[10px] text-muted-foreground">
+              Pago {formatCurrency(partialPaid)} · falta {formatCurrency(openTotal)}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -191,12 +206,45 @@ export function CardPanel({
         <Button size="sm" variant="outline" onClick={() => setShowPurchases((value) => !value)}>
           {showPurchases ? "Ocultar compras" : `Ver compras (${invoice.length})`}
         </Button>
-        {openItems.length ? (
-          <Button size="sm" variant="ghost" onClick={() => onPayInvoice(openItems)}>
+        {openItems.length && openTotal > 0 ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setPayValue(openTotal.toFixed(2).replace(".", ","));
+              setPayOpen((v) => !v);
+            }}
+          >
             Pagar fatura
           </Button>
         ) : null}
       </div>
+      {payOpen && openTotal > 0 ? (
+        <div className="mt-3 flex flex-wrap items-end gap-2 rounded-lg bg-elevated p-3 text-xs">
+          <label className="space-y-1">
+            <span className="text-muted-foreground">Quanto vocês pagaram? (falta {formatCurrency(openTotal)})</span>
+            <Input
+              inputMode="decimal"
+              aria-label="Valor pago da fatura"
+              className="h-9 w-36"
+              value={payValue}
+              onChange={(e) => setPayValue(e.target.value)}
+            />
+          </label>
+          <Button
+            size="sm"
+            onClick={() => {
+              const value = Number(payValue.replace(/\./g, "").replace(",", "."));
+              if (!(value > 0)) return;
+              setPayOpen(false);
+              if (value >= openTotal - 0.009 || !dueISO || !onPartialPay) onPayInvoice(openItems);
+              else onPartialPay(value, dueISO);
+            }}
+          >
+            Confirmar
+          </Button>
+        </div>
+      ) : null}
 
       {showPurchases ? (
         invoice.length ? (

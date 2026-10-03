@@ -3,6 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { invoiceKey, paidByInvoice } from "@/features/finance/safe-to-spend";
 import { PageHeader, Panel, PanelTitle } from "@/components/common/page";
 import { StatCard } from "@/components/common/stat-card";
 import { EmptyState, LoadingState } from "@/components/common/states";
@@ -63,6 +65,7 @@ import {
   useLoans,
   useFinancings,
   useRecurring,
+  useInvoicePayments,
   type Account,
   type Card as CardRecord,
   type Category,
@@ -133,6 +136,9 @@ function Financeiro() {
   const loansQuery = useLoans(workspaceId);
   const financingsQuery = useFinancings(workspaceId);
   const recurringQuery = useRecurring(workspaceId);
+  const paymentsQuery = useInvoicePayments(workspaceId);
+  const invoicePayments = useMemo(() => paymentsQuery.data ?? [], [paymentsQuery.data]);
+  const paidMap = useMemo(() => paidByInvoice(invoicePayments), [invoicePayments]);
   const contextsQuery = useContexts(workspaceId);
   const queryClient = useQueryClient();
 
@@ -330,7 +336,7 @@ function Financeiro() {
         {section.id === "movimentacoes" ? <div className="pt-4"><FinanceSearch transactions={transactions} categories={categories} /></div> : null}
 
         <TabsContent value="visao" className="pt-2">
-          <FinanceCockpit accounts={accounts} transactions={transactions} categories={categories} recurrences={recurrences} onNavigate={setSub} />
+          <FinanceCockpit accounts={accounts} transactions={transactions} categories={categories} recurrences={recurrences} payments={invoicePayments} onNavigate={setSub} />
         </TabsContent>
         <TabsContent value="relatorios" className="pt-6">
           <ReportsPanel transactions={transactions} categories={categories} accounts={accounts} memberName={(id) => memberProfiles.find((m) => m.id === id)?.name || (id === userId ? "Você" : "Membro")} />
@@ -1112,6 +1118,19 @@ function Financeiro() {
                         },
                         ["transactions"],
                         "Fatura paga.",
+                      )
+                    }
+                    paidFor={(due) => paidMap.get(invoiceKey(card.id, due)) ?? 0}
+                    onPartialPay={(amount, due) =>
+                      run(
+                        async () => {
+                          const { error } = await supabase
+                            .from("card_invoice_payments")
+                            .insert({ workspace_id: workspaceId!, card_id: card.id, due_date: due, amount });
+                          if (error) throw error;
+                        },
+                        ["card_invoice_payments"],
+                        "Pagamento parcial registrado.",
                       )
                     }
                   />
