@@ -192,6 +192,9 @@ export function FinanceCockpit({ accounts, transactions, categories, recurrences
           <Button size="sm" variant="outline" onClick={() => setShowCalc((v) => !v)}>
             Ver cálculo <ChevronDown className={cn("ml-1 size-4 transition-transform", showCalc && "rotate-180")} />
           </Button>
+          <Button size="sm" variant="secondary" onClick={() => onNavigate("simular")}>
+            <Sparkles className="mr-1 size-4" /> Simular
+          </Button>
           <Button size="sm" onClick={() => setSimOpen((v) => !v)}>
             <Calculator className="mr-1 size-4" /> Simular gasto
           </Button>
