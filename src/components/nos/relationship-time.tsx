@@ -72,6 +72,11 @@ export function RelationshipTime() {
       </div>
     );
   }
+  const durationLabel = [
+    duration.years ? `${duration.years} ${duration.years === 1 ? "ano" : "anos"}` : null,
+    duration.months ? `${duration.months} ${duration.months === 1 ? "mês" : "meses"}` : null,
+    `${duration.days} ${duration.days === 1 ? "dia" : "dias"}`,
+  ].filter(Boolean).join(" · ");
   const longDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric" }).format(start);
   const shortDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(start);
 
@@ -100,14 +105,14 @@ export function RelationshipTime() {
             <span className="truncate">{names.join(" + ") || "Nossa história"}</span>
           </p>
           <p className="truncate text-xs text-muted-foreground">Juntos desde {longDate}</p>
+          <p className="mt-1 flex items-baseline gap-2 sm:hidden">
+            <span className="numeric text-sm font-semibold text-foreground">{durationLabel}</span>
+            <span className="numeric font-mono text-[11px] text-muted-foreground tabular-nums">{pad(duration.hours)}:{pad(duration.minutes)}:{pad(duration.seconds)}</span>
+          </p>
         </div>
-        <div className="shrink-0 text-right">
+        <div className="hidden shrink-0 text-right sm:block">
           <p className="numeric text-sm font-semibold text-foreground sm:text-base">
-            {[
-              duration.years ? `${duration.years} ${duration.years === 1 ? "ano" : "anos"}` : null,
-              duration.months ? `${duration.months} ${duration.months === 1 ? "mês" : "meses"}` : null,
-              `${duration.days} ${duration.days === 1 ? "dia" : "dias"}`,
-            ].filter(Boolean).join(" · ")}
+            {durationLabel}
           </p>
           <p className="numeric font-mono text-[11px] text-muted-foreground tabular-nums">
             {pad(duration.hours)}:{pad(duration.minutes)}:{pad(duration.seconds)}
