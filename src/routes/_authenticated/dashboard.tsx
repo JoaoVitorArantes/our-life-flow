@@ -24,8 +24,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp, type QuickActionKind } from "@/features/app/app-context";
-import { useAccounts, useTransactions } from "@/features/finance/queries";
+import { useAccounts, useInvoicePayments, useTransactions } from "@/features/finance/queries";
 import { useSafeToSpend } from "@/features/finance/use-safe-to-spend";
+import { applyInvoicePayments } from "@/features/finance/safe-to-spend";
 import { useEvents, useGoals, useTasks } from "@/features/planner/queries";
 import { categoryEmoji, usePurchases } from "@/features/purchases/queries";
 import {
@@ -117,6 +118,8 @@ function Dashboard() {
   const transactionsQuery = useTransactions(workspaceId);
   const accountsQuery = useAccounts(workspaceId);
   const safe = useSafeToSpend(workspaceId);
+  const invoicePaymentsQuery = useInvoicePayments(workspaceId);
+  const invoicePayments = useMemo(() => invoicePaymentsQuery.data ?? [], [invoicePaymentsQuery.data]);
   const eventsQuery = useEvents(workspaceId);
   const tasksQuery = useTasks(workspaceId);
   const goalsQuery = useGoals(workspaceId);
@@ -153,9 +156,10 @@ function Dashboard() {
 
   const finance = useMemo(() => {
     const monthly = transactions.filter((t) => inMonth(t.transaction_date));
-    const open = transactions
-      .filter((t) => t.type === "EXPENSE" && isOpen(t))
-      .sort((a, b) => dueDateOf(a).localeCompare(dueDateOf(b)));
+    const open = applyInvoicePayments(
+      transactions.filter((t) => t.type === "EXPENSE" && isOpen(t)),
+      invoicePayments,
+    ).sort((a, b) => dueDateOf(a).localeCompare(dueDateOf(b)));
     const overdue = open.filter((t) => statusOf(t) === "OVERDUE");
     const today = todayISO();
     const limit = new Date();
@@ -173,7 +177,7 @@ function Dashboard() {
       weekTotal: nextWeek.reduce((sum, t) => sum + Number(t.amount), 0),
       weekCount: nextWeek.length,
     };
-  }, [transactions, accounts]);
+  }, [transactions, accounts, invoicePayments]);
 
   const upcomingEvents = useMemo(() => {
     const from = new Date(new Date().toDateString()).getTime();
@@ -528,14 +532,20 @@ function Dashboard() {
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
                       <span className="numeric text-sm">{formatCurrency(Number(item.amount))}</span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={busyPay === item.id}
-                        onClick={() => void payNow(item.id)}
-                      >
-                        Pagar
-                      </Button>
+                      {item.id.startsWith("invoice-") ? (
+                        <Button size="sm" variant="outline" asChild>
+                          <Link to="/financeiro">Pagar</Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busyPay === item.id}
+                          onClick={() => void payNow(item.id)}
+                        >
+                          Pagar
+                        </Button>
+                      )}
                     </div>
                   </li>
                 );
