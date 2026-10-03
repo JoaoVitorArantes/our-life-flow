@@ -26,14 +26,24 @@ export function AppShell({ children }: { children: ReactNode }) {
       />
       <div className="flex min-w-0 flex-1 flex-col">
         {workspace?.is_demo ? (
-          <div role="status" className="sticky top-0 z-30 bg-warning px-4 py-1.5 text-center text-xs font-medium text-warning-foreground">
+          <div
+            role="status"
+            className="sticky top-0 z-30 bg-warning px-4 py-1.5 text-center text-xs font-medium text-warning-foreground"
+          >
             Ambiente de demonstração — todos os dados são fictícios ·{" "}
-            {syncStatus === "connected" ? "Sincronização ao vivo ativa" : syncStatus === "connecting" ? "Conectando sincronização…" : "Sincronização pausada (requer internet)"}
+            {syncStatus === "connected"
+              ? "Sincronização ao vivo ativa"
+              : syncStatus === "connecting"
+                ? "Conectando sincronização…"
+                : "Sincronização pausada (requer internet)"}
           </div>
         ) : null}
         <Header />
         {syncStatus === "reconnecting" || syncStatus === "unavailable" ? (
-          <div role="status" className="border-b border-border bg-muted px-4 py-1 text-center text-xs text-muted-foreground">
+          <div
+            role="status"
+            className="border-b border-border bg-muted px-4 py-1 text-center text-xs text-muted-foreground"
+          >
             {syncStatus === "reconnecting"
               ? "Reconectando a sincronização… os dados serão atualizados ao voltar."
               : "Sincronização em tempo real indisponível — os dados atualizam ao reabrir o app."}

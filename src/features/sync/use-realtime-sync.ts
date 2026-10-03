@@ -32,10 +32,14 @@ export function useRealtimeSync(workspaceId: string | undefined) {
       if (!active) return;
       const tables = [...pending];
       pending.clear();
-      if (tables.some((t) => WORKSPACE_TABLES.has(t))) void queryClient.invalidateQueries({ queryKey: ["workspace"] });
-      if (tables.some((t) => AI_TABLES.has(t))) void queryClient.invalidateQueries({ queryKey: ["ai_conversations"] });
+      if (tables.some((t) => WORKSPACE_TABLES.has(t)))
+        void queryClient.invalidateQueries({ queryKey: ["workspace"] });
+      if (tables.some((t) => AI_TABLES.has(t)))
+        void queryClient.invalidateQueries({ queryKey: ["ai_conversations"] });
       if (tables.some((t) => !WORKSPACE_TABLES.has(t) && !AI_TABLES.has(t))) {
-        void queryClient.invalidateQueries({ predicate: (q) => !NEVER_INVALIDATE.has(String(q.queryKey[0])) });
+        void queryClient.invalidateQueries({
+          predicate: (q) => !NEVER_INVALIDATE.has(String(q.queryKey[0])),
+        });
       }
     };
     const onChange = (table: string) => {
@@ -47,7 +51,12 @@ export function useRealtimeSync(workspaceId: string | undefined) {
       .channel(`ws-sync:${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "workspace_sync_events", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "workspace_sync_events",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         (payload) => {
           const row = payload.new as { workspace_id?: string; table_name?: string };
           if (row.workspace_id !== workspaceId || !row.table_name) return;
