@@ -47,7 +47,7 @@ export const interpretationSchema = z.object({
 export type Interpretation = z.infer<typeof interpretationSchema>;
 
 export async function interpret(system: string, messages: ModelMessage[], signal?: AbortSignal): Promise<Interpretation> {
-  const apiKey = process.env.LOVABLE_API_KEY;
+  const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("A IA não está configurada.");
   const provider = createOpenAI({
     baseURL: "https://ai.gateway.lovable.dev/v1",
@@ -57,9 +57,8 @@ export async function interpret(system: string, messages: ModelMessage[], signal
   });
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
-    system,
-    messages,
-    abortSignal: signal,
+    messages: [{ role: "system", content: system }, ...messages],
+    ...(signal ? { abortSignal: signal } : {}),
     output: Output.object({ schema: interpretationSchema }),
     providerOptions: {
       openai: {
