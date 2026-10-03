@@ -9,7 +9,7 @@ import { simulate, type Base, type Scenario, type ScenarioKind, type SimResult }
 import type { Card, Category, Recurring } from "@/features/finance/queries";
 
 type Ctx = { id: string; name: string; budget_amount: number | null };
-export type WhatIfPrefill = { title?: string; amount?: number; categoryId?: string; contextId?: string; person?: string };
+export type WhatIfPrefill = { title?: string | undefined; amount?: number | undefined; categoryId?: string | undefined; contextId?: string | undefined; person?: string | undefined };
 
 const KINDS: { value: ScenarioKind | "other"; label: string; emoji: string }[] = [
   { value: "purchase", label: "Nova compra", emoji: "🛍️" },
@@ -83,7 +83,7 @@ type Props = Base & {
   categories: Category[];
   contexts: Ctx[];
   members: { id: string; name: string }[];
-  prefill?: WhatIfPrefill;
+  prefill?: WhatIfPrefill | undefined;
 };
 
 export function WhatIf(props: Props) {
@@ -305,7 +305,7 @@ function Row({ k, v }: { k: string; v: React.ReactNode }) {
   return <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{k}</dt><dd className="text-right font-medium tabular-nums">{v}</dd></div>;
 }
 
-function ResultView({ title, r, draft, contexts, transactions }: { title?: string; r: SimResult; draft: Draft; contexts: Ctx[]; transactions: Base["transactions"] }) {
+function ResultView({ title, r, draft, contexts, transactions }: { title?: string | undefined; r: SimResult; draft: Draft; contexts: Ctx[]; transactions: Base["transactions"] }) {
   const ctx = draft.contextId !== NONE ? contexts.find((c) => c.id === draft.contextId) : undefined;
   const ctxSpent = ctx ? transactions.filter((t) => t.context_id === ctx.id && t.type === "EXPENSE" && t.status !== "CANCELLED").reduce((s, t) => s + Number(t.amount), 0) : 0;
   const simAmount = num(draft.amount);

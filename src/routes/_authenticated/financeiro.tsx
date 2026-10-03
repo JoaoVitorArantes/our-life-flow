@@ -105,7 +105,7 @@ import { useContexts, contextEmoji } from "@/features/contexts/queries";
 import { formatCurrency, formatDateShort } from "@/lib/format";
 import { WhatIf } from "@/components/finance/what-if";
 
-type FinanceSearchParams = { sim?: 1; title?: string; amount?: number; category?: string; context?: string; person?: string };
+type FinanceSearchParams = { sim?: 1 | undefined; title?: string | undefined; amount?: number | undefined; category?: string | undefined; context?: string | undefined; person?: string | undefined };
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
@@ -121,12 +121,12 @@ export const Route = createFileRoute("/_authenticated/financeiro")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>): FinanceSearchParams => ({
-    sim: s.sim ? 1 : undefined,
-    title: typeof s.title === "string" ? s.title.slice(0, 120) : undefined,
-    amount: Number.isFinite(Number(s.amount)) && Number(s.amount) > 0 ? Number(s.amount) : undefined,
-    category: typeof s.category === "string" ? s.category : undefined,
-    context: typeof s.context === "string" ? s.context : undefined,
-    person: typeof s.person === "string" ? s.person : undefined,
+    sim: s["sim"] ? 1 : undefined,
+    title: typeof s["title"] === "string" ? s["title"].slice(0, 120) : undefined,
+    amount: Number.isFinite(Number(s["amount"])) && Number(s["amount"]) > 0 ? Number(s["amount"]) : undefined,
+    category: typeof s["category"] === "string" ? s["category"] : undefined,
+    context: typeof s["context"] === "string" ? s["context"] : undefined,
+    person: typeof s["person"] === "string" ? s["person"] : undefined,
   }),
   component: Financeiro,
 });
