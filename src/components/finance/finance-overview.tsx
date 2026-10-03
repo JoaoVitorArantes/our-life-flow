@@ -578,3 +578,49 @@ export function FinanceCalendar({ transactions }: { transactions: Transaction[] 
     </div>
   );
 }
+
+/** Busca rápida em todo o Financeiro: descrição, observações, categoria ou valor. */
+export function FinanceSearch({ transactions, categories }: { transactions: Transaction[]; categories: Category[] }) {
+  const [q, setQ] = useState("");
+  const term = q.trim().toLowerCase();
+  const catName = (id: string | null) => categories.find((c) => c.id === id)?.name ?? "";
+  const results = term.length < 2 ? [] : transactions
+    .filter((t) => {
+      const value = amt(t).toFixed(2).replace(".", ",");
+      return [t.description, t.notes ?? "", catName(t.category_id), value].some((s) => s.toLowerCase().includes(term));
+    })
+    .slice(0, 12);
+  return (
+    <div className="relative">
+      <Input
+        type="search"
+        placeholder="Buscar em todo o Financeiro (descrição, categoria, valor…)"
+        aria-label="Buscar no Financeiro"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+      />
+      {term.length >= 2 ? (
+        <div className="absolute z-20 mt-1 max-h-80 w-full overflow-y-auto rounded-xl border border-border bg-popover p-1 shadow-lg">
+          {results.length ? (
+            results.map((t) => (
+              <div key={t.id} className="flex justify-between gap-3 rounded-lg px-3 py-2 text-sm hover:bg-elevated">
+                <span className="min-w-0">
+                  <span className="block truncate">{t.description}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDateShort(t.transaction_date)} · {catName(t.category_id) || "Sem categoria"} · {isSettled(t) ? "pago" : t.status === "CANCELLED" ? "cancelado" : "pendente"}
+                  </span>
+                </span>
+                <span className={cn("numeric shrink-0", t.type === "INCOME" && "text-success")}>
+                  {t.type === "INCOME" ? "+" : t.type === "EXPENSE" ? "−" : ""}
+                  {formatCurrency(amt(t))}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="px-3 py-2 text-sm text-muted-foreground">Nada encontrado.</p>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
