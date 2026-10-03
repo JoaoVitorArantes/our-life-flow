@@ -11,3 +11,7 @@
 - [x] Executar compilação e produzir relatório final
 - [x] Adicionar menu mobile completo pelo avatar sem alterar a navegação desktop
 - [x] Tornar o Life OS AI uma camada global com painel contextual, histórico e atalho Ctrl+J
+- [x] Sincronização em tempo real entre aparelhos (Realtime por workspace + invalidação do cache)
+- [x] Workspace de demonstração marcado só por administrador, com preparar/resetar atômicos no banco
+- [x] Guia da feira em docs/feira-demo.md
+- [ ] Android/Google Play (aguardando application ID, conta Play Console e keystore)
