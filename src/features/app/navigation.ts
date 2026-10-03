@@ -11,6 +11,8 @@ import {
   Compass,
   ShoppingBag,
   Settings,
+  Sun,
+  Repeat,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,6 +29,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Visão geral",
     items: [
+      { to: "/meu-dia", label: "Meu Dia", icon: Sun, emoji: "☀️" },
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, emoji: "🏠" },
       { to: "/nos", label: "Leitura de Nós", icon: Heart, emoji: "💜" },
     ],
@@ -36,6 +39,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/agenda", label: "Agenda", icon: CalendarDays, emoji: "📅" },
       { to: "/tarefas", label: "Tarefas", icon: CheckSquare, emoji: "✅" },
+      { to: "/rotinas", label: "Rotinas & Hábitos", icon: Repeat, emoji: "🌱" },
       { to: "/contextos", label: "Contextos", icon: Compass, emoji: "🧭" },
     ],
   },
