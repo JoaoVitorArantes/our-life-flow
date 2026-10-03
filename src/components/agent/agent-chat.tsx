@@ -103,6 +103,7 @@ export function AgentChat({
     onError: (e) => toast.error(e.message || "Não consegui responder agora."),
     onFinish: () => {
       void queryClient.invalidateQueries({ queryKey: ["ai_conversations"] });
+      void queryClient.invalidateQueries({ queryKey: ["ai_conversation", threadId] });
     },
   });
   const busy = status === "submitted" || status === "streaming";

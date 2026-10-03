@@ -30,6 +30,8 @@ import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticate
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
 import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
+import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox.index'
+import { Route as AuthenticatedInboxThreadIdRouteImport } from './routes/_authenticated/inbox.$threadId'
 import { Route as AuthenticatedMetasIdRouteImport } from './routes/_authenticated/metas.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -139,6 +141,17 @@ const AuthenticatedContextosIdRoute =
     path: '/contextos/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInboxIndexRoute = AuthenticatedInboxIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedInboxRoute,
+} as any)
+const AuthenticatedInboxThreadIdRoute =
+  AuthenticatedInboxThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedInboxRoute,
+  } as any)
 const AuthenticatedMetasIdRoute = AuthenticatedMetasIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -156,7 +169,7 @@ export interface FileRoutesByFullPath {
   '/esporte': typeof AuthenticatedEsporteRoute
   '/faculdade': typeof AuthenticatedFaculdadeRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
-  '/inbox': typeof AuthenticatedInboxRoute
+  '/inbox': typeof AuthenticatedInboxRouteWithChildren
   '/metas': typeof AuthenticatedMetasRouteWithChildren
   '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
@@ -165,8 +178,10 @@ export interface FileRoutesByFullPath {
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
+  '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
   '/contextos/': typeof AuthenticatedContextosIndexRoute
+  '/inbox/': typeof AuthenticatedInboxIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -179,7 +194,6 @@ export interface FileRoutesByTo {
   '/esporte': typeof AuthenticatedEsporteRoute
   '/faculdade': typeof AuthenticatedFaculdadeRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
-  '/inbox': typeof AuthenticatedInboxRoute
   '/metas': typeof AuthenticatedMetasRouteWithChildren
   '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
@@ -188,8 +202,10 @@ export interface FileRoutesByTo {
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
+  '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
   '/contextos': typeof AuthenticatedContextosIndexRoute
+  '/inbox': typeof AuthenticatedInboxIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -204,7 +220,7 @@ export interface FileRoutesById {
   '/_authenticated/esporte': typeof AuthenticatedEsporteRoute
   '/_authenticated/faculdade': typeof AuthenticatedFaculdadeRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
-  '/_authenticated/inbox': typeof AuthenticatedInboxRoute
+  '/_authenticated/inbox': typeof AuthenticatedInboxRouteWithChildren
   '/_authenticated/metas': typeof AuthenticatedMetasRouteWithChildren
   '/_authenticated/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/_authenticated/nos': typeof AuthenticatedNosRoute
@@ -213,8 +229,10 @@ export interface FileRoutesById {
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
   '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
+  '/_authenticated/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/_authenticated/metas/$id': typeof AuthenticatedMetasIdRoute
   '/_authenticated/contextos/': typeof AuthenticatedContextosIndexRoute
+  '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -238,8 +256,10 @@ export interface FileRouteTypes {
     | '/tarefas'
     | '/api/agent'
     | '/contextos/$id'
+    | '/inbox/$threadId'
     | '/metas/$id'
     | '/contextos/'
+    | '/inbox/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -252,7 +272,6 @@ export interface FileRouteTypes {
     | '/esporte'
     | '/faculdade'
     | '/financeiro'
-    | '/inbox'
     | '/metas'
     | '/meu-dia'
     | '/nos'
@@ -261,8 +280,10 @@ export interface FileRouteTypes {
     | '/tarefas'
     | '/api/agent'
     | '/contextos/$id'
+    | '/inbox/$threadId'
     | '/metas/$id'
     | '/contextos'
+    | '/inbox'
   id:
     | '__root__'
     | '/'
@@ -285,8 +306,10 @@ export interface FileRouteTypes {
     | '/_authenticated/tarefas'
     | '/api/agent'
     | '/_authenticated/contextos/$id'
+    | '/_authenticated/inbox/$threadId'
     | '/_authenticated/metas/$id'
     | '/_authenticated/contextos/'
+    | '/_authenticated/inbox/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -446,6 +469,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContextosIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inbox/': {
+      id: '/_authenticated/inbox/'
+      path: '/'
+      fullPath: '/inbox/'
+      preLoaderRoute: typeof AuthenticatedInboxIndexRouteImport
+      parentRoute: typeof AuthenticatedInboxRoute
+    }
+    '/_authenticated/inbox/$threadId': {
+      id: '/_authenticated/inbox/$threadId'
+      path: '/$threadId'
+      fullPath: '/inbox/$threadId'
+      preLoaderRoute: typeof AuthenticatedInboxThreadIdRouteImport
+      parentRoute: typeof AuthenticatedInboxRoute
+    }
     '/_authenticated/metas/$id': {
       id: '/_authenticated/metas/$id'
       path: '/$id'
@@ -455,6 +492,19 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedInboxRouteChildren {
+  AuthenticatedInboxThreadIdRoute: typeof AuthenticatedInboxThreadIdRoute
+  AuthenticatedInboxIndexRoute: typeof AuthenticatedInboxIndexRoute
+}
+
+const AuthenticatedInboxRouteChildren: AuthenticatedInboxRouteChildren = {
+  AuthenticatedInboxThreadIdRoute: AuthenticatedInboxThreadIdRoute,
+  AuthenticatedInboxIndexRoute: AuthenticatedInboxIndexRoute,
+}
+
+const AuthenticatedInboxRouteWithChildren =
+  AuthenticatedInboxRoute._addFileChildren(AuthenticatedInboxRouteChildren)
 
 interface AuthenticatedMetasRouteChildren {
   AuthenticatedMetasIdRoute: typeof AuthenticatedMetasIdRoute
@@ -475,7 +525,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEsporteRoute: typeof AuthenticatedEsporteRoute
   AuthenticatedFaculdadeRoute: typeof AuthenticatedFaculdadeRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
-  AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
+  AuthenticatedInboxRoute: typeof AuthenticatedInboxRouteWithChildren
   AuthenticatedMetasRoute: typeof AuthenticatedMetasRouteWithChildren
   AuthenticatedMeuDiaRoute: typeof AuthenticatedMeuDiaRoute
   AuthenticatedNosRoute: typeof AuthenticatedNosRoute
@@ -494,7 +544,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEsporteRoute: AuthenticatedEsporteRoute,
   AuthenticatedFaculdadeRoute: AuthenticatedFaculdadeRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
-  AuthenticatedInboxRoute: AuthenticatedInboxRoute,
+  AuthenticatedInboxRoute: AuthenticatedInboxRouteWithChildren,
   AuthenticatedMetasRoute: AuthenticatedMetasRouteWithChildren,
   AuthenticatedMeuDiaRoute: AuthenticatedMeuDiaRoute,
   AuthenticatedNosRoute: AuthenticatedNosRoute,
