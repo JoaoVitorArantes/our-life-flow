@@ -14,4 +14,13 @@
 - [x] Sincronização em tempo real entre aparelhos (Realtime por workspace + invalidação do cache)
 - [x] Workspace de demonstração marcado só por administrador, com preparar/resetar atômicos no banco
 - [x] Guia da feira em docs/feira-demo.md
-- [ ] Android/Google Play (aguardando application ID, conta Play Console e keystore)
+- [x] Sincronização segura por workspace (sinais mínimos com RLS; exclusões sem vazar ids)
+- [x] Demo cobre Compras, Atividades e Rotinas; preparar/resetar atômicos
+- [x] Projeto Android (TWA) com application ID com.joaovitorarantes.lifeos e guia docs/android-play.md
+- [ ] Conta Google Play Console e verificação de identidade (dono)
+- [ ] Chave de upload / Play App Signing e SHA-256 no assetlinks.json (dono)
+- [ ] Publicar /.well-known/assetlinks.json no domínio final (após SHA-256)
+- [ ] Confirmar domínio final e URLs de retorno do login Google (dono)
+- [ ] Verificar build com Android Studio/Gradle e target API 36 aceito pela Play
+- [ ] Ficha da loja, política de privacidade, exclusão de conta e Segurança dos dados
+- [ ] Teste fechado (12 testadores por 14 dias, se conta pessoal nova)
