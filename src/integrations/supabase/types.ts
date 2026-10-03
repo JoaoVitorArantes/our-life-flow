@@ -975,6 +975,7 @@ export type Database = {
           distance_km: number | null
           duration_minutes: number | null
           id: string
+          is_demo: boolean
           location: string | null
           notes: string | null
           person_scope: string
@@ -993,6 +994,7 @@ export type Database = {
           distance_km?: number | null
           duration_minutes?: number | null
           id?: string
+          is_demo?: boolean
           location?: string | null
           notes?: string | null
           person_scope?: string
@@ -1011,6 +1013,7 @@ export type Database = {
           distance_km?: number | null
           duration_minutes?: number | null
           id?: string
+          is_demo?: boolean
           location?: string | null
           notes?: string | null
           person_scope?: string
@@ -1086,6 +1089,7 @@ export type Database = {
           found_price: number | null
           id: string
           image_url: string | null
+          is_demo: boolean
           notes: string | null
           person_scope: string
           priority: string
@@ -1108,6 +1112,7 @@ export type Database = {
           found_price?: number | null
           id?: string
           image_url?: string | null
+          is_demo?: boolean
           notes?: string | null
           person_scope?: string
           priority?: string
@@ -1130,6 +1135,7 @@ export type Database = {
           found_price?: number | null
           id?: string
           image_url?: string | null
+          is_demo?: boolean
           notes?: string | null
           person_scope?: string
           priority?: string
@@ -1333,6 +1339,7 @@ export type Database = {
           icon: string | null
           id: string
           interval_days: number | null
+          is_demo: boolean
           kind: string
           month_days: number[]
           person_scope: string
@@ -1361,6 +1368,7 @@ export type Database = {
           icon?: string | null
           id?: string
           interval_days?: number | null
+          is_demo?: boolean
           kind?: string
           month_days?: number[]
           person_scope?: string
@@ -1389,6 +1397,7 @@ export type Database = {
           icon?: string | null
           id?: string
           interval_days?: number | null
+          is_demo?: boolean
           kind?: string
           month_days?: number[]
           person_scope?: string
@@ -1917,6 +1926,30 @@ export type Database = {
           },
         ]
       }
+      workspace_sync_events: {
+        Row: {
+          created_at: string
+          id: number
+          op: string
+          table_name: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          op: string
+          table_name: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          op?: string
+          table_name?: string
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       workspaces: {
         Row: {
           avatar_url: string | null
@@ -1976,6 +2009,7 @@ export type Database = {
         Args: { _accept: boolean; _token: string }
         Returns: string
       }
+      seed_demo_extras: { Args: { _workspace_id: string }; Returns: undefined }
       seed_demo_workspace: {
         Args: { _workspace_id: string }
         Returns: undefined
