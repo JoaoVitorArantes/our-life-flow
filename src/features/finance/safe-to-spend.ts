@@ -1,5 +1,6 @@
 import type { Account, Recurring, Transaction } from "./queries";
-import type { RecurrenceFrequency } from "./queries";
+import type { Database } from "@/integrations/supabase/types";
+type RecurrenceFrequency = Database["public"]["Enums"]["recurrence_frequency"];
 import { accountBalance, addMonths, dueDateOf, isOpen, shiftDate, sumBy, todayISO } from "./calc";
 
 export type Projected = Transaction & { projected?: true };
