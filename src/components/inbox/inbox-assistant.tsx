@@ -71,8 +71,12 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => inputRef.current?.focus(), [busy]);
-  useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [messages, previews]);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [busy]);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [messages, previews]);
 
   const nameOf = useMemo(() => {
     const m = new Map<string, string>();
