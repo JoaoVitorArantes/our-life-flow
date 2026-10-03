@@ -37,8 +37,8 @@ export function useCards(workspaceId?: string) {
   const base = listQuery<Card>("cards", "cards", workspaceId);
   return useQuery({
     ...base,
-    queryFn: async () => {
-      const cards = await base.queryFn();
+    // select roda também quando os dados vêm do cache, mantendo o motor de cartão sempre abastecido.
+    select: (cards: Card[]) => {
       registerCardCycles(cards);
       return cards;
     },

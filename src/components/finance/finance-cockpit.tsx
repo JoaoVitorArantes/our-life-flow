@@ -10,6 +10,7 @@ import { formatCurrency, formatDateShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Props = {
+  recurrences?: import("@/features/finance/queries").Recurring[];
   accounts: Account[];
   transactions: Transaction[];
   categories: Category[];
@@ -84,9 +85,9 @@ function MoneyCurve({ past, future }: { past: { date: string; value: number }[];
   );
 }
 
-export function FinanceCockpit({ accounts, transactions, categories, onNavigate }: Props) {
+export function FinanceCockpit({ accounts, transactions, categories, recurrences = [], onNavigate }: Props) {
   const today = todayISO();
-  const s = useMemo(() => calculateSafeToSpend(accounts, transactions), [accounts, transactions]);
+  const s = useMemo(() => calculateSafeToSpend(accounts, transactions, 30, undefined, recurrences), [accounts, transactions, recurrences]);
   const mood = financialMood(s);
   const [showCalc, setShowCalc] = useState(false);
   const [simOpen, setSimOpen] = useState(false);
@@ -198,7 +199,7 @@ export function FinanceCockpit({ accounts, transactions, categories, onNavigate 
         {showCalc ? (
           <div className="mt-5 max-w-sm space-y-2 rounded-2xl border border-border bg-background/60 p-4 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Disponível agora</span><span className="numeric">{formatCurrency(s.available)}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Receitas previstas</span><span className="numeric text-success">+{formatCurrency(s.income)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Próximas entradas{s.projectedIncome ? ` (${formatCurrency(s.projectedIncome)} previstas)` : ""}</span><span className="numeric text-success">+{formatCurrency(s.income)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Compromissos</span><span className="numeric text-destructive">−{formatCurrency(s.commitments)}</span></div>
             <div className="flex justify-between border-t border-border pt-2 font-medium"><span>Saldo após 30 dias</span><span className="numeric">{formatCurrency(s.safe)}</span></div>
             {s.lowest < s.safe ? (
@@ -266,7 +267,7 @@ export function FinanceCockpit({ accounts, transactions, categories, onNavigate 
         </div>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid min-w-0 grid-cols-1 gap-5 [&>*]:min-w-0 lg:grid-cols-[1.4fr_1fr]">
         <Section title="O que vai acontecer com o dinheiro">
           <MoneyCurve past={past} future={future} />
         </Section>
@@ -286,7 +287,7 @@ export function FinanceCockpit({ accounts, transactions, categories, onNavigate 
                 <span className={cn("absolute -left-[21px] top-1 size-2.5 rounded-full", e.t.type === "INCOME" ? "bg-success" : e.date < today ? "bg-destructive" : "bg-muted-foreground/50")} />
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{relDay(e.date, today)} · {formatDateShort(e.date)}</p>
                 <div className="flex justify-between gap-3 text-sm">
-                  <span className="truncate">{kindEmoji(e.t)} {e.t.description}</span>
+                  <span className="truncate">{kindEmoji(e.t)} {e.t.description}{e.projected ? <span className="ml-1 text-xs text-muted-foreground">(previsto)</span> : null}</span>
                   <span className={cn("numeric shrink-0", e.t.type === "INCOME" && "text-success")}>
                     {e.t.type === "INCOME" ? "+" : "−"}{formatCurrency(amt(e.t))}
                   </span>
@@ -298,7 +299,7 @@ export function FinanceCockpit({ accounts, transactions, categories, onNavigate 
         </Section>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-5 [&>*]:min-w-0 lg:grid-cols-3">
         <Section title="Dinheiro já comprometido">
           <p className="numeric mb-3 text-2xl font-semibold">{formatCurrency(s.commitments)}</p>
           <ul className="space-y-1 text-sm">
