@@ -112,7 +112,7 @@ export function AgentChat({
     if (!autoSend || sentAuto.current || initialMessages.length > 0) return;
     // adiado: em modo estrito o primeiro efeito é desmontado antes do envio
     const t = window.setTimeout(() => {
-      sentAuto.current = true; console.log("AUTOSEND", autoSend);
+      sentAuto.current = true;
       void sendMessage({ text: autoSend });
     }, 60);
     return () => window.clearTimeout(t);
