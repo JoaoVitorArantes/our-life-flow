@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BudgetPanel, CashFlow, FinanceCalendar, FinanceOverview, ReportsPanel } from "@/components/finance/finance-overview";
+import { BudgetPanel, CashFlow, FinanceCalendar, FinanceOverview, FinanceSearch, ReportsPanel } from "@/components/finance/finance-overview";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -297,6 +297,8 @@ function Financeiro() {
           )}
         />
       </div>
+
+      <FinanceSearch transactions={transactions} categories={categories} />
 
       <Tabs defaultValue="visao">
         <TabsList className="flex h-auto w-full flex-wrap justify-start">
