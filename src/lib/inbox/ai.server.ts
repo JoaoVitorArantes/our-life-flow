@@ -60,7 +60,7 @@ export async function interpret(system: string, messages: ModelMessage[], signal
     system,
     messages,
     abortSignal: signal,
-    experimental_output: Output.object({ schema: interpretationSchema }),
+    output: Output.object({ schema: interpretationSchema }),
     providerOptions: {
       openai: {
         forceReasoning: true,
@@ -74,7 +74,7 @@ export async function interpret(system: string, messages: ModelMessage[], signal
   try {
     // consome o stream no servidor e devolve só o objeto final
     for await (const _ of result.textStream) void _;
-    return (await result.experimental_output) as Interpretation;
+    return (await result.output) as Interpretation;
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error) && error.text) {
       const parsed = interpretationSchema.safeParse(JSON.parse(error.text));
