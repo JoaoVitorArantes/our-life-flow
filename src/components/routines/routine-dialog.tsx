@@ -74,10 +74,10 @@ export function RoutineDialog({ open, onOpenChange, routine, defaultKind = "ROUT
 
   async function save() {
     if (!workspaceId || !userId) return;
-    if (!title.trim()) return toast.error("Dê um nome para a rotina ou hábito.");
-    if ((frequency === "WEEKDAYS") && !weekdays.length) return toast.error("Escolha pelo menos um dia da semana.");
+    if (!title.trim()) { toast.error("Dê um nome para a rotina ou hábito."); return; }
+    if ((frequency === "WEEKDAYS") && !weekdays.length) { toast.error("Escolha pelo menos um dia da semana."); return; }
     const days = monthDays.split(/[,\s]+/).map(Number).filter((n) => n >= 1 && n <= 31);
-    if (frequency === "MONTH_DAYS" && !days.length) return toast.error("Informe os dias do mês (ex.: 1, 15).");
+    if (frequency === "MONTH_DAYS" && !days.length) { toast.error("Informe os dias do mês (ex.: 1, 15)."); return; }
     const input = {
       kind, title: title.trim(), description: description.trim() || null, frequency,
       weekdays, month_days: days, interval_days: frequency === "CUSTOM" ? Math.max(1, Number(interval) || 1) : null,
