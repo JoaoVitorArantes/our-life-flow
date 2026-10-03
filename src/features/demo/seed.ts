@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
  * and execute atomically; the client never inserts or deletes demo rows directly.
  */
 export async function seedDemoData(workspaceId: string) {
-  const { error } = await supabase.rpc("seed_demo_workspace", { _workspace_id: workspaceId });
+  const { error } = await supabase.rpc("prepare_demo_workspace", { _workspace_id: workspaceId });
   if (error) throw error;
 }
 
