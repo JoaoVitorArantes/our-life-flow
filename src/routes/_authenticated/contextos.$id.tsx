@@ -300,6 +300,9 @@ function ContextDetail() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/financeiro" search={{ sim: 1, context: context.id }}>✨ E se...?</Link>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               Editar
             </Button>
