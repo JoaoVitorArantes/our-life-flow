@@ -92,7 +92,9 @@ function MeuDia() {
   const insights: string[] = [];
   insights.push(events.length ? `Hoje vocês têm ${events.length} ${events.length === 1 ? "compromisso" : "compromissos"}.` : "Agenda livre hoje.");
   if (nextEvent) insights.push(`Seu próximo compromisso é às ${minutesLabel(nextEvent.minutes)}.`);
-  if (tasks.length) insights.push(`Você tem ${tasks.length} ${tasks.length === 1 ? "tarefa" : "tarefas"} para hoje${overdue.length ? `, ${overdue.length} atrasada${overdue.length > 1 ? "s" : ""}` : ""}.`);
+  const dueToday = tasks.length - overdue.length;
+  if (dueToday) insights.push(`Você tem ${dueToday} ${dueToday === 1 ? "tarefa" : "tarefas"} para hoje.`);
+  if (overdue.length) insights.push(`${overdue.length} ${overdue.length === 1 ? "tarefa está atrasada" : "tarefas estão atrasadas"}.`);
   insights.push(finance.length ? `Hoje vencem ${finance.length} ${finance.length === 1 ? "pagamento" : "pagamentos"}.` : "Hoje não há nenhum vencimento financeiro.");
   if (goals[0]) insights.push(goals[0].days === 0 ? `A meta "${goals[0].g.title}" vence hoje.` : `Você está a ${goals[0].days} ${goals[0].days === 1 ? "dia" : "dias"} da meta "${goals[0].g.title}".`);
 

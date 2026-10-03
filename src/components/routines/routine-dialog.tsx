@@ -155,7 +155,7 @@ export function RoutineDialog({ open, onOpenChange, routine, defaultKind = "ROUT
               <Select value={person} onValueChange={setPerson}><SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{ROUTINE_PERSONS.map((p) => <SelectItem key={p.value} value={p.value}>{p.emoji} {p.label}</SelectItem>)}</SelectContent></Select>
             </div>
-            <div className="space-y-1.5"><Label>Contexto</Label><ContextSelect value={contextId} onChange={setContextId} /></div>
+            <div><ContextSelect value={contextId} onChange={setContextId} /></div>
             <div className="space-y-1.5"><Label>Meta relacionada</Label>
               <Select value={goalId} onValueChange={setGoalId}><SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent><SelectItem value={NONE}>Nenhuma</SelectItem>{goals.map((g) => <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>)}</SelectContent></Select>
