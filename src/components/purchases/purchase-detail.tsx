@@ -253,6 +253,21 @@ export function PurchaseDetail({
                 </a>
               </Button>
             ) : null}
+            {purchase.status !== "PURCHASED" && purchase.status !== "DISCARDED" ? (
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  to="/financeiro"
+                  search={{
+                    sim: 1,
+                    title: purchase.title,
+                    amount: purchase.found_price != null ? Number(purchase.found_price) : purchase.budget_amount != null ? Number(purchase.budget_amount) : undefined,
+                    context: purchase.context_id ?? undefined,
+                  }}
+                >
+                  ✨ E se comprarmos?
+                </Link>
+              </Button>
+            ) : null}
             {purchase.status === "PURCHASED" ? (
               <Button size="sm" onClick={openExpense}>
                 {purchase.transaction_id ? "Registrado no Financeiro" : "🛒 Registrar no Financeiro"}
