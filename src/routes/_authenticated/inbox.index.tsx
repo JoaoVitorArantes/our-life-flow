@@ -23,11 +23,11 @@ function InboxHome() {
   const { start, pending } = useStartConversation();
   const [text, setText] = useState("");
   return (
-    <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-[1fr_260px]">
-      <section className="space-y-5">
-        <div className="flex items-center gap-3">
-          <AgentMark className="size-14" />
-          <div>
+    <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_300px] xl:gap-10">
+      <section className="min-w-0 space-y-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <AgentMark className="size-12 shrink-0 sm:size-14" />
+          <div className="min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight">Life OS AI</h1>
             <p className="text-sm text-muted-foreground">O cérebro do seu Life OS: consulta seus dados reais, analisa e registra — sempre com sua confirmação.</p>
           </div>
@@ -44,7 +44,7 @@ function InboxHome() {
           ))}
         </Suggestions>
       </section>
-      <aside className="md:max-h-[70dvh]">
+      <aside className="min-w-0 lg:max-h-[75dvh]">
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Conversas</p>
         <ThreadList />
       </aside>
