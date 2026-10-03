@@ -7,6 +7,7 @@ import { QuickActionHost } from "@/components/quick/quick-action-host";
 import { useApp } from "@/features/app/app-context";
 import { useCards } from "@/features/finance/queries";
 import { InvitationInbox } from "@/features/workspace/partner";
+import { GlobalAgent } from "@/components/agent/global-agent";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -30,6 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <BottomNav />
       <CommandBar />
       <QuickActionHost />
+      <GlobalAgent />
       <InvitationInbox />
     </div>
   );
