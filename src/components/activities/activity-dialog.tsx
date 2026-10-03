@@ -36,11 +36,13 @@ export function ActivityDialog({
   onOpenChange,
   activity,
   defaultContextId,
+  prefill,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   activity?: Activity | null;
   defaultContextId?: string | null;
+  prefill?: { activity_type?: string | null; title?: string; duration_minutes?: number | null; person_scope?: string; time?: string | null } | undefined;
 }) {
   const { workspaceId, userId, activeContextId } = useApp();
   const queryClient = useQueryClient();
@@ -85,7 +87,15 @@ export function ActivityDialog({
       setPerson("COUPLE");
       setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
       setNotes("");
+      if (prefill) {
+        if (prefill.activity_type) setType(prefill.activity_type);
+        if (prefill.title) setTitle(prefill.title);
+        if (prefill.duration_minutes) setDuration(String(prefill.duration_minutes));
+        if (prefill.time) setTime(prefill.time.slice(0, 5));
+        if (prefill.person_scope) setPerson(prefill.person_scope as ActivityPerson);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, activity, defaultContextId, activeContextId]);
 
   async function handleSubmit() {

@@ -21,8 +21,10 @@ import { Route as AuthenticatedEsporteRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFaculdadeRouteImport } from './routes/_authenticated/faculdade'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedMetasRouteImport } from './routes/_authenticated/metas'
+import { Route as AuthenticatedMeuDiaRouteImport } from './routes/_authenticated/meu-dia'
 import { Route as AuthenticatedNosRouteImport } from './routes/_authenticated/nos'
 import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
+import { Route as AuthenticatedRotinasRouteImport } from './routes/_authenticated/rotinas'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
 import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
@@ -88,6 +90,11 @@ const AuthenticatedMetasRoute = AuthenticatedMetasRouteImport.update({
   path: '/metas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMeuDiaRoute = AuthenticatedMeuDiaRouteImport.update({
+  id: '/meu-dia',
+  path: '/meu-dia',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNosRoute = AuthenticatedNosRouteImport.update({
   id: '/nos',
   path: '/nos',
@@ -96,6 +103,11 @@ const AuthenticatedNosRoute = AuthenticatedNosRouteImport.update({
 const AuthenticatedNotasRoute = AuthenticatedNotasRouteImport.update({
   id: '/notas',
   path: '/notas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRotinasRoute = AuthenticatedRotinasRouteImport.update({
+  id: '/rotinas',
+  path: '/rotinas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
@@ -133,8 +145,10 @@ export interface FileRoutesByFullPath {
   '/faculdade': typeof AuthenticatedFaculdadeRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/metas': typeof AuthenticatedMetasRouteWithChildren
+  '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
   '/notas': typeof AuthenticatedNotasRoute
+  '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
@@ -152,8 +166,10 @@ export interface FileRoutesByTo {
   '/faculdade': typeof AuthenticatedFaculdadeRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/metas': typeof AuthenticatedMetasRouteWithChildren
+  '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
   '/notas': typeof AuthenticatedNotasRoute
+  '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
@@ -173,8 +189,10 @@ export interface FileRoutesById {
   '/_authenticated/faculdade': typeof AuthenticatedFaculdadeRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/metas': typeof AuthenticatedMetasRouteWithChildren
+  '/_authenticated/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/_authenticated/nos': typeof AuthenticatedNosRoute
   '/_authenticated/notas': typeof AuthenticatedNotasRoute
+  '/_authenticated/rotinas': typeof AuthenticatedRotinasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/_authenticated/metas/$id': typeof AuthenticatedMetasIdRoute
@@ -194,8 +212,10 @@ export interface FileRouteTypes {
     | '/faculdade'
     | '/financeiro'
     | '/metas'
+    | '/meu-dia'
     | '/nos'
     | '/notas'
+    | '/rotinas'
     | '/tarefas'
     | '/contextos/$id'
     | '/metas/$id'
@@ -213,8 +233,10 @@ export interface FileRouteTypes {
     | '/faculdade'
     | '/financeiro'
     | '/metas'
+    | '/meu-dia'
     | '/nos'
     | '/notas'
+    | '/rotinas'
     | '/tarefas'
     | '/contextos/$id'
     | '/metas/$id'
@@ -233,8 +255,10 @@ export interface FileRouteTypes {
     | '/_authenticated/faculdade'
     | '/_authenticated/financeiro'
     | '/_authenticated/metas'
+    | '/_authenticated/meu-dia'
     | '/_authenticated/nos'
     | '/_authenticated/notas'
+    | '/_authenticated/rotinas'
     | '/_authenticated/tarefas'
     | '/_authenticated/contextos/$id'
     | '/_authenticated/metas/$id'
@@ -334,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMetasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/meu-dia': {
+      id: '/_authenticated/meu-dia'
+      path: '/meu-dia'
+      fullPath: '/meu-dia'
+      preLoaderRoute: typeof AuthenticatedMeuDiaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/nos': {
       id: '/_authenticated/nos'
       path: '/nos'
@@ -346,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/notas'
       fullPath: '/notas'
       preLoaderRoute: typeof AuthenticatedNotasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rotinas': {
+      id: '/_authenticated/rotinas'
+      path: '/rotinas'
+      fullPath: '/rotinas'
+      preLoaderRoute: typeof AuthenticatedRotinasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tarefas': {
@@ -399,8 +437,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFaculdadeRoute: typeof AuthenticatedFaculdadeRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedMetasRoute: typeof AuthenticatedMetasRouteWithChildren
+  AuthenticatedMeuDiaRoute: typeof AuthenticatedMeuDiaRoute
   AuthenticatedNosRoute: typeof AuthenticatedNosRoute
   AuthenticatedNotasRoute: typeof AuthenticatedNotasRoute
+  AuthenticatedRotinasRoute: typeof AuthenticatedRotinasRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
   AuthenticatedContextosIdRoute: typeof AuthenticatedContextosIdRoute
   AuthenticatedContextosIndexRoute: typeof AuthenticatedContextosIndexRoute
@@ -415,8 +455,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFaculdadeRoute: AuthenticatedFaculdadeRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedMetasRoute: AuthenticatedMetasRouteWithChildren,
+  AuthenticatedMeuDiaRoute: AuthenticatedMeuDiaRoute,
   AuthenticatedNosRoute: AuthenticatedNosRoute,
   AuthenticatedNotasRoute: AuthenticatedNotasRoute,
+  AuthenticatedRotinasRoute: AuthenticatedRotinasRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
   AuthenticatedContextosIdRoute: AuthenticatedContextosIdRoute,
   AuthenticatedContextosIndexRoute: AuthenticatedContextosIndexRoute,

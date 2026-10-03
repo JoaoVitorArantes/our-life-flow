@@ -24,6 +24,7 @@ export const KIND_ICON: Record<AgendaKind, typeof CalendarDays> = {
   finance: Wallet,
   goal: Target,
   note: StickyNote,
+  routine: Repeat,
 };
 
 export const KIND_TONE: Record<AgendaKind, string> = {
@@ -32,6 +33,7 @@ export const KIND_TONE: Record<AgendaKind, string> = {
   finance: "text-amber-400",
   goal: "text-emerald-400",
   note: "text-muted-foreground",
+  routine: "text-primary",
 };
 
 export function AgendaRow({
