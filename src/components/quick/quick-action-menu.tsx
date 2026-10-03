@@ -13,6 +13,7 @@ import {
   StickyNote,
   Compass,
   Target,
+  MessageSquareText,
 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useApp, type QuickActionKind } from "@/features/app/app-context";
@@ -51,6 +52,19 @@ export function QuickActionMenu() {
         <DrawerHeader className="text-left">
           <DrawerTitle>Criação rápida</DrawerTitle>
         </DrawerHeader>
+        <div className="px-4 pb-3">
+          <button
+            type="button"
+            onClick={() => openQuickAction("inbox")}
+            className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-primary/40 bg-primary/10 p-4 text-left text-sm font-medium transition-colors hover:bg-primary/15"
+          >
+            <MessageSquareText className="size-5 text-primary" />
+            <span className="flex-1">
+              Falar com o Life OS
+              <span className="block text-xs font-normal text-muted-foreground">“Gastei 38,90 de Uber no Nubank”</span>
+            </span>
+          </button>
+        </div>
         <div className="grid grid-cols-2 gap-2 px-4 pb-8 sm:grid-cols-3">
           {options.map((option) => (
             <button

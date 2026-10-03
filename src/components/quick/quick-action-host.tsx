@@ -9,6 +9,8 @@ import { InstallmentDialog } from "./installment-dialog";
 import { RecurringDialog } from "./recurring-dialog";
 import { LoanDialog } from "./loan-dialog";
 import { FinancingDialog } from "./financing-dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { InboxAssistant } from "@/components/inbox/inbox-assistant";
 
 const SIMPLE: SimpleKind[] = ["event", "task", "goal", "note"];
 
@@ -36,6 +38,17 @@ export function QuickActionHost() {
       {quickAction === "recurring" ? <RecurringDialog open onOpenChange={close} /> : null}
       {quickAction === "loan" ? <LoanDialog open onOpenChange={close} /> : null}
       {quickAction === "financing" ? <FinancingDialog open onOpenChange={close} /> : null}
+
+      <Drawer open={quickAction === "inbox"} onOpenChange={close}>
+        <DrawerContent className="mx-auto h-[88dvh] max-w-2xl">
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>Falar com o Life OS</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex min-h-0 flex-1 flex-col px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-2">
+            <InboxAssistant compact />
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       <Dialog open={quickAction === "workout"} onOpenChange={close}>
         <DialogContent className="sm:max-w-md">

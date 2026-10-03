@@ -13,8 +13,7 @@ import {
   Settings,
   Sun,
   Repeat,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, MessageSquareText } from "lucide-react";
 
 export type NavItem = {
   to: string;
@@ -30,6 +29,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Visão geral",
     items: [
       { to: "/meu-dia", label: "Meu Dia", icon: Sun, emoji: "☀️" },
+      { to: "/inbox", label: "Falar com o Life OS", icon: MessageSquareText, emoji: "💬" },
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, emoji: "🏠" },
       { to: "/nos", label: "Leitura de Nós", icon: Heart, emoji: "💜" },
     ],

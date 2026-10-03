@@ -20,6 +20,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedEsporteRouteImport } from './routes/_authenticated/esporte'
 import { Route as AuthenticatedFaculdadeRouteImport } from './routes/_authenticated/faculdade'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedMetasRouteImport } from './routes/_authenticated/metas'
 import { Route as AuthenticatedMeuDiaRouteImport } from './routes/_authenticated/meu-dia'
 import { Route as AuthenticatedNosRouteImport } from './routes/_authenticated/nos'
@@ -85,6 +86,11 @@ const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInboxRoute = AuthenticatedInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMetasRoute = AuthenticatedMetasRouteImport.update({
   id: '/metas',
   path: '/metas',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/esporte': typeof AuthenticatedEsporteRoute
   '/faculdade': typeof AuthenticatedFaculdadeRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/inbox': typeof AuthenticatedInboxRoute
   '/metas': typeof AuthenticatedMetasRouteWithChildren
   '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/esporte': typeof AuthenticatedEsporteRoute
   '/faculdade': typeof AuthenticatedFaculdadeRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/inbox': typeof AuthenticatedInboxRoute
   '/metas': typeof AuthenticatedMetasRouteWithChildren
   '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/_authenticated/esporte': typeof AuthenticatedEsporteRoute
   '/_authenticated/faculdade': typeof AuthenticatedFaculdadeRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/metas': typeof AuthenticatedMetasRouteWithChildren
   '/_authenticated/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/_authenticated/nos': typeof AuthenticatedNosRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/esporte'
     | '/faculdade'
     | '/financeiro'
+    | '/inbox'
     | '/metas'
     | '/meu-dia'
     | '/nos'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/esporte'
     | '/faculdade'
     | '/financeiro'
+    | '/inbox'
     | '/metas'
     | '/meu-dia'
     | '/nos'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/_authenticated/esporte'
     | '/_authenticated/faculdade'
     | '/_authenticated/financeiro'
+    | '/_authenticated/inbox'
     | '/_authenticated/metas'
     | '/_authenticated/meu-dia'
     | '/_authenticated/nos'
@@ -351,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inbox': {
+      id: '/_authenticated/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AuthenticatedInboxRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/metas': {
       id: '/_authenticated/metas'
       path: '/metas'
@@ -436,6 +455,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEsporteRoute: typeof AuthenticatedEsporteRoute
   AuthenticatedFaculdadeRoute: typeof AuthenticatedFaculdadeRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedMetasRoute: typeof AuthenticatedMetasRouteWithChildren
   AuthenticatedMeuDiaRoute: typeof AuthenticatedMeuDiaRoute
   AuthenticatedNosRoute: typeof AuthenticatedNosRoute
@@ -454,6 +474,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEsporteRoute: AuthenticatedEsporteRoute,
   AuthenticatedFaculdadeRoute: AuthenticatedFaculdadeRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedMetasRoute: AuthenticatedMetasRouteWithChildren,
   AuthenticatedMeuDiaRoute: AuthenticatedMeuDiaRoute,
   AuthenticatedNosRoute: AuthenticatedNosRoute,
