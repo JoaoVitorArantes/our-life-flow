@@ -229,7 +229,7 @@ export function FinanceCockpit({ accounts, transactions, categories, recurrences
 
         {simOpen ? (
           <div className="mt-5 max-w-md space-y-4 rounded-2xl border border-border bg-background/60 p-4">
-            <div className="flex gap-2 text-sm">
+            <div className="flex flex-wrap gap-2 text-sm">
               <Button size="sm" variant={simIncome ? "outline" : "secondary"} onClick={() => setSimIncome(false)}>E se gastarmos…</Button>
               <Button size="sm" variant={simIncome ? "secondary" : "outline"} onClick={() => setSimIncome(true)}>E se entrar…</Button>
             </div>
