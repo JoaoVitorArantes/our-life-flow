@@ -145,7 +145,7 @@ function GlobalAgentThread({ threadId, firstMessage, context, onBack }: { thread
 }
 
 function GlobalAgentPanel({ context }: { context: string }) {
-  const [thread, setThread] = useState<{ id: string; firstMessage?: string } | null>(null);
+  const [thread, setThread] = useState<{ id: string; firstMessage?: string | undefined } | null>(null);
   return thread ? (
     <GlobalAgentThread threadId={thread.id} firstMessage={thread.firstMessage} context={context} onBack={() => setThread(null)} />
   ) : (
