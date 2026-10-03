@@ -124,7 +124,10 @@ export type MoodTone = "calm" | "tight" | "alert";
 /** Leitura determinística do estado financeiro. */
 export function financialMood(s: SafeToSpend): { text: string; tone: MoodTone } {
   if (s.lowest < 0)
-    return { text: "Atenção: os compromissos passam do dinheiro disponível antes dos próximos recebimentos.", tone: "alert" };
+    return {
+      text: `Vocês podem ficar ${(-s.lowest).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} abaixo do necessário antes da próxima entrada.`,
+      tone: "alert",
+    };
   const base = s.available + s.income;
   const ratio = base > 0 ? s.commitments / base : 1;
   if (ratio > 0.8) return { text: "Boa parte do dinheiro já está comprometida.", tone: "tight" };

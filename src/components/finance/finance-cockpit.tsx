@@ -202,10 +202,24 @@ export function FinanceCockpit({ accounts, transactions, categories, recurrences
             <div className="flex justify-between"><span className="text-muted-foreground">Próximas entradas{s.projectedIncome ? ` (${formatCurrency(s.projectedIncome)} previstas)` : ""}</span><span className="numeric text-success">+{formatCurrency(s.income)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Compromissos</span><span className="numeric text-destructive">−{formatCurrency(s.commitments)}</span></div>
             <div className="flex justify-between border-t border-border pt-2 font-medium"><span>Saldo após 30 dias</span><span className="numeric">{formatCurrency(s.safe)}</span></div>
-            {s.lowest < s.safe ? (
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Ponto mais baixo ({formatDateShort(s.lowestDate)})</span><span className="numeric">{formatCurrency(s.lowest)}</span>
-              </div>
+            <div className="flex justify-between font-medium"><span>Menor saldo projetado ({s.lowestDate === today ? "hoje" : formatDateShort(s.lowestDate)})</span><span className={cn("numeric", s.lowest < 0 && "text-destructive")}>{formatCurrency(s.lowest)}</span></div>
+            <div className="flex justify-between font-semibold"><span>Dinheiro livre</span><span className="numeric">{formatCurrency(s.spendable)}</span></div>
+            {s.timeline.length ? (
+              <ol className="space-y-1 border-t border-border pt-2 text-xs">
+                <li className="flex justify-between gap-2"><span className="text-muted-foreground">Hoje · saldo atual</span><span className="numeric">{formatCurrency(s.available)}</span></li>
+                {s.timeline
+                  .filter((e) => e.date <= (s.lowestDate > today ? s.lowestDate : s.timeline[Math.min(5, s.timeline.length - 1)]!.date))
+                  .slice(0, 8)
+                  .map((e) => (
+                    <li key={e.t.id} className={cn("flex justify-between gap-2", e.date === s.lowestDate && s.lowestDate !== today && "font-medium text-foreground")}>
+                      <span className="truncate text-muted-foreground">{formatDateShort(e.date)} · {e.t.description}{e.projected ? " (previsto)" : ""} <span className={e.t.type === "INCOME" ? "text-success" : ""}>{e.t.type === "INCOME" ? "+" : "−"}{formatCurrency(amt(e.t))}</span></span>
+                      <span className="numeric shrink-0">{formatCurrency(e.balance)}</span>
+                    </li>
+                  ))}
+              </ol>
+            ) : null}
+            {s.lowest < 0 ? (
+              <p className="text-xs text-warning">Vocês podem ficar {formatCurrency(-s.lowest)} abaixo do necessário antes da próxima entrada.</p>
             ) : null}
             <p className="pt-1 text-xs text-muted-foreground">
               Considera contas (sem investimentos), receitas e despesas pendentes até {formatDateShort(s.horizon)}. Limite de cartão e acertos entre vocês não contam como dinheiro. O dinheiro livre é o menor valor entre o saldo final e o ponto mais baixo do período.
