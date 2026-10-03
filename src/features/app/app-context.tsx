@@ -15,7 +15,8 @@ export type QuickActionKind =
   | "installment"
   | "recurring"
   | "loan"
-  | "financing";
+  | "financing"
+  | "inbox";
 
 type AppContextValue = {
   workspaceId?: string | undefined;
