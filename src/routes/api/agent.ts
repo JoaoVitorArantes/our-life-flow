@@ -13,14 +13,29 @@ const bodySchema = z.object({
 
 function spToday() {
   const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
-  const weekday = now.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", weekday: "long" });
-  const time = now.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  const weekday = now.toLocaleDateString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    weekday: "long",
+  });
+  const time = now.toLocaleTimeString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   return { iso: parts, weekday, time };
 }
 
 function json(status: number, error: string) {
-  return new Response(JSON.stringify({ error }), { status, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ error }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 export const Route = createFileRoute("/api/agent")({
@@ -47,7 +62,11 @@ export const Route = createFileRoute("/api/agent")({
         const messages = parsed.data.messages as UIMessage[];
 
         // Workspace SEMPRE derivado da conversa + sessão (RLS garante que é do usuário).
-        const { data: thread } = await supabase.from("ai_conversations").select("id, workspace_id, title").eq("id", parsed.data.threadId).maybeSingle();
+        const { data: thread } = await supabase
+          .from("ai_conversations")
+          .select("id, workspace_id, title")
+          .eq("id", parsed.data.threadId)
+          .maybeSingle();
         if (!thread) return json(404, "Conversa não encontrada.");
         const workspaceId = thread.workspace_id;
 
@@ -94,7 +113,8 @@ COMO AGIR
             let runId: string | undefined;
             return async (input: RequestInfo | URL, init?: RequestInit) => {
               const headers = new Headers(init?.headers);
-              if (runId && !headers.has("X-Lovable-AIG-Run-ID")) headers.set("X-Lovable-AIG-Run-ID", runId);
+              if (runId && !headers.has("X-Lovable-AIG-Run-ID"))
+                headers.set("X-Lovable-AIG-Run-ID", runId);
               const res = await fetch(input, { ...init, headers });
               runId ??= res.headers.get("X-Lovable-AIG-Run-ID")?.trim() || undefined;
               return res;
@@ -127,19 +147,32 @@ COMO AGIR
           onError: (error) => {
             console.error("[agent] stream", error);
             const status = (error as { statusCode?: number })?.statusCode;
-            if (status === 402) return "Os créditos de IA do espaço acabaram. Adicione créditos para continuar.";
-            if (status === 429) return "Muitas mensagens em pouco tempo. Tente de novo em instantes.";
+            if (status === 402)
+              return "Os créditos de IA do espaço acabaram. Adicione créditos para continuar.";
+            if (status === 429)
+              return "Muitas mensagens em pouco tempo. Tente de novo em instantes.";
             return "Não consegui responder agora. Tente de novo.";
           },
           onFinish: async ({ responseMessage }) => {
             const rows = [lastUser, responseMessage]
               .filter((m): m is UIMessage => !!m && m.parts.length > 0)
-              .map((m) => ({ conversation_id: thread.id, workspace_id: workspaceId, message_id: m.id, role: m.role, message: m as never }));
-            const { error } = await supabase.from("ai_messages").upsert(rows, { onConflict: "conversation_id,message_id" });
+              .map((m) => ({
+                conversation_id: thread.id,
+                workspace_id: workspaceId,
+                message_id: m.id,
+                role: m.role,
+                message: m as never,
+              }));
+            const { error } = await supabase
+              .from("ai_messages")
+              .upsert(rows, { onConflict: "conversation_id,message_id" });
             if (error) console.error("[agent] persist", error);
             const firstText = lastUser?.parts.find((p) => p.type === "text");
-            const patch: { updated_at: string; title?: string } = { updated_at: new Date().toISOString() };
-            if (thread.title === "Nova conversa" && firstText && "text" in firstText) patch.title = firstText.text.slice(0, 60);
+            const patch: { updated_at: string; title?: string } = {
+              updated_at: new Date().toISOString(),
+            };
+            if (thread.title === "Nova conversa" && firstText && "text" in firstText)
+              patch.title = firstText.text.slice(0, 60);
             const up = await supabase.from("ai_conversations").update(patch).eq("id", thread.id);
             if (up.error) console.error("[agent] title", up.error);
           },

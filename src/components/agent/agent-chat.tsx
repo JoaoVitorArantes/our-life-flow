@@ -4,10 +4,33 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, X, ArrowUpRight, Wallet, CalendarDays, ListChecks, Target, Dumbbell, ShoppingBag, CreditCard, Heart, Layers, Repeat } from "lucide-react";
-import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
+import {
+  Check,
+  X,
+  ArrowUpRight,
+  Wallet,
+  CalendarDays,
+  ListChecks,
+  Target,
+  Dumbbell,
+  ShoppingBag,
+  CreditCard,
+  Heart,
+  Layers,
+  Repeat,
+} from "lucide-react";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import { PromptInput, PromptInputFooter, PromptInputSubmit, PromptInputTextarea } from "@/components/ai-elements/prompt-input";
+import {
+  PromptInput,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTextarea,
+} from "@/components/ai-elements/prompt-input";
 import { Tool, ToolHeader } from "@/components/ai-elements/tool";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
@@ -23,18 +46,38 @@ import { cn } from "@/lib/utils";
 
 /** Rótulos amigáveis: o usuário vê o que está sendo consultado, nunca nomes técnicos. */
 const TOOL_UI: Record<string, { label: string; done: string; icon: typeof Wallet }> = {
-  financial_overview: { label: "Consultando seu Financeiro…", done: "Dinheiro Livre consultado", icon: Wallet },
-  transactions_summary: { label: "Analisando seus lançamentos…", done: "Lançamentos analisados", icon: Wallet },
-  monthly_trend: { label: "Comparando com meses anteriores…", done: "Histórico comparado", icon: Wallet },
+  financial_overview: {
+    label: "Consultando seu Financeiro…",
+    done: "Dinheiro Livre consultado",
+    icon: Wallet,
+  },
+  transactions_summary: {
+    label: "Analisando seus lançamentos…",
+    done: "Lançamentos analisados",
+    icon: Wallet,
+  },
+  monthly_trend: {
+    label: "Comparando com meses anteriores…",
+    done: "Histórico comparado",
+    icon: Wallet,
+  },
   cards_status: { label: "Olhando seus cartões…", done: "Cartões consultados", icon: CreditCard },
-  upcoming_bills: { label: "Vendo suas próximas contas…", done: "Próximas contas consultadas", icon: Wallet },
+  upcoming_bills: {
+    label: "Vendo suas próximas contas…",
+    done: "Próximas contas consultadas",
+    icon: Wallet,
+  },
   installments: { label: "Conferindo parcelas…", done: "Parcelas consultadas", icon: CreditCard },
   nos_balance: { label: "Consultando o Nós…", done: "Nós consultado", icon: Heart },
   goals: { label: "Vendo suas metas…", done: "Metas consultadas", icon: Target },
   tasks: { label: "Conferindo suas tarefas…", done: "Tarefas consultadas", icon: ListChecks },
   agenda: { label: "Consultando sua agenda…", done: "Agenda consultada", icon: CalendarDays },
   activities: { label: "Olhando seus treinos…", done: "Atividades consultadas", icon: Dumbbell },
-  purchases: { label: "Abrindo sua lista de compras…", done: "Compras consultadas", icon: ShoppingBag },
+  purchases: {
+    label: "Abrindo sua lista de compras…",
+    done: "Compras consultadas",
+    icon: ShoppingBag,
+  },
   routines_today: { label: "Vendo suas rotinas…", done: "Rotinas consultadas", icon: Repeat },
   contexts: { label: "Consultando contextos…", done: "Contextos consultados", icon: Layers },
 };
@@ -59,7 +102,15 @@ export const EXAMPLES = [
 ];
 
 export function AgentMark({ className }: { className?: string }) {
-  return <img src={aiMark} alt="Life OS AI" width={816} height={816} className={cn("size-8 shrink-0 object-contain", className)} />;
+  return (
+    <img
+      src={aiMark}
+      alt="Life OS AI"
+      width={816}
+      height={816}
+      className={cn("size-8 shrink-0 object-contain", className)}
+    />
+  );
 }
 
 export function AgentChat({
@@ -153,7 +204,12 @@ export function AgentChat({
   async function confirm(id: string, action: InboxAction) {
     if (!workspaceId || !userId) return;
     try {
-      const ref = await executeAction(action, { workspaceId, userId, memberIds: memberProfiles.map((m) => m.id), queryClient });
+      const ref = await executeAction(action, {
+        workspaceId,
+        userId,
+        memberIds: memberProfiles.map((m) => m.id),
+        queryClient,
+      });
       await record(id, { status: "confirmed", module: ref.module, href: ref.href });
       toast.success(`${INTENT[action.intent].label} registrada em ${ref.module}.`);
     } catch (error) {
@@ -166,7 +222,13 @@ export function AgentChat({
   const last = messages[messages.length - 1];
   const followUps =
     !busy && last?.role === "assistant"
-      ? [...new Set(last.parts.flatMap((p) => (p.type.startsWith("tool-") ? FOLLOW_UPS[p.type.slice(5)] ?? [] : [])))].slice(0, 2)
+      ? [
+          ...new Set(
+            last.parts.flatMap((p) =>
+              p.type.startsWith("tool-") ? (FOLLOW_UPS[p.type.slice(5)] ?? []) : [],
+            ),
+          ),
+        ].slice(0, 2)
       : [];
 
   return (
@@ -178,7 +240,10 @@ export function AgentChat({
               <AgentMark className="size-14" />
               <div>
                 <p className="text-2xl font-semibold tracking-tight">Oi! Eu conheço seu Life OS.</p>
-                <p className="text-sm text-muted-foreground">Pergunte sobre dinheiro, agenda, tarefas, metas, treinos… ou conte o que aconteceu. Nada é salvo sem sua confirmação.</p>
+                <p className="text-sm text-muted-foreground">
+                  Pergunte sobre dinheiro, agenda, tarefas, metas, treinos… ou conte o que
+                  aconteceu. Nada é salvo sem sua confirmação.
+                </p>
               </div>
               <Suggestions>
                 {EXAMPLES.map((e) => (
@@ -191,22 +256,38 @@ export function AgentChat({
           {messages.map((m) => (
             <Message key={m.id} from={m.role}>
               {m.role === "assistant" ? <AgentMark className="mb-1 size-6" /> : null}
-              <MessageContent className={cn(m.role === "user" && "bg-primary text-primary-foreground")}>
+              <MessageContent
+                className={cn(m.role === "user" && "bg-primary text-primary-foreground")}
+              >
                 {m.parts.map((part, i) => {
                   if (part.type === "text") {
-                    return m.role === "user" ? <p key={i} className="whitespace-pre-wrap">{part.text}</p> : <MessageResponse key={i}>{part.text}</MessageResponse>;
+                    return m.role === "user" ? (
+                      <p key={i} className="whitespace-pre-wrap">
+                        {part.text}
+                      </p>
+                    ) : (
+                      <MessageResponse key={i}>{part.text}</MessageResponse>
+                    );
                   }
                   if (part.type === "tool-propose_action") {
-                    if (part.state !== "output-available") return <Shimmer key={i}>Preparando a prévia…</Shimmer>;
+                    if (part.state !== "output-available")
+                      return <Shimmer key={i}>Preparando a prévia…</Shimmer>;
                     const id = part.toolCallId;
                     const action = edits[id] ?? (part.output as InboxAction);
                     const st = states[id];
                     if (st?.status === "confirmed") {
                       return (
-                        <div key={i} className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm">
-                          <Check className="size-4 text-success" /> {INTENT[action.intent].emoji} {action.description} — salvo em {st.module}
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm"
+                        >
+                          <Check className="size-4 text-success" /> {INTENT[action.intent].emoji}{" "}
+                          {action.description} — salvo em {st.module}
                           {st.href ? (
-                            <Link to={st.href} className="ml-auto inline-flex items-center gap-1 text-xs text-primary">
+                            <Link
+                              to={st.href}
+                              className="ml-auto inline-flex items-center gap-1 text-xs text-primary"
+                            >
                               Ver <ArrowUpRight className="size-3" />
                             </Link>
                           ) : null}
@@ -215,7 +296,10 @@ export function AgentChat({
                     }
                     if (st?.status === "cancelled") {
                       return (
-                        <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 text-sm text-muted-foreground"
+                        >
                           <X className="size-4" /> {action.description} — cancelado
                         </div>
                       );
@@ -228,7 +312,9 @@ export function AgentChat({
                         cards={cards}
                         accounts={accounts}
                         categories={categories}
-                        onChange={(patch) => setEdits((e) => ({ ...e, [id]: { ...action, ...patch } }))}
+                        onChange={(patch) =>
+                          setEdits((e) => ({ ...e, [id]: { ...action, ...patch } }))
+                        }
                         onConfirm={() => confirm(id, action)}
                         onCancel={() => void record(id, { status: "cancelled" })}
                         userId={userId}
@@ -239,7 +325,8 @@ export function AgentChat({
                   }
                   if (part.type.startsWith("tool-") && "state" in part) {
                     const ui = TOOL_UI[part.type.slice(5)];
-                    const running = part.state === "input-streaming" || part.state === "input-available";
+                    const running =
+                      part.state === "input-streaming" || part.state === "input-available";
                     if (running) {
                       return (
                         <div key={i} className="flex items-center gap-2 text-sm">
@@ -249,11 +336,19 @@ export function AgentChat({
                       );
                     }
                     return (
-                      <Tool key={i} defaultOpen={false} className="mb-0 w-fit border-border/60 bg-transparent">
+                      <Tool
+                        key={i}
+                        defaultOpen={false}
+                        className="mb-0 w-fit border-border/60 bg-transparent"
+                      >
                         <ToolHeader
                           type={part.type as `tool-${string}`}
                           state={part.state as "output-available"}
-                          title={part.state === "output-error" ? "Não consegui consultar" : ui?.done ?? "Consulta feita"}
+                          title={
+                            part.state === "output-error"
+                              ? "Não consegui consultar"
+                              : (ui?.done ?? "Consulta feita")
+                          }
                         />
                       </Tool>
                     );
