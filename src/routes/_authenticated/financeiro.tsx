@@ -351,6 +351,19 @@ function Financeiro() {
         <TabsContent value="visao" className="pt-2">
           <FinanceCockpit accounts={accounts} transactions={transactions} categories={categories} recurrences={recurrences} payments={invoicePayments} onNavigate={setSub} />
         </TabsContent>
+        <TabsContent value="simular" className="pt-6">
+          <WhatIf
+            accounts={accounts}
+            transactions={transactions}
+            recurrences={recurrences}
+            payments={invoicePayments}
+            cards={cards}
+            categories={categories}
+            contexts={contexts.map((c) => ({ id: c.id, name: c.name, budget_amount: c.budget_amount == null ? null : Number(c.budget_amount) }))}
+            members={memberProfiles.map((m) => ({ id: m.id, name: m.name }))}
+            prefill={simSearch.sim ? { title: simSearch.title, amount: simSearch.amount, categoryId: simSearch.category, contextId: simSearch.context, person: simSearch.person } : undefined}
+          />
+        </TabsContent>
         <TabsContent value="relatorios" className="pt-6">
           <ReportsPanel transactions={transactions} categories={categories} accounts={accounts} memberName={(id) => memberProfiles.find((m) => m.id === id)?.name || (id === userId ? "Você" : "Membro")} />
         </TabsContent>
