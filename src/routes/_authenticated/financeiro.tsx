@@ -14,7 +14,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BudgetPanel, CashFlow, FinanceCalendar, FinanceOverview, FinanceSearch, ReportsPanel } from "@/components/finance/finance-overview";
+import { BudgetPanel, CashFlow, FinanceCalendar, FinanceSearch, ReportsPanel } from "@/components/finance/finance-overview";
+import { FinanceCockpit } from "@/components/finance/finance-cockpit";
+
+const SECTIONS = [
+  { id: "visao", label: "Visão geral", subs: [{ value: "visao", label: "Visão geral" }] },
+  { id: "movimentacoes", label: "Movimentações", subs: [
+    { value: "lancamentos", label: "Lançamentos" },
+    { value: "pagos", label: "Pagos" },
+    { value: "calendario", label: "Calendário" },
+  ] },
+  { id: "compromissos", label: "Compromissos", subs: [
+    { value: "pagar", label: "A pagar" },
+    { value: "parcelas", label: "Parcelas" },
+    { value: "recorrentes", label: "Recorrentes" },
+    { value: "financiamentos", label: "Financiamentos" },
+    { value: "emprestimos", label: "Empréstimos" },
+  ] },
+  { id: "planejamento", label: "Planejamento", subs: [
+    { value: "orcamento", label: "Orçamento" },
+    { value: "fluxo", label: "Projeção" },
+    { value: "relatorios", label: "Relatórios" },
+  ] },
+  { id: "contas", label: "Contas e cartões", subs: [
+    { value: "contas", label: "Contas" },
+    { value: "cartoes", label: "Cartões" },
+    { value: "categorias", label: "Categorias" },
+  ] },
+];
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -123,6 +150,8 @@ function Financeiro() {
   const [originFilter, setOriginFilter] = useState(ALL);
   const [ownerFilter, setOwnerFilter] = useState(ALL);
   const [search, setSearch] = useState("");
+  const [sub, setSub] = useState("visao");
+  const section = SECTIONS.find((sec) => sec.subs.some((item) => item.value === sub)) ?? SECTIONS[0]!;
 
   const transactions = transactionsQuery.data ?? [];
   const accounts = accountsQuery.data ?? [];
@@ -261,7 +290,7 @@ function Financeiro() {
     <div className="space-y-8">
       <PageHeader
         title="Financeiro"
-        subtitle="Contas, cartões, parcelas e compromissos"
+        subtitle="Como está o dinheiro de vocês?"
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => openQuickAction("income")}>
@@ -277,50 +306,31 @@ function Financeiro() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Patrimônio" value={netWorth(accounts, transactions)} />
-        <StatCard label="Receitas do mês" value={totalIncome(monthly)} tone="success" />
-        <StatCard label="Despesas pagas" value={totalExpense(monthly)} tone="destructive" />
-        <StatCard
-          label="Disponível"
-          value={totalIncome(monthly) - totalExpense(monthly)}
-          tone="primary"
-        />
-        <StatCard label="Total a pagar" value={totalPending(transactions)} />
-        <StatCard label="Total atrasado" value={totalOverdue(transactions)} tone="destructive" />
-        <StatCard label="Pendente do mês" value={totalPending(monthly)} />
-        <StatCard
-          label="Comprometido futuro"
-          value={sumBy(
-            payables.filter((t) => dueDateOf(t) > today),
-            (t) => Number(t.amount),
-          )}
-        />
-      </div>
+      <nav aria-label="Áreas do Financeiro" className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
+        {SECTIONS.map((sec) => (
+          <button
+            key={sec.id}
+            type="button"
+            onClick={() => setSub(sec.subs[0]!.value)}
+            className={`shrink-0 rounded-full px-4 py-2 text-sm transition-colors ${section.id === sec.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-elevated hover:text-foreground"}`}
+          >
+            {sec.label}
+          </button>
+        ))}
+      </nav>
 
-      <FinanceSearch transactions={transactions} categories={categories} />
+      <Tabs value={sub} onValueChange={setSub}>
+        {section.subs.length > 1 ? (
+          <TabsList className="flex h-auto w-full flex-wrap justify-start">
+            {section.subs.map((item) => (
+              <TabsTrigger key={item.value} value={item.value}>{item.label}</TabsTrigger>
+            ))}
+          </TabsList>
+        ) : null}
+        {section.id === "movimentacoes" ? <div className="pt-4"><FinanceSearch transactions={transactions} categories={categories} /></div> : null}
 
-      <Tabs defaultValue="visao">
-        <TabsList className="flex h-auto w-full flex-wrap justify-start">
-          <TabsTrigger value="visao">Visão geral</TabsTrigger>
-          <TabsTrigger value="fluxo">Fluxo de caixa</TabsTrigger>
-          <TabsTrigger value="calendario">Calendário</TabsTrigger>
-          <TabsTrigger value="orcamento">Orçamento</TabsTrigger>
-          <TabsTrigger value="pagar">A pagar</TabsTrigger>
-          <TabsTrigger value="pagos">Pagos</TabsTrigger>
-          <TabsTrigger value="lancamentos">Lançamentos</TabsTrigger>
-          <TabsTrigger value="parcelas">Parcelamentos</TabsTrigger>
-          <TabsTrigger value="recorrentes">Recorrentes</TabsTrigger>
-          <TabsTrigger value="emprestimos">Empréstimos</TabsTrigger>
-          <TabsTrigger value="financiamentos">Financiamentos</TabsTrigger>
-          <TabsTrigger value="contas">Contas</TabsTrigger>
-          <TabsTrigger value="cartoes">Cartões</TabsTrigger>
-          <TabsTrigger value="categorias">Categorias</TabsTrigger>
-          <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="visao" className="pt-6">
-          <FinanceOverview transactions={transactions} accounts={accounts} cards={cards} categories={categories} loans={loans} financings={financings} />
+        <TabsContent value="visao" className="pt-2">
+          <FinanceCockpit accounts={accounts} transactions={transactions} categories={categories} onNavigate={setSub} />
         </TabsContent>
         <TabsContent value="relatorios" className="pt-6">
           <ReportsPanel transactions={transactions} categories={categories} accounts={accounts} memberName={(id) => memberProfiles.find((m) => m.id === id)?.name || (id === userId ? "Você" : "Membro")} />
