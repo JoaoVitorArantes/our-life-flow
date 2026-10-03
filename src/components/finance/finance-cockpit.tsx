@@ -267,7 +267,7 @@ export function FinanceCockpit({ accounts, transactions, categories, recurrences
         </div>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid min-w-0 grid-cols-1 gap-5 [&>*]:min-w-0 lg:grid-cols-[1.4fr_1fr]">
         <Section title="O que vai acontecer com o dinheiro">
           <MoneyCurve past={past} future={future} />
         </Section>
@@ -299,7 +299,7 @@ export function FinanceCockpit({ accounts, transactions, categories, recurrences
         </Section>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-5 [&>*]:min-w-0 lg:grid-cols-3">
         <Section title="Dinheiro já comprometido">
           <p className="numeric mb-3 text-2xl font-semibold">{formatCurrency(s.commitments)}</p>
           <ul className="space-y-1 text-sm">
