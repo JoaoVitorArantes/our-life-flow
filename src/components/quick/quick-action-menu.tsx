@@ -52,7 +52,8 @@ export function QuickActionMenu() {
         <DrawerHeader className="text-left">
           <DrawerTitle>Criação rápida</DrawerTitle>
         </DrawerHeader>
-        <div className="px-4 pb-3">
+        <div className="min-h-0 overflow-y-auto overscroll-contain">
+        <div className="mx-auto w-full max-w-3xl px-4 pb-3">
           <button
             type="button"
             onClick={() => openQuickAction("inbox")}
@@ -65,7 +66,7 @@ export function QuickActionMenu() {
             </span>
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-2 px-4 pb-8 sm:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-3xl grid-cols-2 gap-2 px-4 pb-8 sm:grid-cols-3 landscape:max-sm:grid-cols-4 lg:grid-cols-4">
           {options.map((option) => (
             <button
               key={option.kind}
@@ -77,6 +78,7 @@ export function QuickActionMenu() {
               {option.label}
             </button>
           ))}
+        </div>
         </div>
       </DrawerContent>
     </Drawer>
