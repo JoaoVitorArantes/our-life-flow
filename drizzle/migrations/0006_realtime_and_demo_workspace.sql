@@ -1,3 +1,6 @@
+-- Guard for fresh databases: the demo flag must exist before the trigger/RPCs below reference it.
+ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS is_demo boolean NOT NULL DEFAULT false;
+
 -- 1) Realtime publication (idempotent)
 DO $$
 DECLARE t text;
