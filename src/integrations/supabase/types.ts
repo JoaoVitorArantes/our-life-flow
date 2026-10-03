@@ -1184,6 +1184,170 @@ export type Database = {
           },
         ]
       }
+      routine_logs: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          log_date: string
+          routine_id: string
+          status: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          log_date: string
+          routine_id: string
+          status?: string
+          user_id?: string
+          workspace_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          log_date?: string
+          routine_id?: string
+          status?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routine_logs_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_logs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routines: {
+        Row: {
+          activity_type: string | null
+          color: string | null
+          context_id: string | null
+          created_at: string
+          created_by: string
+          daily_target: number | null
+          description: string | null
+          duration_minutes: number | null
+          frequency: string
+          goal_id: string | null
+          icon: string | null
+          id: string
+          interval_days: number | null
+          kind: string
+          month_days: number[]
+          person_scope: string
+          recurring_id: string | null
+          show_in_agenda: boolean
+          start_date: string
+          start_time: string | null
+          status: string
+          title: string
+          updated_at: string
+          weekdays: number[]
+          weekly_target: number | null
+          workspace_id: string
+        }
+        Insert: {
+          activity_type?: string | null
+          color?: string | null
+          context_id?: string | null
+          created_at?: string
+          created_by?: string
+          daily_target?: number | null
+          description?: string | null
+          duration_minutes?: number | null
+          frequency?: string
+          goal_id?: string | null
+          icon?: string | null
+          id?: string
+          interval_days?: number | null
+          kind?: string
+          month_days?: number[]
+          person_scope?: string
+          recurring_id?: string | null
+          show_in_agenda?: boolean
+          start_date?: string
+          start_time?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          weekdays?: number[]
+          weekly_target?: number | null
+          workspace_id: string
+        }
+        Update: {
+          activity_type?: string | null
+          color?: string | null
+          context_id?: string | null
+          created_at?: string
+          created_by?: string
+          daily_target?: number | null
+          description?: string | null
+          duration_minutes?: number | null
+          frequency?: string
+          goal_id?: string | null
+          icon?: string | null
+          id?: string
+          interval_days?: number | null
+          kind?: string
+          month_days?: number[]
+          person_scope?: string
+          recurring_id?: string | null
+          show_in_agenda?: boolean
+          start_date?: string
+          start_time?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          weekdays?: number[]
+          weekly_target?: number | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routines_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "contexts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routines_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routines_recurring_id_fkey"
+            columns: ["recurring_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routines_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settlements: {
         Row: {
           amount: number
