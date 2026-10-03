@@ -8,6 +8,7 @@ import type { Database } from "@/integrations/supabase/types";
 const bodySchema = z.object({
   threadId: z.string().uuid(),
   messages: z.array(z.any()).min(1).max(200),
+  pageContext: z.string().max(300).optional(),
 });
 
 function spToday() {
@@ -66,6 +67,7 @@ Cartões: ${list(base.cards.filter((c) => c.is_active).map((c) => ({ id: c.id, n
 Contas: ${list(base.accounts.filter((a) => a.is_active).map((a) => ({ id: a.id, name: a.name, type: a.account_type, owner_id: a.owner_id })))}
 Categorias: ${list(base.categories)}
 Contextos: ${list(base.contexts)}
+Contexto da tela atual: ${parsed.data.pageContext ?? "não informado"}. Use isso apenas para entender referências como “aqui”, “esta meta” ou “essa compra”. O contexto não limita suas consultas nem ações e nunca substitui os dados das ferramentas.
 
 COMO AGIR
 - Você TEM acesso aos dados reais pelas ferramentas. NUNCA peça ao usuário dados que estão no app e NUNCA diga que não tem acesso. Para qualquer pergunta sobre a vida/dados dele, chame as ferramentas antes de responder.

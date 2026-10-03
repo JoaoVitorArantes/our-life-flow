@@ -67,11 +67,13 @@ export function AgentChat({
   initialMessages,
   initialActionStates,
   autoSend,
+  pageContext,
 }: {
   threadId: string;
   initialMessages: UIMessage[];
   initialActionStates: Record<string, ActionState>;
   autoSend?: string | undefined;
+  pageContext?: string | undefined;
 }) {
   const { workspaceId, userId, memberProfiles } = useApp();
   const queryClient = useQueryClient();
@@ -82,18 +84,19 @@ export function AgentChat({
   const [states, setStates] = useState(initialActionStates);
   const [edits, setEdits] = useState<Record<string, InboxAction>>({});
   const sentAuto = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/agent",
-        body: { threadId },
+        body: { threadId, pageContext },
         headers: async (): Promise<Record<string, string>> => {
           const { data } = await supabase.auth.getSession();
           return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {};
         },
       }),
-    [threadId],
+    [pageContext, threadId],
   );
 
   const { messages, sendMessage, status, stop } = useChat({
@@ -107,6 +110,10 @@ export function AgentChat({
     },
   });
   const busy = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    if (!busy) textareaRef.current?.focus();
+  }, [busy]);
 
   useEffect(() => {
     if (!autoSend || sentAuto.current || initialMessages.length > 0) return;
@@ -277,6 +284,7 @@ export function AgentChat({
 
       <PromptInput onSubmit={({ text: t }) => send(t)} className="mt-2">
         <PromptInputTextarea
+          ref={textareaRef}
           autoFocus
           value={text}
           onChange={(e) => setText(e.target.value)}
