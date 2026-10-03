@@ -109,10 +109,13 @@ export function AgentChat({
   const busy = status === "submitted" || status === "streaming";
 
   useEffect(() => {
-    if (autoSend && !sentAuto.current && initialMessages.length === 0) {
+    if (!autoSend || sentAuto.current || initialMessages.length > 0) return;
+    // adiado: em modo estrito o primeiro efeito é desmontado antes do envio
+    const t = window.setTimeout(() => {
       sentAuto.current = true;
       void sendMessage({ text: autoSend });
-    }
+    }, 60);
+    return () => window.clearTimeout(t);
   }, [autoSend, initialMessages.length, sendMessage]);
 
   const nameOf = useMemo(() => {
