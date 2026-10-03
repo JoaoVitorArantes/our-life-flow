@@ -27,8 +27,21 @@ export function getProjectedRecurring(
         t.status !== "CANCELLED" &&
         (t.recurring_id === r.id || (t.type === r.type && t.description.trim().toLowerCase() === name)),
     );
+    // Mensal com "dia de cobrança": cada ocorrência cai nesse dia (limitado ao fim do mês).
+    const dueDay = freq === "MONTHLY" && r.due_day ? Number(r.due_day) : null;
+    const monthlyOn = (i: number) => {
+      const [y, m] = r.start_date.split("-").map(Number);
+      const first = new Date(y!, m! - 1, 1);
+      const pick = (shift: number) => {
+        const last = new Date(first.getFullYear(), first.getMonth() + shift + 1, 0).getDate();
+        const d = new Date(first.getFullYear(), first.getMonth() + shift, Math.min(dueDay!, last));
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      };
+      const offset = pick(0) < r.start_date ? 1 : 0;
+      return pick(i + offset);
+    };
     for (let i = 0; i < 400; i++) {
-      const date = shiftDate(r.start_date, i, freq);
+      const date = dueDay ? monthlyOn(i) : shiftDate(r.start_date, i, freq);
       if (date > horizon || (r.end_date && date > r.end_date)) break;
       if (date < today) continue;
       const key = freq === "WEEKLY" ? date : freq === "YEARLY" ? date.slice(0, 4) : date.slice(0, 7);

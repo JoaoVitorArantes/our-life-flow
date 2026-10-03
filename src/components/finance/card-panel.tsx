@@ -60,30 +60,54 @@ export function CardPanel({
   const today = todayISO();
   const hasClosing = !!card.closing_day;
   const hasDue = !!card.due_day;
-  const cycles = cardCycles(card.closing_day ?? 1);
+  const baseCycles = cardCycles(card.closing_day ?? 1);
   const inRange = (t: Transaction, range: { start: string; end: string }) =>
     t.transaction_date >= range.start && t.transaction_date <= range.end;
 
   const active = transactions.filter((t) => t.status !== "CANCELLED");
+  const dueOfClosing = (closing: string) => (hasDue ? cardDueDate(closing, card.due_day!) : null);
+  const openAmount = (range: { start: string; end: string }) => {
+    const items = active.filter((t) => inRange(t, range) && t.status !== "PAID");
+    const due = dueOfClosing(range.end);
+    return sumBy(items, (t) => Number(t.amount)) - (due && paidFor ? paidFor(due) : 0);
+  };
+  // Uma fatura já fechada e ainda não quitada continua sendo a "fatura atual" até ser paga.
+  let displayed = baseCycles.current;
+  let probe = baseCycles.current;
+  for (let i = 0; i < 6; i++) {
+    const [y, m, d] = probe.start.split("-").map(Number);
+    const prev = cardCycles(card.closing_day ?? 1, new Date(y!, m! - 1, d! - 1)).current;
+    if (openAmount(prev) > 0.009) displayed = prev;
+    probe = prev;
+  }
+  const cycles = { current: displayed };
+
   const invoice = active.filter((t) => inRange(t, cycles.current));
   // Tudo lançado depois do fechamento atual entra na próxima fatura (inclusive parcelas futuras).
   const nextInvoice = active.filter((t) => t.transaction_date > cycles.current.end);
   const invoiceTotal = sumBy(invoice, (t) => Number(t.amount));
   const nextTotal = sumBy(nextInvoice, (t) => Number(t.amount));
 
+  const paidCycles = new Set<string>();
+  for (let r = displayed; r.end <= baseCycles.current.end; ) {
+    const due = dueOfClosing(r.end);
+    if (due) paidCycles.add(due);
+    const [y, m, d] = r.end.split("-").map(Number);
+    r = cardCycles(card.closing_day ?? 1, new Date(y!, m! - 1, d! + 1)).current;
+  }
   const used = Math.max(
     0,
     sumBy(
       active.filter((t) => t.status !== "PAID"),
       (t) => Number(t.amount),
-    ) - (hasDue && paidFor ? paidFor(cardDueDate(cycles.current.end, card.due_day!)) : 0),
+    ) - (paidFor ? sumBy([...paidCycles], (due) => paidFor(due)) : 0),
   );
   const limit = Number(card.credit_limit) || 0;
   const available = Math.max(0, limit - used);
   const usage = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
 
   const closingISO = cycles.current.end;
-  const dueISO = hasDue ? cardDueDate(closingISO, card.due_day!) : null;
+  const dueISO = dueOfClosing(closingISO);
   const openItems = invoice.filter((t) => t.status !== "PAID");
   const partialPaid = dueISO && paidFor ? paidFor(dueISO) : 0;
   const openTotal = Math.max(0, Math.round((sumBy(openItems, (t) => Number(t.amount)) - partialPaid) * 100) / 100);
