@@ -39,7 +39,7 @@ function incomeIn(list: Transaction[], key: string) {
   return active(list).filter((t) => t.type === "INCOME" && monthKey(t.transaction_date) === key);
 }
 
-function Tile({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: "good" | "bad" | "accent" }) {
+function Tile({ label, value, hint, tone }: { label: string; value: string; hint?: string | undefined; tone?: "good" | "bad" | "accent" | undefined }) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
       <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
@@ -289,14 +289,15 @@ export function BudgetPanel({ transactions, categories, workspaceId }: { transac
 
   async function save(cat: Category) {
     const raw = draft[cat.id];
-    if (raw === undefined) return;
+    if (raw === undefined) return undefined;
     const value = raw.trim() === "" ? null : Number(raw.replace(",", "."));
-    if (value !== null && (Number.isNaN(value) || value < 0)) return toast.error("Valor inválido");
+    if (value !== null && (Number.isNaN(value) || value < 0)) { toast.error("Valor inválido"); return undefined; }
     const { error } = await supabase.from("categories").update({ monthly_budget: value }).eq("id", cat.id).eq("workspace_id", workspaceId);
-    if (error) return toast.error("Não foi possível salvar");
+    if (error) { toast.error("Não foi possível salvar"); return undefined; }
     toast.success(`Orçamento de ${cat.name} salvo`);
     setDraft(({ [cat.id]: _, ...rest }) => rest);
-    queryClient.invalidateQueries({ queryKey: ["categories", workspaceId] });
+    await queryClient.invalidateQueries({ queryKey: ["categories", workspaceId] });
+    return undefined;
   }
 
   return (
