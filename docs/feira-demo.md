@@ -4,6 +4,17 @@ Público-alvo: bancas técnicas e avaliadores.
 
 > **Importante:** o Life OS precisa de internet para login, dados vivos, sincronização e IA. Não há modo offline. Leve um hotspot de reserva.
 
+## Status atual
+
+| Item | No código | No banco hospedado |
+| --- | --- | --- |
+| Sinal de sincronização `workspace_sync_events` + gatilhos | Pronto | Migrações `0007`/`0008` registradas no histórico do banco do projeto (o mesmo banco atende prévia e site publicado). |
+| Preparar/resetar demo (`prepare_demo_workspace`, `reset_demo_workspace`) | Pronto | Funções presentes no banco. |
+| Workspace demo marcado | — | **Ainda não criado.** Seguir a seção 1. |
+| Teste real em dois aparelhos | — | **Não realizado.** Fazer após a seção 1, com o site publicado na versão atual. |
+
+Se o projeto for recriado em outro banco, aplicar todas as migrações de `drizzle/migrations` antes de testar a sincronização: sem elas não há sinal ao vivo (só a atualização ao voltar ao app).
+
 ## 1. Preparação feita por um administrador (uma vez)
 
 1. Crie uma conta dedicada à demonstração pelo cadastro normal do app, com um e-mail exclusivo da equipe (nunca uma conta pessoal). Não publique essa senha em material impresso nem no código.
@@ -16,7 +27,7 @@ Público-alvo: bancas técnicas e avaliadores.
 
    Usuários comuns não conseguem fazer isso: um gatilho no banco bloqueia qualquer alteração de `is_demo` vinda do app.
 4. Opcional: para mostrar a sincronização entre duas pessoas, crie uma segunda conta demo e convide-a pelo próprio app (Configurações → Workspace).
-5. Entre com a conta demo → Configurações → **Preparar / resetar demonstração**. O banco valida que o workspace é demo, apaga os registros fictícios e recria o conjunto completo numa única operação.
+5. Saia e entre de novo (ou recarregue) para o app ler a marcação. Depois, com a conta demo → Configurações → **Preparar / resetar demonstração**. O banco valida que o workspace é demo, apaga os registros fictícios e recria o conjunto completo numa única operação.
 
 Garantias:
 - Os botões de demonstração só aparecem em workspaces marcados como demo, com faixa amarela fixa “Ambiente de demonstração”.
@@ -32,7 +43,7 @@ O que o conjunto fictício cobre: contas, cartão e fatura, lançamentos, recorr
 | --- | --- | --- |
 | 0:00–0:40 | Dashboard e faixa de demonstração | Problema: vida financeira e rotina espalhadas. Stack: TanStack Start (SSR + funções no servidor), React Query, PostgreSQL com RLS. |
 | 0:40–1:40 | Financeiro: saldo, fatura do Cartão Demo, parcelamento do notebook, aluguel recorrente, “Dinheiro livre” | Cálculo de dinheiro livre a partir de compromissos futuros; parcelas e recorrências derivadas sem duplicar registros. |
-| 1:40–2:30 | Contextos: “Viagem de férias” com orçamento e “Semestre letivo” ligando tarefas, eventos e gastos | Modelo relacional por workspace; gatilhos impedem referências entre workspaces. |
+| 1:40–2:30 | Contextos: “Viagem de férias” com orçamento e “Semestre letivo” ligando tarefas, eventos e gastos | Modelo relacional por workspace; gatilhos de validação recusam referências principais de outro workspace. |
 | 2:30–3:30 | **Sincronização em dois aparelhos** (seção 3) | Gatilhos gravam um sinal mínimo (workspace, tabela, operação — sem ids) em `workspace_sync_events`; o Realtime só entrega a quem passa na política RLS de membro do workspace; o app invalida o cache em lote. |
 | 3:30–4:30 | Life AI: “Quanto gastei com alimentação este mês?” e “Crie uma tarefa para amanhã” | A IA não acessa o banco: usa ferramentas controladas que consultam com a permissão do próprio usuário; escritas viram propostas que exigem “Confirmar”. |
 | 4:30–5:00 | Segurança e perguntas | Isolamento por workspace, modo demo marcado só por administrador, reset atômico no servidor. |
@@ -53,7 +64,7 @@ Aparelho A ── grava ──> PostgreSQL (RLS por workspace)
                  workspace_sync_events ── Realtime (checa RLS) ──> Aparelho B ── recarrega os dados
 ```
 
-- Isolamento: toda tabela tem `workspace_id` e políticas `is_workspace_member`; gatilhos impedem referências cruzadas.
+- Isolamento: as tabelas de dados de cada módulo têm `workspace_id` e políticas RLS baseadas em membro do workspace (exceções: `profiles`, ligada ao próprio usuário, e `workspaces`, a raiz). Gatilhos de validação checam que as referências principais (contexto, conta, cartão, categoria etc.) pertencem ao mesmo workspace — não é uma garantia formal sobre toda chave estrangeira.
 - Exclusões também sincronizam, sem expor ids para outros workspaces.
 - IA: ferramentas de leitura com a permissão do usuário; escrita só após “Confirmar”.
 - Sem modo offline: sem internet não há login, dados nem sincronização. A faixa de demonstração mostra “Sincronização ao vivo ativa” ou “pausada (requer internet)”.
