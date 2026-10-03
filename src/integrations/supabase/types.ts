@@ -70,6 +70,92 @@ export type Database = {
           },
         ]
       }
+      ai_conversations: {
+        Row: {
+          action_states: Json
+          created_at: string
+          created_by: string
+          id: string
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          action_states?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          action_states?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_messages: {
+        Row: {
+          author_id: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          message: Json
+          message_id: string
+          role: string
+          workspace_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message: Json
+          message_id: string
+          role: string
+          workspace_id: string
+        }
+        Update: {
+          author_id?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message?: Json
+          message_id?: string
+          role?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_messages_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_invoice_payments: {
         Row: {
           amount: number
