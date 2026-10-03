@@ -1968,9 +1968,17 @@ export type Database = {
         Args: { _transaction_id: string }
         Returns: undefined
       }
+      reset_demo_workspace: {
+        Args: { _workspace_id: string }
+        Returns: undefined
+      }
       respond_partner_invitation: {
         Args: { _accept: boolean; _token: string }
         Returns: string
+      }
+      seed_demo_workspace: {
+        Args: { _workspace_id: string }
+        Returns: undefined
       }
       set_active_workspace: { Args: { _workspace_id: string }; Returns: string }
       user_is_workspace_member: {
