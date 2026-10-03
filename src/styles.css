@@ -186,3 +186,10 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
 }
+
+/* Mobile keyboard: keep focused fields clear of the bottom nav/keyboard */
+input, textarea, select, [role="combobox"] {
+  scroll-margin-top: 5rem;
+  scroll-margin-bottom: 7rem;
+}
+html { -webkit-text-size-adjust: 100%; }
