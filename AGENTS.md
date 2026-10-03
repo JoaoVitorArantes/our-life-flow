@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- Routine/habit occurrences are derived from the routine's frequency (occursOn) and only check-ins are stored in routine_logs — never persist occurrences as tasks or events, so the Agenda never duplicates them.
