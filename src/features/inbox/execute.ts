@@ -99,7 +99,7 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
       budget_amount: a.amount,
       category: a.purchase_category,
       priority: (["LOW", "MEDIUM", "HIGH"].includes(a.priority ?? "") ? a.priority : "MEDIUM") as PurchasePriority,
-      status: "WANT",
+      status: "WANT_TO_BUY",
       context_id: a.context_id,
       person_scope: (["JOAO", "RENIFER", "COUPLE"].includes(a.person_scope ?? "") ? a.person_scope : "COUPLE") as PersonScope,
     });
