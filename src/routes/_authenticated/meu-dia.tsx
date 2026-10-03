@@ -15,7 +15,7 @@ import { useRoutines, useRoutineLogs, occursOn, routineStats } from "@/features/
 import { RoutineRow } from "@/components/routines/routine-row";
 import { RoutineDialog } from "@/components/routines/routine-dialog";
 import { ActivityDialog } from "@/components/activities/activity-dialog";
-import { relationshipDuration } from "@/components/common/relationship-time";
+import { relationshipDuration } from "@/components/nos/relationship-time";
 import { toISO } from "@/features/finance/calc";
 import { formatCurrency } from "@/lib/format";
 

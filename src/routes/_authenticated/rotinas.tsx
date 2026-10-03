@@ -97,8 +97,7 @@ function Rotinas() {
                       <p className="text-xs text-muted-foreground">{[frequencyLabel(r), r.start_time?.slice(0, 5), person ? `${person.emoji} ${person.label}` : null].filter(Boolean).join(" · ")}</p>
                     </div>
                     <div className="flex shrink-0 gap-1">
-                      <Button size="sm" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>Editar</Button>
-                      <RecordActions onDelete={() => remove(r)} confirmTitle="Excluir esta rotina?" confirmDescription="O histórico de check-ins dela também será apagado." />
+                      <RecordActions onEdit={() => { setEditing(r); setOpen(true); }} onDelete={() => remove(r)} confirmTitle="Excluir esta rotina?" confirmDescription="O histórico de check-ins dela também será apagado." />
                     </div>
                   </div>
                   <dl className="grid grid-cols-4 gap-2 text-center text-xs">
