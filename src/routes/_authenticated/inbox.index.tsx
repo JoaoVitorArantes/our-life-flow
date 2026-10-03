@@ -32,7 +32,7 @@ function InboxHome() {
             <p className="text-sm text-muted-foreground">O cérebro do seu Life OS: consulta seus dados reais, analisa e registra — sempre com sua confirmação.</p>
           </div>
         </div>
-        <PromptInput onSubmit={({ text: t }) => t.trim() && void start(t.trim())}>
+        <PromptInput onSubmit={({ text: t }) => { if (t.trim()) void start(t.trim()); }}>
           <PromptInputTextarea autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="Pergunte ou conte algo…" className="text-base md:text-sm" aria-label="Mensagem para o Life OS" />
           <PromptInputFooter className="justify-end">
             <PromptInputSubmit status={pending ? "submitted" : "ready"} disabled={pending || !text.trim()} />

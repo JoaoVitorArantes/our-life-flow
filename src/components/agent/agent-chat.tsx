@@ -242,7 +242,7 @@ export function AgentChat({
                       <Tool key={i} defaultOpen={false} className="mb-0 w-fit border-border/60 bg-transparent">
                         <ToolHeader
                           type={part.type as `tool-${string}`}
-                          state={part.state}
+                          state={part.state as "output-available"}
                           title={part.state === "output-error" ? "Não consegui consultar" : ui?.done ?? "Consulta feita"}
                         />
                       </Tool>
