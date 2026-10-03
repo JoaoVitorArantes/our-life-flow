@@ -20,7 +20,13 @@ export function getProjectedRecurring(
   for (const r of recurrences) {
     if (!r.is_active || r.type === "TRANSFER") continue;
     const freq = (r.frequency === "CUSTOM" ? "MONTHLY" : r.frequency) as RecurrenceFrequency;
-    const real = transactions.filter((t) => t.recurring_id === r.id && t.status !== "CANCELLED");
+    const name = r.description.trim().toLowerCase();
+    // Lançamento real da recorrência: vinculado a ela, ou registrado à mão com mesmo nome e tipo.
+    const real = transactions.filter(
+      (t) =>
+        t.status !== "CANCELLED" &&
+        (t.recurring_id === r.id || (t.type === r.type && t.description.trim().toLowerCase() === name)),
+    );
     for (let i = 0; i < 400; i++) {
       const date = shiftDate(r.start_date, i, freq);
       if (date > horizon || (r.end_date && date > r.end_date)) break;
