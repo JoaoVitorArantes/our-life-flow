@@ -26,12 +26,12 @@ function ThreadPage() {
   const { data, isLoading } = useConversation(threadId);
 
   return (
-    <div className="mx-auto grid h-[calc(100dvh-10rem)] max-w-6xl gap-6 md:grid-cols-[240px_1fr]">
-      <aside className="hidden min-h-0 md:flex md:flex-col">
+    <div className="mx-auto grid h-[calc(100dvh-10rem)] w-full max-w-7xl gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <aside className="hidden min-h-0 lg:flex lg:flex-col">
         <ThreadList activeId={threadId} />
       </aside>
-      <section className="flex min-h-0 flex-col">
-        <div className="mb-2 flex items-center gap-2 md:hidden">
+      <section className="flex min-h-0 min-w-0 flex-col">
+        <div className="mb-2 flex items-center gap-2 lg:hidden">
           <Link to="/inbox" className="grid size-11 place-items-center rounded-lg hover:bg-muted" aria-label="Voltar às conversas">
             <ChevronLeft className="size-5" />
           </Link>
