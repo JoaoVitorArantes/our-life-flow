@@ -199,7 +199,7 @@ function GlobalAgentThread({
   onBack,
 }: {
   threadId: string;
-  firstMessage?: string;
+  firstMessage?: string | undefined;
   context: string;
   onBack: () => void;
 }) {
