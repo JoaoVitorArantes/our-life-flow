@@ -57,7 +57,8 @@ export async function interpret(system: string, messages: ModelMessage[], signal
   });
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
-    messages: [{ role: "system", content: system }, ...messages],
+    instructions: system,
+    messages,
     ...(signal ? { abortSignal: signal } : {}),
     output: Output.object({ schema: interpretationSchema }),
     providerOptions: {
