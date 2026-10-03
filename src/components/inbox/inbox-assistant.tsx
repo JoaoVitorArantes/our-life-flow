@@ -17,9 +17,9 @@ import { executeAction, missingFields } from "@/features/inbox/execute";
 import { useInboxHistory } from "@/features/inbox/history";
 
 type Msg = { role: "user" | "assistant"; content: string };
-type Preview = { key: string; text: string; action: InboxAction };
+export type Preview = { key: string; text: string; action: InboxAction };
 
-const INTENT: Record<InboxAction["intent"], { label: string; emoji: string }> = {
+export const INTENT: Record<InboxAction["intent"], { label: string; emoji: string }> = {
   expense: { label: "Despesa", emoji: "💸" },
   income: { label: "Receita", emoji: "💰" },
   task: { label: "Tarefa", emoji: "✅" },
@@ -257,7 +257,7 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
 
 type Named = { id: string; name: string };
 
-function PreviewCard({
+export function PreviewCard({
   preview,
   nameOf,
   cards,
