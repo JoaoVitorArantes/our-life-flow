@@ -11,16 +11,15 @@
 - [x] Executar compilação e produzir relatório final
 - [x] Adicionar menu mobile completo pelo avatar sem alterar a navegação desktop
 - [x] Tornar o Life OS AI uma camada global com painel contextual, histórico e atalho Ctrl+J
-- [x] Sincronização em tempo real entre aparelhos (Realtime por workspace + invalidação do cache)
-- [x] Workspace de demonstração marcado só por administrador, com preparar/resetar atômicos no banco
+- [x] Workspace de demonstração marcado só por administrador; preparar/resetar atômicos cobrindo também Compras, Atividades e Rotinas
 - [x] Guia da feira em docs/feira-demo.md
 - [x] Sincronização segura por workspace (sinais mínimos com RLS; exclusões sem vazar ids)
-- [x] Demo cobre Compras, Atividades e Rotinas; preparar/resetar atômicos
-- [x] Projeto Android (TWA) com application ID com.joaovitorarantes.lifeos e guia docs/android-play.md
+- [x] Projeto Android (TWA), application ID definitivo com.joaovitorarantes.lifeos, host provisório our-life-flow.lovable.app, guia docs/android-play.md
 - [ ] Conta Google Play Console e verificação de identidade (dono)
 - [ ] Chave de upload / Play App Signing e SHA-256 no assetlinks.json (dono)
-- [ ] Publicar /.well-known/assetlinks.json no domínio final (após SHA-256)
-- [ ] Confirmar domínio final e URLs de retorno do login Google (dono)
-- [ ] Verificar build com Android Studio/Gradle e target API 36 aceito pela Play
+- [ ] Publicar /.well-known/assetlinks.json em our-life-flow.lovable.app (ou no domínio próprio, se confirmado) após obter a SHA-256
+- [ ] Conferir login Google/URLs permitidas no host do app e decidir se haverá domínio próprio (dono)
+- [ ] Gerar Gradle Wrapper e compilar no Android Studio (JDK 17 + SDK 36) — não executado aqui
+- [ ] Criar workspace demo dedicado (SQL de administrador) e testar sincronização em dois aparelhos
 - [ ] Ficha da loja, política de privacidade, exclusão de conta e Segurança dos dados
 - [ ] Teste fechado (12 testadores por 14 dias, se conta pessoal nova)

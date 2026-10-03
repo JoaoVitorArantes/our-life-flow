@@ -3,9 +3,11 @@ plugins {
 }
 
 // Trusted Web Activity wrapper for the hosted Life OS (SSR + server functions + Google OAuth).
-// The app opens https://lifejvrenii.com in Chrome full-screen; no web code is bundled.
+// Opens https://our-life-flow.lovable.app/dashboard in Chrome full-screen; no web code is bundled.
+// Provisional host = current Lovable-hosted domain. Change only if the owner confirms a custom domain
+// (also update res/values/strings.xml asset_statements and the site's assetlinks.json).
 def twa = [
-    host        : "lifejvrenii.com",
+    host        : "our-life-flow.lovable.app",
     launchUrl   : "/dashboard",
     name        : "Life OS",
     themeColor  : "#0B0D10",
