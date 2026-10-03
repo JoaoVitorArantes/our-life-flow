@@ -27,6 +27,7 @@ import { Route as AuthenticatedNosRouteImport } from './routes/_authenticated/no
 import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
 import { Route as AuthenticatedRotinasRouteImport } from './routes/_authenticated/rotinas'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
+import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
 import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
 import { Route as AuthenticatedMetasIdRouteImport } from './routes/_authenticated/metas.$id'
@@ -121,6 +122,11 @@ const AuthenticatedTarefasRoute = AuthenticatedTarefasRouteImport.update({
   path: '/tarefas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAgentRoute = ApiAgentRouteImport.update({
+  id: '/api/agent',
+  path: '/api/agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedContextosIndexRoute =
   AuthenticatedContextosIndexRouteImport.update({
     id: '/contextos/',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/notas': typeof AuthenticatedNotasRoute
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/api/agent': typeof ApiAgentRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
   '/contextos/': typeof AuthenticatedContextosIndexRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/notas': typeof AuthenticatedNotasRoute
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
+  '/api/agent': typeof ApiAgentRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
   '/contextos': typeof AuthenticatedContextosIndexRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/notas': typeof AuthenticatedNotasRoute
   '/_authenticated/rotinas': typeof AuthenticatedRotinasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
+  '/api/agent': typeof ApiAgentRoute
   '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/_authenticated/metas/$id': typeof AuthenticatedMetasIdRoute
   '/_authenticated/contextos/': typeof AuthenticatedContextosIndexRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/rotinas'
     | '/tarefas'
+    | '/api/agent'
     | '/contextos/$id'
     | '/metas/$id'
     | '/contextos/'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/notas'
     | '/rotinas'
     | '/tarefas'
+    | '/api/agent'
     | '/contextos/$id'
     | '/metas/$id'
     | '/contextos'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notas'
     | '/_authenticated/rotinas'
     | '/_authenticated/tarefas'
+    | '/api/agent'
     | '/_authenticated/contextos/$id'
     | '/_authenticated/metas/$id'
     | '/_authenticated/contextos/'
@@ -282,6 +294,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiAgentRoute: typeof ApiAgentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTarefasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/agent': {
+      id: '/api/agent'
+      path: '/api/agent'
+      fullPath: '/api/agent'
+      preLoaderRoute: typeof ApiAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/contextos/': {
       id: '/_authenticated/contextos/'
       path: '/contextos'
@@ -493,6 +513,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiAgentRoute: ApiAgentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
