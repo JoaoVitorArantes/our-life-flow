@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import type { Tables, Enums } from "@/integrations/supabase/types";
 import { useEvents, useTasks, useGoals, useNotes, type Event } from "@/features/planner/queries";
-import { useTransactions, type Transaction } from "@/features/finance/queries";
+import { useRecurring, useTransactions, type Transaction } from "@/features/finance/queries";
+import { getProjectedRecurring } from "@/features/finance/safe-to-spend";
 import { useContexts } from "@/features/contexts/queries";
 import { dueDateOf, statusOf, toISO } from "@/features/finance/calc";
 
@@ -122,6 +123,7 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
   const goals = useGoals(workspaceId);
   const notes = useNotes(workspaceId);
   const transactions = useTransactions(workspaceId);
+  const recurring = useRecurring(workspaceId);
   const contexts = useContexts(workspaceId);
 
   const from = range?.from ?? addDays(new Date(), -400);
@@ -208,6 +210,32 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
       });
     }
 
+    // Previsões de recorrentes (ex.: salário): mesmas do Dinheiro livre, nunca gravadas.
+    const projFrom = fromIso > todayIso ? fromIso : todayIso;
+    if (projFrom <= toIso) {
+      for (const t of getProjectedRecurring(recurring.data ?? [], transactions.data ?? [], projFrom, toIso)) {
+        const due = dueDateOf(t);
+        if (due < fromIso || due > toIso) continue;
+        list.push({
+          key: `finance:${t.id}`,
+          recordId: t.id,
+          kind: "finance",
+          title: `${t.description} (previsto)`,
+          date: due,
+          minutes: null,
+          endMinutes: null,
+          amount: Number(t.amount),
+          contextId: t.context_id,
+          ownerId: t.owner_id,
+          done: false,
+          overdue: false,
+          hint: "Previsão de recorrente",
+          location: null,
+          recurring: true,
+        });
+      }
+    }
+
     for (const goal of goals.data ?? []) {
       if (!goal.due_date || goal.due_date < fromIso || goal.due_date > toIso) continue;
       const done = goal.status === "DONE";
@@ -261,7 +289,7 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
       return a.title.localeCompare(b.title);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events.data, tasks.data, transactions.data, goals.data, notes.data, fromIso, toIso]);
+  }, [events.data, tasks.data, transactions.data, recurring.data, goals.data, notes.data, fromIso, toIso]);
 
   return {
     items,
