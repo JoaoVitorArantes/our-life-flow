@@ -60,9 +60,9 @@ function Configuracoes() {
     if (!workspaceId || !userId) return;
     setBusy(true);
     try {
-      const result = await seedDemoData(workspaceId, userId);
+      await seedDemoData(workspaceId);
       await queryClient.invalidateQueries();
-      toast.success(result.skipped ? "Os dados de demonstração já existem." : "Dados de demonstração criados.");
+      toast.success("Dados fictícios recriados.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível criar.");
     } finally {
@@ -76,7 +76,7 @@ function Configuracoes() {
     try {
       await clearDemoData(workspaceId);
       await queryClient.invalidateQueries();
-      toast.success("Dados de demonstração removidos.");
+      toast.success("Dados fictícios removidos.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível remover.");
     } finally {
@@ -154,20 +154,22 @@ function Configuracoes() {
         <div className="mt-4 border-t border-border pt-4"><PartnerSettings /></div>
       </Panel>
 
-      <Panel className="space-y-3">
-        <PanelTitle>Dados de demonstração</PanelTitle>
-        <p className="text-sm text-muted-foreground">
-          Todo registro de demonstração fica marcado e pode ser removido sem afetar seus dados reais.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" disabled={busy} onClick={loadDemo}>
-            Criar dados de exemplo
-          </Button>
-          <Button size="sm" variant="ghost" disabled={busy} onClick={removeDemo}>
-            Remover
-          </Button>
-        </div>
-      </Panel>
+      {workspace?.is_demo ? (
+        <Panel className="space-y-3 border-warning/40">
+          <PanelTitle>Dados de demonstração</PanelTitle>
+          <p className="text-sm text-muted-foreground">
+            Este é um workspace de demonstração. "Preparar" apaga os registros fictícios e recria o conjunto completo; "Remover" apaga somente os registros fictícios.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" disabled={busy} onClick={loadDemo}>
+              Preparar / resetar demonstração
+            </Button>
+            <Button size="sm" variant="ghost" disabled={busy} onClick={removeDemo}>
+              Remover dados fictícios
+            </Button>
+          </div>
+        </Panel>
+      ) : null}
 
       <Panel>
         <PanelTitle>Conta</PanelTitle>
