@@ -57,6 +57,13 @@
       "when": 1791044332718,
       "tag": "0007_secure_workspace_sync_and_demo_integrity",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791044355582,
+      "tag": "0008_prepare_demo_workspace",
+      "breakpoints": true
     }
   ]
 }

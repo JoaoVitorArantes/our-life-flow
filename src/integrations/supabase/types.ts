@@ -1996,6 +1996,10 @@ export type Database = {
       }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
+      prepare_demo_workspace: {
+        Args: { _workspace_id: string }
+        Returns: undefined
+      }
       rebuild_settlements: { Args: { _workspace_id?: string }; Returns: number }
       rebuild_transaction_settlement: {
         Args: { _transaction_id: string }
