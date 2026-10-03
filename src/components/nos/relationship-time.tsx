@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarHeart, ChevronRight, Plus } from "lucide-react";
+import { CalendarHeart, ChevronRight, Heart } from "lucide-react";
 import { useApp } from "@/features/app/app-context";
 import { MemberAvatar } from "@/components/profile/member-avatar";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function addCalendarMonths(date: Date, months: number) {
@@ -45,7 +44,7 @@ export function relationshipDuration(start: Date, now: Date) {
 const pad = (value: number) => String(value).padStart(2, "0");
 
 export function RelationshipTime() {
-  const { memberProfiles, workspace, relationship } = useApp();
+  const { memberProfiles, relationship } = useApp();
   const [now, setNow] = useState(() => new Date());
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -73,77 +72,54 @@ export function RelationshipTime() {
       </div>
     );
   }
+  const durationLabel = [
+    duration.years ? `${duration.years} ${duration.years === 1 ? "ano" : "anos"}` : null,
+    duration.months ? `${duration.months} ${duration.months === 1 ? "mês" : "meses"}` : null,
+    `${duration.days} ${duration.days === 1 ? "dia" : "dias"}`,
+  ].filter(Boolean).join(" · ");
   const longDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric" }).format(start);
   const shortDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(start);
 
   return (
     <>
-      <Button
+      <button
         type="button"
-        variant="ghost"
         onClick={() => setOpen(true)}
-        className="group relative h-auto w-full justify-start overflow-hidden rounded-2xl border border-primary/20 bg-surface/90 p-5 text-left text-foreground shadow-lift backdrop-blur-xl transition-all duration-300 hover:border-primary/45 hover:bg-surface sm:p-7"
+        aria-label="Ver detalhes do Tempo de Nós"
+        className="group flex min-h-[80px] w-full items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-4 text-left shadow-sm transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-4 sm:px-5"
       >
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 overflow-hidden bg-primary/5">
-          {workspace?.avatar_url ? (
-            <img
-              src={workspace.avatar_url}
-              alt="Foto compartilhada do Life OS"
-              className="size-full object-cover opacity-30"
+        <div className="flex shrink-0 items-center">
+          {people.map((person, index) => (
+            <MemberAvatar
+              key={person.id}
+              name={person.name}
+              email={person.email}
+              src={person.avatar_url}
+              className={index ? "-ml-2.5 size-9 border-2 border-surface sm:size-10" : "size-9 border-2 border-surface sm:size-10"}
             />
-          ) : null}
-          <div className="absolute inset-0 bg-background/25" />
+          ))}
         </div>
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-              <span className="size-1.5 rounded-full bg-primary shadow-[0_0_12px_var(--color-primary)]" />
-              Tempo de Nós
-            </div>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex items-center">
-                {people.map((person, index) => (
-                  <MemberAvatar
-                    key={person.id}
-                    name={person.name}
-                    email={person.email}
-                    src={person.avatar_url}
-                    className={index ? "-ml-2 size-10 border-2 border-surface" : "size-10 border-2 border-surface"}
-                  />
-                ))}
-                {people.length === 1 ? <Plus className="mx-1 size-3 text-muted-foreground" /> : null}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">{names.join(" + ") || "Nossa história"}</p>
-                <p className="text-xs text-muted-foreground">Desde {longDate}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4 sm:gap-7">
-            {[
-              [duration.years, "anos"],
-              [duration.months, "meses"],
-              [duration.days, "dias"],
-            ].map(([value, label]) => (
-              <div key={label} className="min-w-0 text-center">
-                <p className="numeric font-mono text-3xl font-medium text-foreground sm:text-4xl">{pad(Number(value))}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-between gap-4 border-t border-border/70 pt-4 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
-            <div>
-              <p className="numeric font-mono text-xl text-foreground sm:text-2xl">
-                {pad(duration.hours)}:{pad(duration.minutes)}:{pad(duration.seconds)}
-              </p>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">horas · minutos · segundos</p>
-            </div>
-            <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
-          </div>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
+            <Heart className="size-3 shrink-0 fill-primary text-primary" aria-hidden />
+            <span className="truncate">{names.join(" + ") || "Nossa história"}</span>
+          </p>
+          <p className="truncate text-xs text-muted-foreground">Juntos desde {longDate}</p>
+          <p className="mt-1 flex items-baseline gap-2 sm:hidden">
+            <span className="numeric text-sm font-semibold text-foreground">{durationLabel}</span>
+            <span className="numeric font-mono text-[11px] text-muted-foreground tabular-nums">{pad(duration.hours)}:{pad(duration.minutes)}:{pad(duration.seconds)}</span>
+          </p>
         </div>
-      </Button>
+        <div className="hidden shrink-0 text-right sm:block">
+          <p className="numeric text-sm font-semibold text-foreground sm:text-base">
+            {durationLabel}
+          </p>
+          <p className="numeric font-mono text-[11px] text-muted-foreground tabular-nums">
+            {pad(duration.hours)}:{pad(duration.minutes)}:{pad(duration.seconds)}
+          </p>
+        </div>
+        <ChevronRight className="hidden size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary sm:block" />
+      </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
