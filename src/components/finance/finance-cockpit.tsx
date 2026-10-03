@@ -17,6 +17,8 @@ type Props = {
 };
 
 const amt = (t: Transaction) => Number(t.amount) || 0;
+/** Ícones de categoria guardam nomes de ícone; só exibimos quando for emoji. */
+const emojiOf = (icon?: string | null) => (icon && !/^[a-z0-9-]+$/i.test(icon) ? `${icon} ` : "");
 
 function relDay(iso: string, today: string) {
   const d = daysBetween(today, iso);
@@ -317,7 +319,7 @@ export function FinanceCockpit({ accounts, transactions, categories, onNavigate 
             <ul className="space-y-3 text-sm">
               {budgets.map(({ c, spent, budget }) => (
                 <li key={c.id} className="space-y-1">
-                  <div className="flex justify-between"><span>{c.icon ? `${c.icon} ` : ""}{c.name}</span><span className="numeric text-muted-foreground">{formatCurrency(spent)} / {formatCurrency(budget)}</span></div>
+                  <div className="flex justify-between"><span>{emojiOf(c.icon)}{c.name}</span><span className="numeric text-muted-foreground">{formatCurrency(spent)} / {formatCurrency(budget)}</span></div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-elevated">
                     <div className={cn("h-full rounded-full bg-primary", spent > budget && "bg-destructive")} style={{ width: `${Math.min(100, (spent / budget) * 100)}%` }} />
                   </div>
@@ -337,7 +339,7 @@ export function FinanceCockpit({ accounts, transactions, categories, onNavigate 
             <ul className="space-y-2 text-sm">
               {top.map(([id, value]) => (
                 <li key={id} className="flex justify-between">
-                  <span>{cat(id)?.icon ? `${cat(id)!.icon} ` : ""}{cat(id)?.name ?? "Sem categoria"}</span>
+                  <span>{emojiOf(cat(id)?.icon)}{cat(id)?.name ?? "Sem categoria"}</span>
                   <span className="numeric">{formatCurrency(value)}</span>
                 </li>
               ))}

@@ -316,7 +316,7 @@ export function BudgetPanel({ transactions, categories, workspaceId }: { transac
             <li key={cat.id} className="grid gap-2 p-3 sm:grid-cols-[1fr_160px] sm:items-center">
               <div className="space-y-1">
                 <div className="flex justify-between text-sm">
-                  <span>{cat.icon ? `${cat.icon} ` : ""}{cat.name}</span>
+                  <span>{cat.name}</span>
                   <span className="numeric text-muted-foreground">
                     {formatCurrency(spent)}
                     {budget ? ` · ${pct.toFixed(0)}%` : ""}
