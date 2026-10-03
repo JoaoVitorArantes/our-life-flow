@@ -340,3 +340,148 @@ export function BudgetPanel({ transactions, categories, workspaceId }: { transac
     </div>
   );
 }
+
+/** Relatórios: comparação mensal, médias, categorias e quem lançou (6 meses). */
+export function ReportsPanel({
+  transactions,
+  categories,
+  accounts,
+  memberName,
+}: {
+  transactions: Transaction[];
+  categories: Category[];
+  accounts: Account[];
+  memberName: (id: string) => string;
+}) {
+  const key = currentMonth();
+  const months = Array.from({ length: 6 }, (_, i) => shiftMonth(key, i - 5));
+  const rows = months.map((m) => ({
+    m,
+    inc: sumBy(incomeIn(transactions, m), amt),
+    exp: sumBy(expensesIn(transactions, m), amt),
+  }));
+  const closed = rows.slice(0, -1).filter((r) => r.exp > 0 || r.inc > 0);
+  const avgExp = closed.length ? sumBy(closed, (r) => r.exp) / closed.length : 0;
+  const avgInc = closed.length ? sumBy(closed, (r) => r.inc) / closed.length : 0;
+  const current = rows[rows.length - 1]!;
+  const max = Math.max(1, ...rows.map((r) => Math.max(r.inc, r.exp)));
+  const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? "Sem categoria";
+
+  const catAvg = new Map<string, { now: number; past: number }>();
+  for (const r of rows) {
+    for (const t of expensesIn(transactions, r.m)) {
+      const id = t.category_id ?? "none";
+      const e = catAvg.get(id) ?? { now: 0, past: 0 };
+      if (r.m === key) e.now += amt(t);
+      else e.past += amt(t);
+      catAvg.set(id, e);
+    }
+  }
+  const pastMonths = Math.max(1, closed.length);
+  const catRows = [...catAvg.entries()]
+    .map(([id, v]) => ({ id, now: v.now, avg: v.past / pastMonths }))
+    .sort((a, b) => b.now - a.now);
+
+  const byPerson = new Map<string, { inc: number; exp: number }>();
+  for (const t of [...incomeIn(transactions, key), ...expensesIn(transactions, key)]) {
+    const e = byPerson.get(t.owner_id) ?? { inc: 0, exp: 0 };
+    if (t.type === "INCOME") e.inc += amt(t);
+    else e.exp += amt(t);
+    byPerson.set(t.owner_id, e);
+  }
+  const patrimony = accounts
+    .filter((a) => a.is_active)
+    .map((a) => ({ a, value: accountBalance(a, transactions) }))
+    .sort((x, y) => y.value - x.value);
+  const totalPatrimony = sumBy(patrimony, (p) => p.value);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Tile label="Média de gastos" value={formatCurrency(avgExp)} hint={`Últimos ${closed.length || 0} meses`} />
+        <Tile label="Média de receitas" value={formatCurrency(avgInc)} hint={`Últimos ${closed.length || 0} meses`} />
+        <Tile
+          label="Este mês vs média"
+          value={avgExp ? `${current.exp >= avgExp ? "+" : "−"}${formatCurrency(Math.abs(current.exp - avgExp))}` : "—"}
+          tone={avgExp && current.exp > avgExp ? "bad" : "good"}
+          hint="Gastos do mês comparados à média"
+        />
+        <Tile label="Patrimônio em contas" value={formatCurrency(totalPatrimony)} tone="accent" />
+      </div>
+
+      <div className="rounded-2xl border border-border bg-surface p-4">
+        <p className="mb-4 text-sm font-semibold">Comparação mensal</p>
+        <div className="flex h-40 items-end gap-3">
+          {rows.map((r) => (
+            <div key={r.m} className="flex flex-1 flex-col items-center gap-1">
+              <div className="flex h-32 w-full items-end justify-center gap-1">
+                <div className="w-1/3 rounded-t bg-success/70" style={{ height: `${(r.inc / max) * 100}%` }} title={formatCurrency(r.inc)} />
+                <div className="w-1/3 rounded-t bg-destructive/70" style={{ height: `${(r.exp / max) * 100}%` }} title={formatCurrency(r.exp)} />
+              </div>
+              <span className={cn("text-[11px] capitalize text-muted-foreground", r.m === key && "font-semibold text-foreground")}>{monthName(r.m)}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">Verde: receitas · Vermelho: despesas (pela data do lançamento)</p>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="mb-3 text-sm font-semibold">Categorias: este mês vs média</p>
+          {catRows.length ? (
+            <ul className="divide-y divide-border text-sm">
+              {catRows.map((c) => (
+                <li key={c.id} className="flex justify-between gap-3 py-2">
+                  <span className="truncate">{catName(c.id)}</span>
+                  <span className="numeric shrink-0">
+                    {formatCurrency(c.now)}
+                    <span className={cn("ml-2 text-xs", c.avg && c.now > c.avg * 1.2 ? "text-destructive" : "text-muted-foreground")}>
+                      média {formatCurrency(c.avg)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">Sem despesas no período.</p>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="mb-1 text-sm font-semibold">Quem lançou este mês</p>
+            <p className="mb-3 text-xs text-muted-foreground">Só identificação — o dinheiro é do Nós.</p>
+            {byPerson.size ? (
+              <ul className="divide-y divide-border text-sm">
+                {[...byPerson.entries()].map(([id, v]) => (
+                  <li key={id} className="flex justify-between py-2">
+                    <span>{memberName(id)}</span>
+                    <span className="numeric">
+                      <span className="text-success">{formatCurrency(v.inc)}</span> · <span className="text-destructive">{formatCurrency(v.exp)}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhum lançamento no mês.</p>
+            )}
+          </div>
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="mb-3 text-sm font-semibold">Patrimônio por conta</p>
+            <ul className="space-y-2 text-sm">
+              {patrimony.map(({ a, value }) => (
+                <li key={a.id} className="space-y-1">
+                  <div className="flex justify-between">
+                    <span>{a.name}</span>
+                    <span className="numeric">{formatCurrency(value)}</span>
+                  </div>
+                  <Bar value={Math.max(0, value)} max={Math.max(1, totalPatrimony)} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

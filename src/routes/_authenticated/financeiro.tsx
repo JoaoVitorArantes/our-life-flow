@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BudgetPanel, CashFlow, FinanceOverview } from "@/components/finance/finance-overview";
+import { BudgetPanel, CashFlow, FinanceOverview, ReportsPanel } from "@/components/finance/finance-overview";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -313,10 +313,14 @@ function Financeiro() {
           <TabsTrigger value="contas">Contas</TabsTrigger>
           <TabsTrigger value="cartoes">Cartões</TabsTrigger>
           <TabsTrigger value="categorias">Categorias</TabsTrigger>
+          <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
         </TabsList>
 
         <TabsContent value="visao" className="pt-6">
           <FinanceOverview transactions={transactions} accounts={accounts} cards={cards} categories={categories} loans={loans} financings={financings} />
+        </TabsContent>
+        <TabsContent value="relatorios" className="pt-6">
+          <ReportsPanel transactions={transactions} categories={categories} accounts={accounts} memberName={(id) => memberProfiles.find((m) => m.id === id)?.name || (id === userId ? "Você" : "Membro")} />
         </TabsContent>
         <TabsContent value="fluxo" className="pt-6">
           <CashFlow transactions={transactions} accounts={accounts} />
