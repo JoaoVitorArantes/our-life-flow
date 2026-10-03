@@ -215,6 +215,7 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
             onCancel={() => cancel(p)}
             userId={userId}
             hasPartner={memberProfiles.length === 2}
+            partnerName={nameOf(memberProfiles.find((m) => m.id !== userId)?.id)}
           />
         ))}
         <div ref={endRef} />
@@ -263,6 +264,7 @@ function PreviewCard({
   onCancel,
   userId,
   hasPartner,
+  partnerName,
 }: {
   preview: Preview;
   nameOf: (id?: string | null) => string | undefined;
@@ -274,6 +276,7 @@ function PreviewCard({
   onCancel: () => void;
   userId?: string | undefined;
   hasPartner: boolean;
+  partnerName?: string | undefined;
 }) {
   const a = preview.action;
   const [editing, setEditing] = useState(false);
@@ -286,8 +289,6 @@ function PreviewCard({
   const mine = a.amount ? Math.round(a.amount * (a.my_share_percent ?? 50)) / 100 : 0;
   const theirs = a.amount ? Math.round((a.amount - mine) * 100) / 100 : 0;
   const payerName = nameOf(a.payer_user_id) ?? "Você";
-  const otherName = hasPartner ? undefined : undefined;
-  void otherName;
 
   const rows: [string, string][] = [];
   rows.push(["Quando", `${friendlyDate(a.date)}${a.time ? ` · ${a.time}` : ""}`]);
@@ -384,7 +385,7 @@ function PreviewCard({
         <div className="mt-3 rounded-xl bg-muted/50 p-3 text-sm">
           <p className="flex items-center gap-1.5 font-medium"><Users className="size-4" /> Dividida · pago por {payerName}</p>
           <p className="mt-1 text-muted-foreground">
-            {nameOf(userId)}: {formatCurrency(mine)} · outra parte: {formatCurrency(theirs)}
+            {nameOf(userId)}: {formatCurrency(mine)} · {partnerName ?? "outra parte"}: {formatCurrency(theirs)}
           </p>
           {theirs > 0 ? (
             <p className="mt-1 text-xs text-muted-foreground">O acerto será calculado pelo módulo Nós ao confirmar.</p>

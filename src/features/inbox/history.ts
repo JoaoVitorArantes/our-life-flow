@@ -25,8 +25,15 @@ export function useInboxHistory(workspaceId?: string) {
     const sync = (e: StorageEvent) => {
       if (e.key === key(workspaceId)) setEntries(JSON.parse(e.newValue ?? "[]"));
     };
+    const local = () => {
+      try { setEntries(JSON.parse(localStorage.getItem(key(workspaceId)) ?? "[]")); } catch { /* ignore */ }
+    };
     window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+    window.addEventListener("lifeos-inbox", local);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("lifeos-inbox", local);
+    };
   }, [workspaceId]);
 
   const upsert = useCallback(
@@ -34,6 +41,7 @@ export function useInboxHistory(workspaceId?: string) {
       setEntries((prev) => {
         const next = [entry, ...prev.filter((e) => e.id !== entry.id)].slice(0, 100);
         localStorage.setItem(key(workspaceId), JSON.stringify(next));
+        queueMicrotask(() => window.dispatchEvent(new Event("lifeos-inbox")));
         return next;
       });
     },
@@ -44,6 +52,7 @@ export function useInboxHistory(workspaceId?: string) {
       setEntries((prev) => {
         const next = prev.filter((e) => e.id !== id);
         localStorage.setItem(key(workspaceId), JSON.stringify(next));
+        queueMicrotask(() => window.dispatchEvent(new Event("lifeos-inbox")));
         return next;
       });
     },
