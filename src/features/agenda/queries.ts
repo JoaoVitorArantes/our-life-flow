@@ -4,9 +4,10 @@ import { useEvents, useTasks, useGoals, useNotes, type Event } from "@/features/
 import { useRecurring, useTransactions, type Transaction } from "@/features/finance/queries";
 import { getProjectedRecurring } from "@/features/finance/safe-to-spend";
 import { useContexts } from "@/features/contexts/queries";
+import { occursOn, useRoutineLogs, useRoutines } from "@/features/routines/queries";
 import { dueDateOf, statusOf, toISO } from "@/features/finance/calc";
 
-export type AgendaKind = "event" | "task" | "finance" | "goal" | "note";
+export type AgendaKind = "event" | "task" | "finance" | "goal" | "note" | "routine";
 export type EventRecurrence = Enums<"event_recurrence">;
 export type EventStatus = Enums<"event_status">;
 
@@ -125,6 +126,8 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
   const transactions = useTransactions(workspaceId);
   const recurring = useRecurring(workspaceId);
   const contexts = useContexts(workspaceId);
+  const routines = useRoutines(workspaceId);
+  const routineLogs = useRoutineLogs(workspaceId);
 
   const from = range?.from ?? addDays(new Date(), -400);
   const to = range?.to ?? addDays(new Date(), 400);
@@ -281,6 +284,27 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
       });
     }
 
+    // Rotinas: ocorrências derivadas da frequência, nunca gravadas como evento.
+    {
+      const rFrom = range ? from : addDays(new Date(), -30);
+      const rTo = range ? to : addDays(new Date(), 60);
+      const done = new Map((routineLogs.data ?? []).map((l) => [`${l.routine_id}|${l.log_date}`, l.status]));
+      for (const r of (routines.data ?? []).filter((x) => x.show_in_agenda)) {
+        for (let d = new Date(rFrom); d <= rTo; d = addDays(d, 1)) {
+          const iso = isoOf(d);
+          if (!occursOn(r, iso)) continue;
+          const [h, m] = (r.start_time ?? "").split(":").map(Number);
+          const minutes = r.start_time ? h! * 60 + m! : null;
+          list.push({
+            key: `routine-${r.id}-${iso}`, recordId: r.id, kind: "routine", title: `${r.icon ?? ""} ${r.title}`.trim(), date: iso,
+            minutes, endMinutes: minutes != null && r.duration_minutes ? minutes + r.duration_minutes : null, amount: null,
+            contextId: r.context_id, ownerId: r.created_by, done: !!done.get(`${r.id}|${iso}`), overdue: false,
+            hint: r.kind === "HABIT" ? "Hábito" : "Rotina", location: null, recurring: true,
+          });
+        }
+      }
+    }
+
     return list.sort((a, b) => {
       if (a.date !== b.date) return a.date < b.date ? -1 : 1;
       const am = a.minutes ?? 24 * 60 + 1;
@@ -289,7 +313,7 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
       return a.title.localeCompare(b.title);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events.data, tasks.data, transactions.data, recurring.data, goals.data, notes.data, fromIso, toIso]);
+  }, [events.data, tasks.data, transactions.data, recurring.data, goals.data, notes.data, routines.data, routineLogs.data, fromIso, toIso]);
 
   return {
     items,
@@ -319,6 +343,7 @@ export const KIND_LABEL: Record<AgendaKind, string> = {
   finance: "Financeiro",
   goal: "Meta",
   note: "Nota",
+  routine: "Rotina",
 };
 
 export const EVENT_RECURRENCES: { value: EventRecurrence; label: string }[] = [

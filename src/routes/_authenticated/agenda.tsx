@@ -86,6 +86,7 @@ const KINDS: { value: AgendaKind | "all"; label: string }[] = [
   { value: "finance", label: "Financeiro" },
   { value: "goal", label: "Metas" },
   { value: "note", label: "Notas" },
+  { value: "routine", label: "Rotinas" },
 ];
 const STORAGE_KEY = "lifeos-agenda-view";
 
@@ -159,7 +160,7 @@ function Agenda() {
         const rank = (i: AgendaItem) => (i.overdue ? 0 : i.date === todayIso ? 1 : 2);
         if (rank(a) !== rank(b)) return rank(a) - rank(b);
         if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-        const order: Record<AgendaKind, number> = { finance: 0, event: 1, task: 2, goal: 3, note: 4 };
+        const order: Record<AgendaKind, number> = { finance: 0, event: 1, task: 2, goal: 3, note: 4, routine: 5 };
         return order[a.kind] - order[b.kind];
       })
       .slice(0, 12);
