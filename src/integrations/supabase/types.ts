@@ -142,6 +142,7 @@ export type Database = {
           created_at: string
           icon: string | null
           id: string
+          monthly_budget: number | null
           name: string
           type: Database["public"]["Enums"]["category_type"]
           workspace_id: string
@@ -151,6 +152,7 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
+          monthly_budget?: number | null
           name: string
           type?: Database["public"]["Enums"]["category_type"]
           workspace_id: string
@@ -160,6 +162,7 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
+          monthly_budget?: number | null
           name?: string
           type?: Database["public"]["Enums"]["category_type"]
           workspace_id?: string
