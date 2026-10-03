@@ -8,10 +8,12 @@ import { useApp } from "@/features/app/app-context";
 import { useCards } from "@/features/finance/queries";
 import { InvitationInbox } from "@/features/workspace/partner";
 import { GlobalAgent } from "@/components/agent/global-agent";
+import { useRealtimeSync } from "@/features/sync/use-realtime-sync";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
-  const { workspaceName, workspaceId } = useApp();
+  const { workspaceName, workspaceId, workspace } = useApp();
+  const syncStatus = useRealtimeSync(workspaceId);
   // Mantém os ciclos de fatura carregados para o cálculo de vencimento em todas as telas.
   useCards(workspaceId);
 
@@ -23,7 +25,19 @@ export function AppShell({ children }: { children: ReactNode }) {
         workspaceName={workspaceName}
       />
       <div className="flex min-w-0 flex-1 flex-col">
+        {workspace?.is_demo ? (
+          <div role="status" className="sticky top-0 z-30 bg-warning px-4 py-1.5 text-center text-xs font-medium text-warning-foreground">
+            Ambiente de demonstração — todos os dados são fictícios
+          </div>
+        ) : null}
         <Header />
+        {syncStatus === "reconnecting" || syncStatus === "unavailable" ? (
+          <div role="status" className="border-b border-border bg-muted px-4 py-1 text-center text-xs text-muted-foreground">
+            {syncStatus === "reconnecting"
+              ? "Reconectando a sincronização… os dados serão atualizados ao voltar."
+              : "Sincronização em tempo real indisponível — os dados atualizam ao reabrir o app."}
+          </div>
+        ) : null}
         <main className="flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-12 md:pt-8">
           <div className="mx-auto w-full max-w-5xl space-y-8">{children}</div>
         </main>

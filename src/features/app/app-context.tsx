@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/auth/session";
 import { useWorkspace, type Member, type Profile, type Relationship, type Workspace } from "@/features/workspace/queries";
 
@@ -48,6 +49,7 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useSession();
   const workspaceQuery = useWorkspace(!!user);
+  const queryClient = useQueryClient();
   const [commandOpen, setCommandOpen] = useState(false);
   const [quickAction, setQuickAction] = useState<QuickActionKind | null>(null);
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
@@ -68,6 +70,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           supabase.rpc("set_active_workspace", { _workspace_id: workspaceId }),
         );
         if (error) throw error;
+        // Drop every cached query from the previous workspace before loading the new one.
+        await queryClient.cancelQueries();
+        queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== "workspace" });
+        setActiveContextId(null);
         await workspaceQuery.refetch();
       },
       userId: user?.id,
@@ -86,7 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeContextId,
       setActiveContextId,
     }),
-    [workspaceQuery, user?.id, commandOpen, quickAction, quickMenuOpen, activeContextId],
+    [workspaceQuery, queryClient, user?.id, commandOpen, quickAction, quickMenuOpen, activeContextId],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

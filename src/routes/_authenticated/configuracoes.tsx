@@ -36,7 +36,7 @@ const THEMES: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
 ];
 
 function Configuracoes() {
-  const { profile, workspaceId, workspaceName, memberProfiles, userId, refetchWorkspace, availableWorkspaces, switchWorkspace } = useApp();
+  const { profile, workspace, workspaceId, workspaceName, memberProfiles, userId, refetchWorkspace, availableWorkspaces, switchWorkspace } = useApp();
   const { mode, setMode } = useTheme();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ function Configuracoes() {
   }
 
   async function loadDemo() {
-    if (!workspaceId || !userId) return;
+    if (!workspaceId || !workspace?.is_demo) return;
     setBusy(true);
     try {
       await seedDemoData(workspaceId);
@@ -71,7 +71,7 @@ function Configuracoes() {
   }
 
   async function removeDemo() {
-    if (!workspaceId) return;
+    if (!workspaceId || !workspace?.is_demo) return;
     setBusy(true);
     try {
       await clearDemoData(workspaceId);
