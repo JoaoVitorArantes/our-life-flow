@@ -20,7 +20,13 @@ export function getProjectedRecurring(
   for (const r of recurrences) {
     if (!r.is_active || r.type === "TRANSFER") continue;
     const freq = (r.frequency === "CUSTOM" ? "MONTHLY" : r.frequency) as RecurrenceFrequency;
-    const real = transactions.filter((t) => t.recurring_id === r.id && t.status !== "CANCELLED");
+    const name = r.description.trim().toLowerCase();
+    // Lançamento real da recorrência: vinculado a ela, ou registrado à mão com mesmo nome e tipo.
+    const real = transactions.filter(
+      (t) =>
+        t.status !== "CANCELLED" &&
+        (t.recurring_id === r.id || (t.type === r.type && t.description.trim().toLowerCase() === name)),
+    );
     for (let i = 0; i < 400; i++) {
       const date = shiftDate(r.start_date, i, freq);
       if (date > horizon || (r.end_date && date > r.end_date)) break;
@@ -124,7 +130,10 @@ export type MoodTone = "calm" | "tight" | "alert";
 /** Leitura determinística do estado financeiro. */
 export function financialMood(s: SafeToSpend): { text: string; tone: MoodTone } {
   if (s.lowest < 0)
-    return { text: "Atenção: os compromissos passam do dinheiro disponível antes dos próximos recebimentos.", tone: "alert" };
+    return {
+      text: `Vocês podem ficar ${(-s.lowest).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} abaixo do necessário antes da próxima entrada.`,
+      tone: "alert",
+    };
   const base = s.available + s.income;
   const ratio = base > 0 ? s.commitments / base : 1;
   if (ratio > 0.8) return { text: "Boa parte do dinheiro já está comprometida.", tone: "tight" };
