@@ -485,3 +485,96 @@ export function ReportsPanel({
     </div>
   );
 }
+
+/** Calendário financeiro: lançamentos pelo vencimento, mês a mês. */
+export function FinanceCalendar({ transactions }: { transactions: Transaction[] }) {
+  const [key, setKey] = useState(currentMonth());
+  const [selected, setSelected] = useState<string | null>(null);
+  const today = todayISO();
+  const list = active(transactions).filter((t) => t.type !== "TRANSFER" && monthKey(dueDateOf(t)) === key);
+  const byDay = new Map<string, Transaction[]>();
+  for (const t of list) {
+    const d = dueDateOf(t);
+    byDay.set(d, [...(byDay.get(d) ?? []), t]);
+  }
+  const [y, m] = key.split("-").map(Number);
+  const first = new Date(y!, m! - 1, 1);
+  const days = new Date(y!, m!, 0).getDate();
+  const lead = (first.getDay() + 6) % 7;
+  const cells = [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => `${key}-${String(i + 1).padStart(2, "0")}`)];
+  const dayItems = selected ? (byDay.get(selected) ?? []) : [];
+  const total = (items: Transaction[], type: string) => sumBy(items.filter((t) => t.type === type), amt);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <button type="button" aria-label="Mês anterior" className="rounded-lg border border-border px-3 py-1.5 text-sm" onClick={() => setKey(shiftMonth(key, -1))}>‹</button>
+        <p className="text-sm font-semibold capitalize">
+          {new Date(`${key}-15T12:00:00`).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+        </p>
+        <button type="button" aria-label="Próximo mês" className="rounded-lg border border-border px-3 py-1.5 text-sm" onClick={() => setKey(shiftMonth(key, 1))}>›</button>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Tile label="Entradas no mês" value={formatCurrency(total(list, "INCOME"))} tone="good" />
+        <Tile label="Saídas no mês" value={formatCurrency(total(list, "EXPENSE"))} tone="bad" />
+        <Tile label="Ainda pendente" value={formatCurrency(sumBy(list.filter((t) => t.type === "EXPENSE" && isOpen(t)), amt))} />
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted-foreground">
+        {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d) => <span key={d}>{d}</span>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) =>
+          d ? (
+            <button
+              type="button"
+              key={d}
+              onClick={() => setSelected(d === selected ? null : d)}
+              className={cn(
+                "flex min-h-14 flex-col items-start rounded-lg border border-border bg-surface p-1.5 text-left text-xs transition-colors hover:border-primary/50",
+                d === today && "border-primary",
+                d === selected && "bg-primary/10",
+              )}
+            >
+              <span className="font-medium">{Number(d.slice(8))}</span>
+              {byDay.get(d)?.length ? (
+                <span className="mt-auto flex flex-wrap gap-0.5">
+                  {total(byDay.get(d)!, "INCOME") > 0 ? <span className="size-1.5 rounded-full bg-success" /> : null}
+                  {byDay.get(d)!.some((t) => t.type === "EXPENSE" && isOpen(t) && d < today) ? (
+                    <span className="size-1.5 rounded-full bg-destructive" />
+                  ) : total(byDay.get(d)!, "EXPENSE") > 0 ? (
+                    <span className="size-1.5 rounded-full bg-primary" />
+                  ) : null}
+                  <span className="hidden text-[10px] text-muted-foreground sm:inline">{byDay.get(d)!.length}</span>
+                </span>
+              ) : null}
+            </button>
+          ) : (
+            <span key={`e${i}`} />
+          ),
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">Verde: entrada · Roxo: saída · Vermelho: atrasada</p>
+      {selected ? (
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="mb-2 text-sm font-semibold">{formatDateShort(selected)}</p>
+          {dayItems.length ? (
+            <ul className="divide-y divide-border text-sm">
+              {dayItems.map((t) => (
+                <li key={t.id} className="flex justify-between gap-3 py-2">
+                  <span className="truncate">{t.description}</span>
+                  <span className={cn("numeric shrink-0", t.type === "INCOME" ? "text-success" : "")}>
+                    {t.type === "INCOME" ? "+" : "−"}
+                    {formatCurrency(amt(t))}
+                    <span className="ml-2 text-xs text-muted-foreground">{isSettled(t) ? "pago" : "pendente"}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nada neste dia.</p>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}

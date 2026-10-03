@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BudgetPanel, CashFlow, FinanceOverview, ReportsPanel } from "@/components/finance/finance-overview";
+import { BudgetPanel, CashFlow, FinanceCalendar, FinanceOverview, ReportsPanel } from "@/components/finance/finance-overview";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -302,6 +302,7 @@ function Financeiro() {
         <TabsList className="flex h-auto w-full flex-wrap justify-start">
           <TabsTrigger value="visao">Visão geral</TabsTrigger>
           <TabsTrigger value="fluxo">Fluxo de caixa</TabsTrigger>
+          <TabsTrigger value="calendario">Calendário</TabsTrigger>
           <TabsTrigger value="orcamento">Orçamento</TabsTrigger>
           <TabsTrigger value="pagar">A pagar</TabsTrigger>
           <TabsTrigger value="pagos">Pagos</TabsTrigger>
@@ -321,6 +322,9 @@ function Financeiro() {
         </TabsContent>
         <TabsContent value="relatorios" className="pt-6">
           <ReportsPanel transactions={transactions} categories={categories} accounts={accounts} memberName={(id) => memberProfiles.find((m) => m.id === id)?.name || (id === userId ? "Você" : "Membro")} />
+        </TabsContent>
+        <TabsContent value="calendario" className="pt-6">
+          <FinanceCalendar transactions={transactions} />
         </TabsContent>
         <TabsContent value="fluxo" className="pt-6">
           <CashFlow transactions={transactions} accounts={accounts} />
