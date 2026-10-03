@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BudgetPanel, CashFlow, FinanceOverview } from "@/components/finance/finance-overview";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -297,8 +298,11 @@ function Financeiro() {
         />
       </div>
 
-      <Tabs defaultValue="pagar">
-        <TabsList className="flex w-full flex-wrap justify-start">
+      <Tabs defaultValue="visao">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start">
+          <TabsTrigger value="visao">Visão geral</TabsTrigger>
+          <TabsTrigger value="fluxo">Fluxo de caixa</TabsTrigger>
+          <TabsTrigger value="orcamento">Orçamento</TabsTrigger>
           <TabsTrigger value="pagar">A pagar</TabsTrigger>
           <TabsTrigger value="pagos">Pagos</TabsTrigger>
           <TabsTrigger value="lancamentos">Lançamentos</TabsTrigger>
@@ -310,6 +314,16 @@ function Financeiro() {
           <TabsTrigger value="cartoes">Cartões</TabsTrigger>
           <TabsTrigger value="categorias">Categorias</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="visao" className="pt-6">
+          <FinanceOverview transactions={transactions} accounts={accounts} cards={cards} categories={categories} loans={loans} financings={financings} />
+        </TabsContent>
+        <TabsContent value="fluxo" className="pt-6">
+          <CashFlow transactions={transactions} accounts={accounts} />
+        </TabsContent>
+        <TabsContent value="orcamento" className="pt-6">
+          {workspaceId ? <BudgetPanel transactions={transactions} categories={categories} workspaceId={workspaceId} /> : null}
+        </TabsContent>
 
         {/* ------------------------------------------------------- a pagar */}
         <TabsContent value="pagar" className="space-y-4 pt-6">
