@@ -330,7 +330,7 @@ function Financeiro() {
         {section.id === "movimentacoes" ? <div className="pt-4"><FinanceSearch transactions={transactions} categories={categories} /></div> : null}
 
         <TabsContent value="visao" className="pt-2">
-          <FinanceCockpit accounts={accounts} transactions={transactions} categories={categories} onNavigate={setSub} />
+          <FinanceCockpit accounts={accounts} transactions={transactions} categories={categories} recurrences={recurrences} onNavigate={setSub} />
         </TabsContent>
         <TabsContent value="relatorios" className="pt-6">
           <ReportsPanel transactions={transactions} categories={categories} accounts={accounts} memberName={(id) => memberProfiles.find((m) => m.id === id)?.name || (id === userId ? "Você" : "Membro")} />

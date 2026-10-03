@@ -10,6 +10,7 @@ import { formatCurrency, formatDateShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Props = {
+  recurrences?: import("@/features/finance/queries").Recurring[];
   accounts: Account[];
   transactions: Transaction[];
   categories: Category[];
@@ -84,9 +85,9 @@ function MoneyCurve({ past, future }: { past: { date: string; value: number }[];
   );
 }
 
-export function FinanceCockpit({ accounts, transactions, categories, onNavigate }: Props) {
+export function FinanceCockpit({ accounts, transactions, categories, recurrences = [], onNavigate }: Props) {
   const today = todayISO();
-  const s = useMemo(() => calculateSafeToSpend(accounts, transactions), [accounts, transactions]);
+  const s = useMemo(() => calculateSafeToSpend(accounts, transactions, 30, undefined, recurrences), [accounts, transactions, recurrences]);
   const mood = financialMood(s);
   const [showCalc, setShowCalc] = useState(false);
   const [simOpen, setSimOpen] = useState(false);
@@ -198,7 +199,7 @@ export function FinanceCockpit({ accounts, transactions, categories, onNavigate 
         {showCalc ? (
           <div className="mt-5 max-w-sm space-y-2 rounded-2xl border border-border bg-background/60 p-4 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Disponível agora</span><span className="numeric">{formatCurrency(s.available)}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Receitas previstas</span><span className="numeric text-success">+{formatCurrency(s.income)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Próximas entradas{s.projectedIncome ? ` (${formatCurrency(s.projectedIncome)} previstas)` : ""}</span><span className="numeric text-success">+{formatCurrency(s.income)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Compromissos</span><span className="numeric text-destructive">−{formatCurrency(s.commitments)}</span></div>
             <div className="flex justify-between border-t border-border pt-2 font-medium"><span>Saldo após 30 dias</span><span className="numeric">{formatCurrency(s.safe)}</span></div>
             {s.lowest < s.safe ? (
