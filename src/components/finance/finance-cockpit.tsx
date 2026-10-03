@@ -287,7 +287,7 @@ export function FinanceCockpit({ accounts, transactions, categories, recurrences
                 <span className={cn("absolute -left-[21px] top-1 size-2.5 rounded-full", e.t.type === "INCOME" ? "bg-success" : e.date < today ? "bg-destructive" : "bg-muted-foreground/50")} />
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{relDay(e.date, today)} · {formatDateShort(e.date)}</p>
                 <div className="flex justify-between gap-3 text-sm">
-                  <span className="truncate">{kindEmoji(e.t)} {e.t.description}</span>
+                  <span className="truncate">{kindEmoji(e.t)} {e.t.description}{e.projected ? <span className="ml-1 text-xs text-muted-foreground">(previsto)</span> : null}</span>
                   <span className={cn("numeric shrink-0", e.t.type === "INCOME" && "text-success")}>
                     {e.t.type === "INCOME" ? "+" : "−"}{formatCurrency(amt(e.t))}
                   </span>
