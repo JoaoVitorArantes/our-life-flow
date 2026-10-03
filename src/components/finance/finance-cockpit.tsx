@@ -10,6 +10,7 @@ import { formatCurrency, formatDateShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Props = {
+  payments?: import("@/features/finance/queries").InvoicePayment[];
   recurrences?: import("@/features/finance/queries").Recurring[];
   accounts: Account[];
   transactions: Transaction[];
@@ -85,9 +86,9 @@ function MoneyCurve({ past, future }: { past: { date: string; value: number }[];
   );
 }
 
-export function FinanceCockpit({ accounts, transactions, categories, recurrences = [], onNavigate }: Props) {
+export function FinanceCockpit({ accounts, transactions, categories, recurrences = [], payments = [], onNavigate }: Props) {
   const today = todayISO();
-  const s = useMemo(() => calculateSafeToSpend(accounts, transactions, 30, undefined, recurrences), [accounts, transactions, recurrences]);
+  const s = useMemo(() => calculateSafeToSpend(accounts, transactions, 30, undefined, recurrences, payments), [accounts, transactions, recurrences, payments]);
   const mood = financialMood(s);
   const [showCalc, setShowCalc] = useState(false);
   const [simOpen, setSimOpen] = useState(false);
