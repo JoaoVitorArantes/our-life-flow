@@ -124,10 +124,10 @@ export function AgendaRow({
           <Link
             to="/contextos/$id"
             params={{ id: context.id }}
-            className="hidden items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground sm:flex"
+            className="hidden max-w-[160px] items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground lg:flex"
           >
-            <Folder className="size-3" />
-            {contextEmoji(context.type)} {context.name}
+            <Folder className="size-3 shrink-0" />
+            <span className="truncate">{contextEmoji(context.type)} {context.name}</span>
           </Link>
         ) : null}
         {item.kind === "finance" && !item.done && !item.recordId.startsWith("proj-") && onPay ? (

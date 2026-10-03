@@ -128,11 +128,11 @@ function Contextos() {
                 />
               </div>
               <div className="flex items-center justify-between gap-2">
-                <div className="flex gap-2">
+                <div className="flex min-w-0 flex-wrap gap-2">
                   <Badge variant="outline">{contextStatusLabel(context.status)}</Badge>
                   <CreatedBy userId={context.owner_id} />
                 </div>
-                <span className="numeric text-sm">{formatCurrency(spent(context.id))}</span>
+                <span className="numeric shrink-0 text-sm">{formatCurrency(spent(context.id))}</span>
               </div>
             </Panel>
           ))}

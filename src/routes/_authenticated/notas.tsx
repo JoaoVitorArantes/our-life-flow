@@ -71,10 +71,10 @@ function Notas() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {notes.map((note) => (
-            <Panel key={note.id} className="space-y-2">
+            <Panel key={note.id} className="min-w-0 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <p className="min-w-0 flex-1 truncate font-medium">{note.title}</p>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <CreatedBy userId={note.owner_id} />
                   <RecordActions
                     onEdit={() => setEditing(note)}

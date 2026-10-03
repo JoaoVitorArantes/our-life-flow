@@ -80,7 +80,7 @@ function Metas() {
             const current = goalProgress(goal, contributions);
             const progress = target ? Math.min((current / target) * 100, 100) : 0;
             return (
-              <Panel key={goal.id} className="space-y-4">
+              <Panel key={goal.id} className="min-w-0 space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <Link to="/metas/$id" params={{ id: goal.id }} className="min-w-0 flex-1">
                     <p className="truncate font-medium">{goal.title}</p>
@@ -90,7 +90,7 @@ function Metas() {
                       </p>
                     ) : null}
                   </Link>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1">
                     <CreatedBy userId={goal.owner_id} />
                     <RecordActions
                       onEdit={() => setEditing(goal)}
