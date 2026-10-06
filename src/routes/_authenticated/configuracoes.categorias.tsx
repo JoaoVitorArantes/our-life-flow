@@ -24,6 +24,7 @@ import { useCategories, type Category } from "@/features/finance/queries";
 import { supabase } from "@/integrations/supabase/client";
 import type { Enums } from "@/integrations/supabase/types";
 import { LoadingState } from "@/components/common/states";
+import { CATEGORY_ICONS, CategoryIcon } from "@/components/finance/category-icon";
 
 export const Route = createFileRoute("/_authenticated/configuracoes/categorias")({
   head: () => ({
@@ -107,8 +108,8 @@ function Categorias() {
 
   const row = (category: Category) => (
     <li key={category.id} className="flex items-center gap-3 py-2.5">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl text-base" style={{ background: `${category.color ?? "#64748B"}26` }}>
-        {category.icon || "•"}
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl" style={{ background: `${category.color ?? "#64748B"}26`, color: category.color ?? undefined }}>
+        <CategoryIcon name={category.icon} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium">{category.name}</span>
@@ -161,14 +162,25 @@ function Categorias() {
           </DialogHeader>
           {draft ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-[80px_1fr] gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="cat-icon">Ícone</Label>
-                  <Input id="cat-icon" value={draft.icon} maxLength={4} placeholder="🛒" onChange={(e) => setDraft({ ...draft, icon: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cat-name">Nome</Label>
-                  <Input id="cat-name" value={draft.name} maxLength={40} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+              <div className="space-y-2">
+                <Label htmlFor="cat-name">Nome</Label>
+                <Input id="cat-name" value={draft.name} maxLength={40} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Ícone</Label>
+                <div className="grid grid-cols-7 gap-1.5 sm:grid-cols-9">
+                  {Object.keys(CATEGORY_ICONS).map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      aria-label={icon}
+                      aria-pressed={draft.icon === icon}
+                      onClick={() => setDraft({ ...draft, icon })}
+                      className={`flex aspect-square items-center justify-center rounded-lg border transition ${draft.icon === icon ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"}`}
+                    >
+                      <CategoryIcon name={icon} />
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className="space-y-2">
