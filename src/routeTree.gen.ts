@@ -28,7 +28,10 @@ import { Route as AuthenticatedRotinasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as AuthenticatedConfiguracoesIndexRouteImport } from './routes/_authenticated/configuracoes.index'
+import { Route as AuthenticatedConfiguracoesEspacoRouteImport } from './routes/_authenticated/configuracoes.espaco'
 import { Route as AuthenticatedConfiguracoesPerfilRouteImport } from './routes/_authenticated/configuracoes.perfil'
+import { Route as AuthenticatedConfiguracoesPersonalizacaoRouteImport } from './routes/_authenticated/configuracoes.personalizacao'
+import { Route as AuthenticatedConfiguracoesPessoasRouteImport } from './routes/_authenticated/configuracoes.pessoas'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
 import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
 import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox.index'
@@ -131,10 +134,28 @@ const AuthenticatedConfiguracoesIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedConfiguracoesRoute,
   } as any)
+const AuthenticatedConfiguracoesEspacoRoute =
+  AuthenticatedConfiguracoesEspacoRouteImport.update({
+    id: '/espaco',
+    path: '/espaco',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
 const AuthenticatedConfiguracoesPerfilRoute =
   AuthenticatedConfiguracoesPerfilRouteImport.update({
     id: '/perfil',
     path: '/perfil',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
+const AuthenticatedConfiguracoesPersonalizacaoRoute =
+  AuthenticatedConfiguracoesPersonalizacaoRouteImport.update({
+    id: '/personalizacao',
+    path: '/personalizacao',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
+const AuthenticatedConfiguracoesPessoasRoute =
+  AuthenticatedConfiguracoesPessoasRouteImport.update({
+    id: '/pessoas',
+    path: '/pessoas',
     getParentRoute: () => AuthenticatedConfiguracoesRoute,
   } as any)
 const AuthenticatedContextosIndexRoute =
@@ -184,7 +205,10 @@ export interface FileRoutesByFullPath {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/configuracoes/espaco': typeof AuthenticatedConfiguracoesEspacoRoute
   '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
+  '/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
+  '/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
@@ -209,7 +233,10 @@ export interface FileRoutesByTo {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/configuracoes/espaco': typeof AuthenticatedConfiguracoesEspacoRoute
   '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
+  '/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
+  '/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
@@ -237,7 +264,10 @@ export interface FileRoutesById {
   '/_authenticated/rotinas': typeof AuthenticatedRotinasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/_authenticated/configuracoes/espaco': typeof AuthenticatedConfiguracoesEspacoRoute
   '/_authenticated/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
+  '/_authenticated/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
+  '/_authenticated/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
   '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/_authenticated/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/_authenticated/metas/$id': typeof AuthenticatedMetasIdRoute
@@ -265,7 +295,10 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/configuracoes/espaco'
     | '/configuracoes/perfil'
+    | '/configuracoes/personalizacao'
+    | '/configuracoes/pessoas'
     | '/contextos/$id'
     | '/inbox/$threadId'
     | '/metas/$id'
@@ -290,7 +323,10 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/configuracoes/espaco'
     | '/configuracoes/perfil'
+    | '/configuracoes/personalizacao'
+    | '/configuracoes/pessoas'
     | '/contextos/$id'
     | '/inbox/$threadId'
     | '/metas/$id'
@@ -317,7 +353,10 @@ export interface FileRouteTypes {
     | '/_authenticated/rotinas'
     | '/_authenticated/tarefas'
     | '/api/agent'
+    | '/_authenticated/configuracoes/espaco'
     | '/_authenticated/configuracoes/perfil'
+    | '/_authenticated/configuracoes/personalizacao'
+    | '/_authenticated/configuracoes/pessoas'
     | '/_authenticated/contextos/$id'
     | '/_authenticated/inbox/$threadId'
     | '/_authenticated/metas/$id'
@@ -469,11 +508,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesIndexRouteImport
       parentRoute: typeof AuthenticatedConfiguracoesRoute
     }
+    '/_authenticated/configuracoes/espaco': {
+      id: '/_authenticated/configuracoes/espaco'
+      path: '/espaco'
+      fullPath: '/configuracoes/espaco'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesEspacoRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
     '/_authenticated/configuracoes/perfil': {
       id: '/_authenticated/configuracoes/perfil'
       path: '/perfil'
       fullPath: '/configuracoes/perfil'
       preLoaderRoute: typeof AuthenticatedConfiguracoesPerfilRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
+    '/_authenticated/configuracoes/personalizacao': {
+      id: '/_authenticated/configuracoes/personalizacao'
+      path: '/personalizacao'
+      fullPath: '/configuracoes/personalizacao'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesPersonalizacaoRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
+    '/_authenticated/configuracoes/pessoas': {
+      id: '/_authenticated/configuracoes/pessoas'
+      path: '/pessoas'
+      fullPath: '/configuracoes/pessoas'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesPessoasRouteImport
       parentRoute: typeof AuthenticatedConfiguracoesRoute
     }
     '/_authenticated/contextos/': {
@@ -515,14 +575,23 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedConfiguracoesRouteChildren {
+  AuthenticatedConfiguracoesEspacoRoute: typeof AuthenticatedConfiguracoesEspacoRoute
   AuthenticatedConfiguracoesPerfilRoute: typeof AuthenticatedConfiguracoesPerfilRoute
+  AuthenticatedConfiguracoesPersonalizacaoRoute: typeof AuthenticatedConfiguracoesPersonalizacaoRoute
+  AuthenticatedConfiguracoesPessoasRoute: typeof AuthenticatedConfiguracoesPessoasRoute
   AuthenticatedConfiguracoesIndexRoute: typeof AuthenticatedConfiguracoesIndexRoute
 }
 
 const AuthenticatedConfiguracoesRouteChildren: AuthenticatedConfiguracoesRouteChildren =
   {
+    AuthenticatedConfiguracoesEspacoRoute:
+      AuthenticatedConfiguracoesEspacoRoute,
     AuthenticatedConfiguracoesPerfilRoute:
       AuthenticatedConfiguracoesPerfilRoute,
+    AuthenticatedConfiguracoesPersonalizacaoRoute:
+      AuthenticatedConfiguracoesPersonalizacaoRoute,
+    AuthenticatedConfiguracoesPessoasRoute:
+      AuthenticatedConfiguracoesPessoasRoute,
     AuthenticatedConfiguracoesIndexRoute: AuthenticatedConfiguracoesIndexRoute,
   }
 
