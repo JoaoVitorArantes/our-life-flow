@@ -20,13 +20,18 @@ async function withAvatarUrls(profiles: Profile[]) {
   );
 }
 
+async function signWorkspacePath(path: string | null) {
+  if (!path || path.startsWith("http")) return path;
+  const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60);
+  return data?.signedUrl ? `${data.signedUrl}#avatar-path=${path}` : null;
+}
+
 async function withWorkspaceAvatar(workspace: Workspace) {
-  if (!workspace.avatar_url || workspace.avatar_url.startsWith("http")) return workspace;
-  const { data } = await supabase.storage.from("avatars").createSignedUrl(workspace.avatar_url, 60 * 60);
-  return {
-    ...workspace,
-    avatar_url: data?.signedUrl ? `${data.signedUrl}#avatar-path=${workspace.avatar_url}` : null,
-  };
+  const [avatar_url, cover_url] = await Promise.all([
+    signWorkspacePath(workspace.avatar_url),
+    signWorkspacePath(workspace.cover_url),
+  ]);
+  return { ...workspace, avatar_url, cover_url };
 }
 
 /** Creates profile + "Life OS" workspace + default categories when missing. */
