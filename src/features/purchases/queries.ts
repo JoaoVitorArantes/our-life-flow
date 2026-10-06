@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { moveToTrash } from "@/features/trash/api";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -175,6 +176,5 @@ export async function updatePurchase(id: string, input: Partial<PurchaseInput> &
 }
 
 export async function deletePurchase(id: string) {
-  const { error } = await supabase.from("purchases").delete().eq("id", id);
-  if (error) throw error;
+  await moveToTrash("purchases", id);
 }
