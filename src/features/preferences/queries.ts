@@ -96,3 +96,18 @@ export function useNavGroups(): NavGroup[] {
     return favorites.length ? [{ label: "Favoritos", items: favorites }, ...groups] : groups;
   }, [data]);
 }
+
+const HOME_ROUTES = new Set(NAV_GROUPS.flatMap((group) => group.items.map((item) => item.to)));
+
+/** Person's chosen home screen (falls back to the Dashboard). */
+export async function resolveHomeRoute(): Promise<"/dashboard"> {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return "/dashboard";
+  const { data } = await supabase
+    .from("user_preferences")
+    .select("home_route")
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+  const route = data?.home_route;
+  return (route && HOME_ROUTES.has(route) ? route : "/dashboard") as "/dashboard";
+}
