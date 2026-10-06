@@ -23,11 +23,11 @@
 - [ ] Criar workspace demo dedicado (SQL de administrador) e testar sincronização em dois aparelhos
 - [ ] Ficha da loja, política de privacidade, exclusão de conta e Segurança dos dados
 - [ ] Teste fechado (12 testadores por 14 dias, se conta pessoal nova)
-- [ ] Control Center: Meu espaço (nome, descrição, foto, capa, cor)
-- [ ] Control Center: Categorias (criar, editar, arquivar, excluir quando seguro)
-- [ ] Control Center: Pessoas e permissões (workspace_can)
-- [ ] Control Center: Personalização (navegação, favoritos, tela inicial, preferências)
-- [ ] Control Center: Dados (exportação do workspace atual, lixeira com restaurar/excluir definitivo confirmado)
-- [ ] Control Center: Atividade (workspace_activity com metadados mínimos; restauração registrada)
-- [ ] Registros com deleted_at fora de telas, contagens, dashboards, buscas e cálculos
-- [ ] Validar integridade dos dados existentes e dos módulos atuais
+- [x] Control Center: Meu espaço (nome, descrição, foto, capa, cor)
+- [x] Control Center: Categorias (criar, editar, arquivar, excluir quando seguro)
+- [x] Control Center: Pessoas e permissões (workspace_can)
+- [x] Control Center: Personalização (navegação, favoritos, tela inicial, preferências)
+- [x] Control Center: Dados (exportação do workspace atual, lixeira com restaurar/excluir definitivo confirmado)
+- [x] Control Center: Atividade (workspace_activity com metadados mínimos; restauração registrada)
+- [x] Registros com deleted_at fora de telas, contagens, dashboards, buscas e cálculos
+- [x] Validar integridade dos dados existentes e dos módulos atuais
