@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedComprasRouteImport } from './routes/_authenticated/compras'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEsporteRouteImport } from './routes/_authenticated/esporte'
 import { Route as AuthenticatedFaculdadeRouteImport } from './routes/_authenticated/faculdade'
@@ -26,6 +27,8 @@ import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRotinasRouteImport } from './routes/_authenticated/rotinas'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
+import { Route as AuthenticatedConfiguracoesIndexRouteImport } from './routes/_authenticated/configuracoes.index'
+import { Route as AuthenticatedConfiguracoesPerfilRouteImport } from './routes/_authenticated/configuracoes.perfil'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
 import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
 import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox.index'
@@ -61,6 +64,12 @@ const AuthenticatedComprasRoute = AuthenticatedComprasRouteImport.update({
   path: '/compras',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -116,6 +125,18 @@ const ApiAgentRoute = ApiAgentRouteImport.update({
   path: '/api/agent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedConfiguracoesIndexRoute =
+  AuthenticatedConfiguracoesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
+const AuthenticatedConfiguracoesPerfilRoute =
+  AuthenticatedConfiguracoesPerfilRouteImport.update({
+    id: '/perfil',
+    path: '/perfil',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
 const AuthenticatedContextosIndexRoute =
   AuthenticatedContextosIndexRouteImport.update({
     id: '/contextos/',
@@ -151,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/compras': typeof AuthenticatedComprasRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/esporte': typeof AuthenticatedEsporteRoute
   '/faculdade': typeof AuthenticatedFaculdadeRoute
@@ -162,9 +184,11 @@ export interface FileRoutesByFullPath {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
+  '/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos/': typeof AuthenticatedContextosIndexRoute
   '/inbox/': typeof AuthenticatedInboxIndexRoute
 }
@@ -185,9 +209,11 @@ export interface FileRoutesByTo {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos': typeof AuthenticatedContextosIndexRoute
   '/inbox': typeof AuthenticatedInboxIndexRoute
 }
@@ -199,6 +225,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/compras': typeof AuthenticatedComprasRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/esporte': typeof AuthenticatedEsporteRoute
   '/_authenticated/faculdade': typeof AuthenticatedFaculdadeRoute
@@ -210,9 +237,11 @@ export interface FileRoutesById {
   '/_authenticated/rotinas': typeof AuthenticatedRotinasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/_authenticated/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/_authenticated/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/_authenticated/metas/$id': typeof AuthenticatedMetasIdRoute
+  '/_authenticated/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/_authenticated/contextos/': typeof AuthenticatedContextosIndexRoute
   '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
 }
@@ -224,6 +253,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/agenda'
     | '/compras'
+    | '/configuracoes'
     | '/dashboard'
     | '/esporte'
     | '/faculdade'
@@ -235,9 +265,11 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/configuracoes/perfil'
     | '/contextos/$id'
     | '/inbox/$threadId'
     | '/metas/$id'
+    | '/configuracoes/'
     | '/contextos/'
     | '/inbox/'
   fileRoutesByTo: FileRoutesByTo
@@ -258,9 +290,11 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/configuracoes/perfil'
     | '/contextos/$id'
     | '/inbox/$threadId'
     | '/metas/$id'
+    | '/configuracoes'
     | '/contextos'
     | '/inbox'
   id:
@@ -271,6 +305,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/agenda'
     | '/_authenticated/compras'
+    | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
     | '/_authenticated/esporte'
     | '/_authenticated/faculdade'
@@ -282,9 +317,11 @@ export interface FileRouteTypes {
     | '/_authenticated/rotinas'
     | '/_authenticated/tarefas'
     | '/api/agent'
+    | '/_authenticated/configuracoes/perfil'
     | '/_authenticated/contextos/$id'
     | '/_authenticated/inbox/$threadId'
     | '/_authenticated/metas/$id'
+    | '/_authenticated/configuracoes/'
     | '/_authenticated/contextos/'
     | '/_authenticated/inbox/'
   fileRoutesById: FileRoutesById
@@ -339,6 +376,13 @@ declare module '@tanstack/react-router' {
       path: '/compras'
       fullPath: '/compras'
       preLoaderRoute: typeof AuthenticatedComprasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -418,6 +462,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/configuracoes/': {
+      id: '/_authenticated/configuracoes/'
+      path: '/'
+      fullPath: '/configuracoes/'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesIndexRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
+    '/_authenticated/configuracoes/perfil': {
+      id: '/_authenticated/configuracoes/perfil'
+      path: '/perfil'
+      fullPath: '/configuracoes/perfil'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesPerfilRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
     '/_authenticated/contextos/': {
       id: '/_authenticated/contextos/'
       path: '/contextos'
@@ -456,6 +514,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedConfiguracoesRouteChildren {
+  AuthenticatedConfiguracoesPerfilRoute: typeof AuthenticatedConfiguracoesPerfilRoute
+  AuthenticatedConfiguracoesIndexRoute: typeof AuthenticatedConfiguracoesIndexRoute
+}
+
+const AuthenticatedConfiguracoesRouteChildren: AuthenticatedConfiguracoesRouteChildren =
+  {
+    AuthenticatedConfiguracoesPerfilRoute:
+      AuthenticatedConfiguracoesPerfilRoute,
+    AuthenticatedConfiguracoesIndexRoute: AuthenticatedConfiguracoesIndexRoute,
+  }
+
+const AuthenticatedConfiguracoesRouteWithChildren =
+  AuthenticatedConfiguracoesRoute._addFileChildren(
+    AuthenticatedConfiguracoesRouteChildren,
+  )
+
 interface AuthenticatedMetasRouteChildren {
   AuthenticatedMetasIdRoute: typeof AuthenticatedMetasIdRoute
 }
@@ -470,6 +545,7 @@ const AuthenticatedMetasRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedComprasRoute: typeof AuthenticatedComprasRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEsporteRoute: typeof AuthenticatedEsporteRoute
   AuthenticatedFaculdadeRoute: typeof AuthenticatedFaculdadeRoute
@@ -489,6 +565,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedComprasRoute: AuthenticatedComprasRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEsporteRoute: AuthenticatedEsporteRoute,
   AuthenticatedFaculdadeRoute: AuthenticatedFaculdadeRoute,
