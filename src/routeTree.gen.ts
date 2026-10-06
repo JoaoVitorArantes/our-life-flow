@@ -28,7 +28,9 @@ import { Route as AuthenticatedRotinasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as AuthenticatedConfiguracoesIndexRouteImport } from './routes/_authenticated/configuracoes.index'
+import { Route as AuthenticatedConfiguracoesCategoriasRouteImport } from './routes/_authenticated/configuracoes.categorias'
 import { Route as AuthenticatedConfiguracoesEspacoRouteImport } from './routes/_authenticated/configuracoes.espaco'
+import { Route as AuthenticatedConfiguracoesFinanceiroRouteImport } from './routes/_authenticated/configuracoes.financeiro'
 import { Route as AuthenticatedConfiguracoesPerfilRouteImport } from './routes/_authenticated/configuracoes.perfil'
 import { Route as AuthenticatedConfiguracoesPersonalizacaoRouteImport } from './routes/_authenticated/configuracoes.personalizacao'
 import { Route as AuthenticatedConfiguracoesPessoasRouteImport } from './routes/_authenticated/configuracoes.pessoas'
@@ -134,10 +136,22 @@ const AuthenticatedConfiguracoesIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedConfiguracoesRoute,
   } as any)
+const AuthenticatedConfiguracoesCategoriasRoute =
+  AuthenticatedConfiguracoesCategoriasRouteImport.update({
+    id: '/categorias',
+    path: '/categorias',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
 const AuthenticatedConfiguracoesEspacoRoute =
   AuthenticatedConfiguracoesEspacoRouteImport.update({
     id: '/espaco',
     path: '/espaco',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
+const AuthenticatedConfiguracoesFinanceiroRoute =
+  AuthenticatedConfiguracoesFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
     getParentRoute: () => AuthenticatedConfiguracoesRoute,
   } as any)
 const AuthenticatedConfiguracoesPerfilRoute =
@@ -205,7 +219,9 @@ export interface FileRoutesByFullPath {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/configuracoes/espaco': typeof AuthenticatedConfiguracoesEspacoRoute
+  '/configuracoes/financeiro': typeof AuthenticatedConfiguracoesFinanceiroRoute
   '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   '/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
@@ -233,7 +249,9 @@ export interface FileRoutesByTo {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/configuracoes/espaco': typeof AuthenticatedConfiguracoesEspacoRoute
+  '/configuracoes/financeiro': typeof AuthenticatedConfiguracoesFinanceiroRoute
   '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   '/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
@@ -264,7 +282,9 @@ export interface FileRoutesById {
   '/_authenticated/rotinas': typeof AuthenticatedRotinasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/_authenticated/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/_authenticated/configuracoes/espaco': typeof AuthenticatedConfiguracoesEspacoRoute
+  '/_authenticated/configuracoes/financeiro': typeof AuthenticatedConfiguracoesFinanceiroRoute
   '/_authenticated/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/_authenticated/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   '/_authenticated/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
@@ -295,7 +315,9 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/configuracoes/categorias'
     | '/configuracoes/espaco'
+    | '/configuracoes/financeiro'
     | '/configuracoes/perfil'
     | '/configuracoes/personalizacao'
     | '/configuracoes/pessoas'
@@ -323,7 +345,9 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/configuracoes/categorias'
     | '/configuracoes/espaco'
+    | '/configuracoes/financeiro'
     | '/configuracoes/perfil'
     | '/configuracoes/personalizacao'
     | '/configuracoes/pessoas'
@@ -353,7 +377,9 @@ export interface FileRouteTypes {
     | '/_authenticated/rotinas'
     | '/_authenticated/tarefas'
     | '/api/agent'
+    | '/_authenticated/configuracoes/categorias'
     | '/_authenticated/configuracoes/espaco'
+    | '/_authenticated/configuracoes/financeiro'
     | '/_authenticated/configuracoes/perfil'
     | '/_authenticated/configuracoes/personalizacao'
     | '/_authenticated/configuracoes/pessoas'
@@ -508,11 +534,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesIndexRouteImport
       parentRoute: typeof AuthenticatedConfiguracoesRoute
     }
+    '/_authenticated/configuracoes/categorias': {
+      id: '/_authenticated/configuracoes/categorias'
+      path: '/categorias'
+      fullPath: '/configuracoes/categorias'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesCategoriasRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
     '/_authenticated/configuracoes/espaco': {
       id: '/_authenticated/configuracoes/espaco'
       path: '/espaco'
       fullPath: '/configuracoes/espaco'
       preLoaderRoute: typeof AuthenticatedConfiguracoesEspacoRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
+    '/_authenticated/configuracoes/financeiro': {
+      id: '/_authenticated/configuracoes/financeiro'
+      path: '/financeiro'
+      fullPath: '/configuracoes/financeiro'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesFinanceiroRouteImport
       parentRoute: typeof AuthenticatedConfiguracoesRoute
     }
     '/_authenticated/configuracoes/perfil': {
@@ -575,7 +615,9 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedConfiguracoesRouteChildren {
+  AuthenticatedConfiguracoesCategoriasRoute: typeof AuthenticatedConfiguracoesCategoriasRoute
   AuthenticatedConfiguracoesEspacoRoute: typeof AuthenticatedConfiguracoesEspacoRoute
+  AuthenticatedConfiguracoesFinanceiroRoute: typeof AuthenticatedConfiguracoesFinanceiroRoute
   AuthenticatedConfiguracoesPerfilRoute: typeof AuthenticatedConfiguracoesPerfilRoute
   AuthenticatedConfiguracoesPersonalizacaoRoute: typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   AuthenticatedConfiguracoesPessoasRoute: typeof AuthenticatedConfiguracoesPessoasRoute
@@ -584,8 +626,12 @@ interface AuthenticatedConfiguracoesRouteChildren {
 
 const AuthenticatedConfiguracoesRouteChildren: AuthenticatedConfiguracoesRouteChildren =
   {
+    AuthenticatedConfiguracoesCategoriasRoute:
+      AuthenticatedConfiguracoesCategoriasRoute,
     AuthenticatedConfiguracoesEspacoRoute:
       AuthenticatedConfiguracoesEspacoRoute,
+    AuthenticatedConfiguracoesFinanceiroRoute:
+      AuthenticatedConfiguracoesFinanceiroRoute,
     AuthenticatedConfiguracoesPerfilRoute:
       AuthenticatedConfiguracoesPerfilRoute,
     AuthenticatedConfiguracoesPersonalizacaoRoute:
