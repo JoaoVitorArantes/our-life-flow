@@ -3,7 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Camera, ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/features/app/app-context";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,13 +20,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { compressSquareImage } from "@/components/profile/image-utils";
+import { removeStoredImage, saveWorkspaceIdentity, storedPath, uploadWorkspaceImage } from "@/features/workspace/identity";
 import { cn } from "@/lib/utils";
 
-function storedPath(url?: string | null) {
-  if (!url) return null;
-  return url.split("#avatar-path=")[1] ?? (url.startsWith("http") ? null : url);
-}
 
 export function WorkspaceAvatarMenu({ collapsed = false }: { collapsed?: boolean }) {
   const { workspace, workspaceId, workspaceName, refetchWorkspace } = useApp();
@@ -68,23 +63,21 @@ export function WorkspaceAvatarMenu({ collapsed = false }: { collapsed?: boolean
     if (!selected || !workspaceId) return;
     setBusy(true);
     try {
-      const blob = await compressSquareImage(selected);
-      const oldPath = storedPath(workspace?.avatar_url);
-      const path = `workspaces/${workspaceId}/avatar-${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, blob, { contentType: "image/jpeg", cacheControl: "3600" });
-      if (uploadError) throw uploadError;
-
-      const { error: workspaceError } = await supabase
-        .from("workspaces")
-        .update({ avatar_url: path })
-        .eq("id", workspaceId);
-      if (workspaceError) {
-        await supabase.storage.from("avatars").remove([path]);
-        throw workspaceError;
+      if (!workspace) return;
+      const oldPath = storedPath(workspace.avatar_url);
+      const path = await uploadWorkspaceImage(workspaceId, "avatar", selected);
+      try {
+        await saveWorkspaceIdentity(workspace, {
+          name: workspace.name,
+          description: workspace.description,
+          accentColor: workspace.accent_color,
+          avatarPath: path,
+        });
+      } catch (error) {
+        await removeStoredImage(path);
+        throw error;
       }
-      if (oldPath && oldPath !== path) await supabase.storage.from("avatars").remove([oldPath]);
+      if (oldPath && oldPath !== path) await removeStoredImage(oldPath);
 
       await refreshWorkspace();
       closePreview();
@@ -101,15 +94,13 @@ export function WorkspaceAvatarMenu({ collapsed = false }: { collapsed?: boolean
     setBusy(true);
     try {
       const path = storedPath(workspace.avatar_url);
-      const { error: workspaceError } = await supabase
-        .from("workspaces")
-        .update({ avatar_url: null })
-        .eq("id", workspaceId);
-      if (workspaceError) throw workspaceError;
-      if (path) {
-        const { error: storageError } = await supabase.storage.from("avatars").remove([path]);
-        if (storageError) throw storageError;
-      }
+      await saveWorkspaceIdentity(workspace, {
+        name: workspace.name,
+        description: workspace.description,
+        accentColor: workspace.accent_color,
+        avatarPath: null,
+      });
+      await removeStoredImage(path);
       await refreshWorkspace();
       toast.success("Foto do Life OS removida.");
     } catch (error) {
