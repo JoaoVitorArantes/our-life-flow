@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useNavGroups } from "@/features/preferences/queries";
 import { PanelLeftClose, PanelLeftOpen, Repeat2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FOOTER_NAV, NAV_GROUPS, type NavItem } from "@/features/app/navigation";
+import { FOOTER_NAV, type NavItem } from "@/features/app/navigation";
 import { useApp } from "@/features/app/app-context";
 import { useNavigationIndicators } from "@/features/app/use-navigation-indicators";
 import { AvatarMenu } from "@/components/profile/avatar-menu";
@@ -47,6 +47,7 @@ export function Sidebar({
 }) {
   const { workspaceId, profile, availableWorkspaces, switchWorkspace } = useApp();
   const indicators = useNavigationIndicators(workspaceId);
+  const navGroups = useNavGroups();
 
   return (
     <aside

@@ -4,7 +4,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Camera, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
-import { NAV_GROUPS, FOOTER_NAV, type NavItem } from "@/features/app/navigation";
+import { FOOTER_NAV, type NavItem } from "@/features/app/navigation";
 import { useNavigationIndicators } from "@/features/app/use-navigation-indicators";
 import { useApp } from "@/features/app/app-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +43,7 @@ function MobileNavLink({ item, badge, active, close }: { item: NavItem; badge?: 
 export function MobileMenu() {
   const { workspaceId, workspaceName, profile, userId, refetchWorkspace } = useApp();
   const indicators = useNavigationIndicators(workspaceId);
+  const navGroups = useNavGroups();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
