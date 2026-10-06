@@ -44,7 +44,9 @@ type AppContextValue = {
   setActiveContextId: (id: string | null) => void;
 };
 
-const AppContext = createContext<AppContextValue | null>(null);
+// Um único contexto mesmo após recarga parcial do código (evita "useApp must be used inside AppProvider").
+const globalStore = globalThis as { __lifeosAppContext?: React.Context<AppContextValue | null> };
+const AppContext = (globalStore.__lifeosAppContext ??= createContext<AppContextValue | null>(null));
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useSession();
