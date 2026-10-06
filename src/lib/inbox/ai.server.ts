@@ -17,7 +17,7 @@ function createRunIdFetch() {
 
 /** Uma ação interpretada. Campos irrelevantes ao intent vêm null. Schema estrito e plano. */
 export const actionSchema = z.object({
-  intent: z.enum(["expense", "income", "task", "event", "note", "purchase", "activity", "goal"]),
+  intent: z.enum(["expense", "income", "task", "event", "note", "purchase", "activity", "goal", "rename_workspace"]),
   description: z.string(),
   amount: z.number().nullable(),
   date: z.string().nullable(),

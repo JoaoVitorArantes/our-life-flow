@@ -31,17 +31,19 @@ function fail(area: string, error: unknown) {
 
 export async function loadBase(ctx: AgentCtx) {
   const { supabase: sb, workspaceId: w } = ctx;
-  const [accounts, cards, categories, contexts, members, goals] = await Promise.all([
+  const [accounts, cards, categories, contexts, members, goals, workspace] = await Promise.all([
     sb.from("accounts").select("*").eq("workspace_id", w),
     sb.from("cards").select("*").eq("workspace_id", w),
-    sb.from("categories").select("id, name, type").eq("workspace_id", w),
+    sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null),
     sb.from("contexts").select("id, name, type, status").eq("workspace_id", w).neq("status", "ARCHIVED"),
     sb.from("workspace_members").select("user_id").eq("workspace_id", w),
     sb.from("goals").select("id, title, status").eq("workspace_id", w),
+    sb.from("workspaces").select("name, description").eq("id", w).maybeSingle(),
   ]);
   const ids = (members.data ?? []).map((m) => m.user_id);
   const { data: profiles } = ids.length ? await sb.from("profiles").select("id, name").in("id", ids) : { data: [] };
   return {
+    workspace: { name: workspace.data?.name ?? "Life OS", description: workspace.data?.description ?? null, members: ids.length },
     accounts: accounts.data ?? [],
     cards: cards.data ?? [],
     categories: categories.data ?? [],
@@ -393,7 +395,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
 
     propose_action: tool({
       description:
-        "Propõe um REGISTRO (despesa, receita, tarefa, compromisso, nota, desejo de compra, atividade, meta). NÃO salva nada: o app mostra uma prévia e o usuário confirma. Use só ids reais das listas do sistema. Se faltar a forma de pagamento de uma despesa ou houver ambiguidade (ex.: dois Nubank), pergunte ANTES de propor.",
+        "Propõe um REGISTRO (despesa, receita, tarefa, compromisso, nota, desejo de compra, atividade, meta) ou renomear o espaço (rename_workspace: description = novo nome). NÃO salva nada: o app mostra uma prévia e o usuário confirma. Use só ids reais das listas do sistema. Se faltar a forma de pagamento de uma despesa ou houver ambiguidade (ex.: dois Nubank), pergunte ANTES de propor.",
       inputSchema: actionSchema,
       execute: async (a) => {
         const ok = (set: { id: string }[], id: string | null) => (id && set.some((x) => x.id === id) ? id : null);

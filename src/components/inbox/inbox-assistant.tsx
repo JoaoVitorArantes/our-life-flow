@@ -28,6 +28,7 @@ export const INTENT: Record<InboxAction["intent"], { label: string; emoji: strin
   purchase: { label: "Compra planejada", emoji: "🛍️" },
   activity: { label: "Atividade", emoji: "🏃" },
   goal: { label: "Meta", emoji: "🎯" },
+  rename_workspace: { label: "Novo nome do espaço", emoji: "🏡" },
 };
 
 const EXAMPLES = [

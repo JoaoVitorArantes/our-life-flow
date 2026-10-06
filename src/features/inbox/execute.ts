@@ -134,6 +134,24 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     await invalidate("events");
     return { id: data.id, module: "Agenda", href: "/agenda" };
   }
+  if (a.intent === "rename_workspace") {
+    // Ação administrativa: só roda depois do Confirmar, pela mesma função protegida da tela Meu espaço.
+    const { data: ws, error: wsError } = await supabase.from("workspaces").select("*").eq("id", workspaceId).single();
+    if (wsError) throw wsError;
+    const { error } = await supabase.rpc("update_workspace_identity", {
+      _workspace_id: workspaceId,
+      _name: a.description.trim().slice(0, 60),
+      _description: ws.description ?? "",
+      _accent_color: ws.accent_color as string,
+      _avatar_url: null as unknown as string,
+      _cover_url: null as unknown as string,
+      _set_avatar: false,
+      _set_cover: false,
+    });
+    if (error) throw error;
+    await invalidate("workspace");
+    return { id: workspaceId, module: "Meu espaço", href: "/configuracoes/espaco" };
+  }
   if (a.intent === "task") {
     const { data, error } = await supabase.from("tasks").insert({ ...owner, due_date: a.date }).select("id").single();
     if (error) throw error;
