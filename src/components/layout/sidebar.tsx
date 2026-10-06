@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useNavGroups } from "@/features/preferences/queries";
 import { PanelLeftClose, PanelLeftOpen, Repeat2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FOOTER_NAV, NAV_GROUPS, type NavItem } from "@/features/app/navigation";
@@ -76,7 +77,7 @@ export function Sidebar({
       ) : null}
 
       <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
-        {NAV_GROUPS.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.label} className="space-y-1">
             {collapsed ? <div className="mx-auto mb-2 h-px w-6 bg-sidebar-border" /> : (
               <p className="px-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/65">{group.label}</p>

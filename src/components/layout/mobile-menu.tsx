@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavGroups } from "@/features/preferences/queries";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Camera, LogOut, Monitor, Moon, Sun } from "lucide-react";
@@ -138,7 +139,7 @@ export function MobileMenu() {
 
           <nav aria-label="Menu completo" className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
             <div className="space-y-5">
-              {NAV_GROUPS.map((group) => (
+              {navGroups.map((group) => (
                 <section key={group.label} aria-labelledby={`mobile-${group.label}`}>
                   <p id={`mobile-${group.label}`} className="px-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/65">{group.label}</p>
                   <div className="space-y-1">
