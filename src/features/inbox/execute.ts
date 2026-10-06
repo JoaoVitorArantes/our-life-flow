@@ -3,7 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { createTransaction } from "@/features/finance/queries";
 import { createInstallmentPlan } from "@/features/finance/mutations";
 import { saveDivision } from "@/features/nos/mutations";
-import { createPurchase, type PersonScope, type PurchasePriority } from "@/features/purchases/queries";
+import {
+  createPurchase,
+  type PersonScope,
+  type PurchasePriority,
+} from "@/features/purchases/queries";
 import { createActivity, type ActivityPerson } from "@/features/activities/queries";
 import type { InboxAction } from "@/lib/inbox/inbox.functions";
 
@@ -34,7 +38,8 @@ export function missingFields(a: InboxAction): string[] {
 
 export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<ExecResult> {
   const { workspaceId, userId, queryClient } = ctx;
-  const invalidate = (...keys: string[]) => Promise.all(keys.map((k) => queryClient.invalidateQueries({ queryKey: [k] })));
+  const invalidate = (...keys: string[]) =>
+    Promise.all(keys.map((k) => queryClient.invalidateQueries({ queryKey: [k] })));
 
   if (a.intent === "expense" && a.installments && a.card_id) {
     const planId = await createInstallmentPlan({
@@ -51,7 +56,11 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
       firstPaid: false,
     });
     await invalidate("transactions", "installment_plans");
-    return { id: String((planId as { id?: string } | undefined)?.id ?? planId ?? ""), module: "Financeiro", href: "/financeiro" };
+    return {
+      id: String((planId as { id?: string } | undefined)?.id ?? planId ?? ""),
+      module: "Financeiro",
+      href: "/financeiro",
+    };
   }
 
   if (a.intent === "expense" || a.intent === "income") {
@@ -89,7 +98,13 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
         note: a.description,
       });
     }
-    await invalidate("transactions", "settlements", "transaction_splits", "transaction_payers", "transaction_division");
+    await invalidate(
+      "transactions",
+      "settlements",
+      "transaction_splits",
+      "transaction_payers",
+      "transaction_division",
+    );
     return { id: created.id, module: "Financeiro", href: "/financeiro" };
   }
 
@@ -98,10 +113,14 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
       title: a.description,
       budget_amount: a.amount,
       category: a.purchase_category,
-      priority: (["LOW", "MEDIUM", "HIGH"].includes(a.priority ?? "") ? a.priority : "MEDIUM") as PurchasePriority,
+      priority: (["LOW", "MEDIUM", "HIGH"].includes(a.priority ?? "")
+        ? a.priority
+        : "MEDIUM") as PurchasePriority,
       status: "WANT_TO_BUY",
       context_id: a.context_id,
-      person_scope: (["JOAO", "RENIFER", "COUPLE"].includes(a.person_scope ?? "") ? a.person_scope : "COUPLE") as PersonScope,
+      person_scope: (["JOAO", "RENIFER", "COUPLE"].includes(a.person_scope ?? "")
+        ? a.person_scope
+        : "COUPLE") as PersonScope,
     });
     await invalidate("purchases");
     return { id: p.id, module: "Compras", href: "/compras" };
@@ -115,7 +134,9 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
       start_time: a.time,
       duration_minutes: a.duration_minutes ? Math.round(a.duration_minutes) : null,
       distance_km: a.distance_km,
-      person_scope: (["JOAO", "RENIFER", "COUPLE"].includes(a.person_scope ?? "") ? a.person_scope : "COUPLE") as ActivityPerson,
+      person_scope: (["JOAO", "RENIFER", "COUPLE"].includes(a.person_scope ?? "")
+        ? a.person_scope
+        : "COUPLE") as ActivityPerson,
       context_id: a.context_id,
     });
     await invalidate("physical_activities", "activities");
@@ -123,7 +144,13 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
   }
 
   // tarefas, agenda, notas e metas: mesmos inserts do formulário rápido
-  const owner = { workspace_id: workspaceId, owner_id: userId, visibility: "SHARED" as const, context_id: a.context_id, title: a.description };
+  const owner = {
+    workspace_id: workspaceId,
+    owner_id: userId,
+    visibility: "SHARED" as const,
+    context_id: a.context_id,
+    title: a.description,
+  };
   if (a.intent === "event") {
     const { data, error } = await supabase
       .from("events")
@@ -136,7 +163,11 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
   }
   if (a.intent === "rename_workspace") {
     // Ação administrativa: só roda depois do Confirmar, pela mesma função protegida da tela Meu espaço.
-    const { data: ws, error: wsError } = await supabase.from("workspaces").select("*").eq("id", workspaceId).single();
+    const { data: ws, error: wsError } = await supabase
+      .from("workspaces")
+      .select("*")
+      .eq("id", workspaceId)
+      .single();
     if (wsError) throw wsError;
     const { error } = await supabase.rpc("update_workspace_identity", {
       _workspace_id: workspaceId,
@@ -153,7 +184,11 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     return { id: workspaceId, module: "Meu espaço", href: "/configuracoes/espaco" };
   }
   if (a.intent === "task") {
-    const { data, error } = await supabase.from("tasks").insert({ ...owner, due_date: a.date }).select("id").single();
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert({ ...owner, due_date: a.date })
+      .select("id")
+      .single();
     if (error) throw error;
     await invalidate("tasks");
     return { id: data.id, module: "Tarefas", href: "/tarefas" };

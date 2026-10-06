@@ -23,7 +23,17 @@ export async function compressImage(file: File, width: number, height: number) {
   canvas.height = height;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Não foi possível preparar a imagem.");
-  context.drawImage(bitmap, (bitmap.width - sw) / 2, (bitmap.height - sh) / 2, sw, sh, 0, 0, width, height);
+  context.drawImage(
+    bitmap,
+    (bitmap.width - sw) / 2,
+    (bitmap.height - sh) / 2,
+    sw,
+    sh,
+    0,
+    0,
+    width,
+    height,
+  );
   bitmap.close();
   return new Promise<Blob>((resolve, reject) =>
     canvas.toBlob(

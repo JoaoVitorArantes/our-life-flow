@@ -11,10 +11,15 @@ export function storedPath(url?: string | null) {
 }
 
 /** Uploads into the workspace's private folder; storage policies check membership. */
-export async function uploadWorkspaceImage(workspaceId: string, kind: "avatar" | "cover", file: File) {
+export async function uploadWorkspaceImage(
+  workspaceId: string,
+  kind: "avatar" | "cover",
+  file: File,
+) {
   const invalid = validateImage(file);
   if (invalid) throw new Error(invalid);
-  const blob = kind === "avatar" ? await compressImage(file, 640, 640) : await compressImage(file, 1600, 600);
+  const blob =
+    kind === "avatar" ? await compressImage(file, 640, 640) : await compressImage(file, 1600, 600);
   const path = `workspaces/${workspaceId}/${kind}-${Date.now()}.jpg`;
   const { error } = await supabase.storage
     .from("avatars")

@@ -8,7 +8,15 @@ import { useNavigationIndicators } from "@/features/app/use-navigation-indicator
 import { AvatarMenu } from "@/components/profile/avatar-menu";
 import { WorkspaceAvatarMenu } from "@/components/profile/workspace-avatar-menu";
 
-function NavLink({ item, collapsed, badge }: { item: NavItem; collapsed: boolean; badge?: number | undefined }) {
+function NavLink({
+  item,
+  collapsed,
+  badge,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  badge?: number | undefined;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const active = pathname === item.to;
   return (
@@ -23,7 +31,9 @@ function NavLink({ item, collapsed, badge }: { item: NavItem; collapsed: boolean
           : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-accent/45 hover:text-foreground",
       )}
     >
-      {active ? <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary" aria-hidden /> : null}
+      {active ? (
+        <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary" aria-hidden />
+      ) : null}
       <item.icon className={cn("size-4 shrink-0 transition-colors", active && "text-primary")} />
       {collapsed ? null : <span className="truncate font-medium">{item.label}</span>}
       {!collapsed && badge && badge > 0 ? (
@@ -31,7 +41,9 @@ function NavLink({ item, collapsed, badge }: { item: NavItem; collapsed: boolean
           {badge > 99 ? "99+" : badge}
         </span>
       ) : null}
-      {collapsed && badge && badge > 0 ? <span className="absolute right-1 top-1 size-1.5 rounded-full bg-primary" /> : null}
+      {collapsed && badge && badge > 0 ? (
+        <span className="absolute right-1 top-1 size-1.5 rounded-full bg-primary" />
+      ) : null}
     </Link>
   );
 }
@@ -67,11 +79,15 @@ export function Sidebar({
       </div>
       {availableWorkspaces.length > 1 && !collapsed ? (
         <div className="px-3 pb-3">
-          <button type="button" onClick={() => {
-            const index = availableWorkspaces.findIndex((item) => item.id === workspaceId);
-            const next = availableWorkspaces[(index + 1) % availableWorkspaces.length];
-            if (next) void switchWorkspace(next.id);
-          }} className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground">
+          <button
+            type="button"
+            onClick={() => {
+              const index = availableWorkspaces.findIndex((item) => item.id === workspaceId);
+              const next = availableWorkspaces[(index + 1) % availableWorkspaces.length];
+              if (next) void switchWorkspace(next.id);
+            }}
+            className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground"
+          >
             <Repeat2 className="size-3.5" /> Trocar espaço
           </button>
         </div>
@@ -80,16 +96,29 @@ export function Sidebar({
       <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
         {navGroups.map((group) => (
           <div key={group.label} className="space-y-1">
-            {collapsed ? <div className="mx-auto mb-2 h-px w-6 bg-sidebar-border" /> : (
-              <p className="px-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/65">{group.label}</p>
+            {collapsed ? (
+              <div className="mx-auto mb-2 h-px w-6 bg-sidebar-border" />
+            ) : (
+              <p className="px-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/65">
+                {group.label}
+              </p>
             )}
             {group.items.map((item) => (
-              <NavLink key={item.to} item={item} collapsed={collapsed} badge={indicators[item.to]} />
+              <NavLink
+                key={item.to}
+                item={item}
+                collapsed={collapsed}
+                badge={indicators[item.to]}
+              />
             ))}
           </div>
         ))}
         <div className="mt-auto space-y-1 border-t border-sidebar-border pt-3">
-          {collapsed ? null : <p className="px-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/65">Sistema</p>}
+          {collapsed ? null : (
+            <p className="px-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/65">
+              Sistema
+            </p>
+          )}
           {FOOTER_NAV.map((item) => (
             <NavLink key={item.to} item={item} collapsed={collapsed} />
           ))}
@@ -112,10 +141,20 @@ export function Sidebar({
           </button>
         </div>
       </nav>
-      <div className={cn("border-t border-sidebar-border p-3", collapsed && "flex justify-center")}> 
-        <div className={cn("flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-accent/35", collapsed && "p-0")}>
+      <div className={cn("border-t border-sidebar-border p-3", collapsed && "flex justify-center")}>
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-accent/35",
+            collapsed && "p-0",
+          )}
+        >
           <AvatarMenu compact />
-          {collapsed ? null : <div className="min-w-0"><p className="truncate text-xs font-semibold">{profile?.name || "Seu perfil"}</p><p className="truncate text-[10px] text-muted-foreground">Perfil pessoal</p></div>}
+          {collapsed ? null : (
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold">{profile?.name || "Seu perfil"}</p>
+              <p className="truncate text-[10px] text-muted-foreground">Perfil pessoal</p>
+            </div>
+          )}
         </div>
       </div>
     </aside>

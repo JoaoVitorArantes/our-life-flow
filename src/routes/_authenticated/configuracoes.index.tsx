@@ -20,7 +20,10 @@ function SettingsIndex() {
   const { workspaceName } = useApp();
   return (
     <div className="space-y-6">
-      <PageHeader title="Configurações" subtitle={`Você está ajustando o espaço “${workspaceName}”.`} />
+      <PageHeader
+        title="Configurações"
+        subtitle={`Você está ajustando o espaço “${workspaceName}”.`}
+      />
       <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
         {SETTINGS_SECTIONS.map((section) => (
           <li key={section.to}>

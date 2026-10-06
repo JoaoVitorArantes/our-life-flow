@@ -59,7 +59,9 @@ export function toCsv(rows: Record<string, unknown>[]) {
     const text = typeof value === "object" ? JSON.stringify(value) : String(value);
     return /[",\n;]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   };
-  return [columns.join(","), ...rows.map((row) => columns.map((c) => cell(row[c])).join(","))].join("\n");
+  return [columns.join(","), ...rows.map((row) => columns.map((c) => cell(row[c])).join(","))].join(
+    "\n",
+  );
 }
 
 const stamp = () => new Date().toISOString().slice(0, 10);
@@ -67,7 +69,11 @@ const stamp = () => new Date().toISOString().slice(0, 10);
 export async function exportWorkspaceJson(workspaceId: string, workspaceName: string) {
   const data: Record<string, unknown> = {};
   for (const [table] of EXPORT_TABLES) data[table] = await fetchAll(table, workspaceId);
-  const payload = { exported_at: new Date().toISOString(), workspace: { id: workspaceId, name: workspaceName }, data };
+  const payload = {
+    exported_at: new Date().toISOString(),
+    workspace: { id: workspaceId, name: workspaceName },
+    data,
+  };
   download(`life-os-${stamp()}.json`, JSON.stringify(payload, null, 2), "application/json");
 }
 

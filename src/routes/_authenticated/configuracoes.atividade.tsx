@@ -74,23 +74,41 @@ function Atividade() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Atividade" subtitle="As ações importantes do espaço, sem detalhes sensíveis." />
+      <PageHeader
+        title="Atividade"
+        subtitle="As ações importantes do espaço, sem detalhes sensíveis."
+      />
       <Panel>
-        {isLoading ? <LoadingState /> : data.length ? (
+        {isLoading ? (
+          <LoadingState />
+        ) : data.length ? (
           <ol className="space-y-4">
             {data.map((entry) => {
               const person = memberProfiles.find((p) => p.id === entry.actor_id);
               const when = new Date(entry.created_at);
               return (
                 <li key={entry.id} className="flex gap-3">
-                  <MemberAvatar name={person?.name} email={person?.email} src={person?.avatar_url} className="size-8 shrink-0" fallbackClassName="text-[10px]" />
+                  <MemberAvatar
+                    name={person?.name}
+                    email={person?.email}
+                    src={person?.avatar_url}
+                    className="size-8 shrink-0"
+                    fallbackClassName="text-[10px]"
+                  />
                   <div className="min-w-0 text-sm">
                     <p>
                       <span className="font-medium">{person?.name?.split(" ")[0] ?? "Alguém"}</span>{" "}
-                      <span className="text-muted-foreground">{describe(entry.action, entry.entity_type, entry.entity_label)}</span>
+                      <span className="text-muted-foreground">
+                        {describe(entry.action, entry.entity_type, entry.entity_label)}
+                      </span>
                     </p>
-                    <time dateTime={entry.created_at} title={format(when, "dd/MM/yyyy HH:mm")} className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(when, { addSuffix: true, locale: ptBR })} · {format(when, "dd/MM/yyyy HH:mm")}
+                    <time
+                      dateTime={entry.created_at}
+                      title={format(when, "dd/MM/yyyy HH:mm")}
+                      className="text-xs text-muted-foreground"
+                    >
+                      {formatDistanceToNow(when, { addSuffix: true, locale: ptBR })} ·{" "}
+                      {format(when, "dd/MM/yyyy HH:mm")}
                     </time>
                   </div>
                 </li>
@@ -98,7 +116,10 @@ function Atividade() {
             })}
           </ol>
         ) : (
-          <p className="py-6 text-center text-sm text-muted-foreground">Nada registrado ainda. Renomear o espaço, mexer em categorias ou usar a lixeira aparece aqui.</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Nada registrado ainda. Renomear o espaço, mexer em categorias ou usar a lixeira aparece
+            aqui.
+          </p>
         )}
       </Panel>
     </div>

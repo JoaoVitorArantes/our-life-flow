@@ -33,7 +33,9 @@ function Sistema() {
       if (action === "seed") await seedDemoData(workspaceId);
       else await clearDemoData(workspaceId);
       await queryClient.invalidateQueries();
-      toast.success(action === "seed" ? "Dados fictícios recriados." : "Dados fictícios removidos.");
+      toast.success(
+        action === "seed" ? "Dados fictícios recriados." : "Dados fictícios removidos.",
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível concluir.");
     } finally {
@@ -55,17 +57,29 @@ function Sistema() {
         <Panel className="space-y-3 border-warning/40">
           <PanelTitle>Dados de demonstração</PanelTitle>
           <p className="text-sm text-muted-foreground">
-            Este é um workspace de demonstração. "Preparar" apaga os registros fictícios e recria o conjunto completo; "Remover" apaga somente os registros fictícios.
+            Este é um workspace de demonstração. "Preparar" apaga os registros fictícios e recria o
+            conjunto completo; "Remover" apaga somente os registros fictícios.
           </p>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" disabled={busy} onClick={() => void runDemo("seed")}>Preparar / resetar demonstração</Button>
-            <Button size="sm" variant="ghost" disabled={busy} onClick={() => void runDemo("clear")}>Remover dados fictícios</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              onClick={() => void runDemo("seed")}
+            >
+              Preparar / resetar demonstração
+            </Button>
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => void runDemo("clear")}>
+              Remover dados fictícios
+            </Button>
           </div>
         </Panel>
       ) : null}
       <Panel>
         <PanelTitle>Conta</PanelTitle>
-        <Button size="sm" variant="outline" onClick={() => void signOut()}>Sair</Button>
+        <Button size="sm" variant="outline" onClick={() => void signOut()}>
+          Sair
+        </Button>
       </Panel>
     </div>
   );

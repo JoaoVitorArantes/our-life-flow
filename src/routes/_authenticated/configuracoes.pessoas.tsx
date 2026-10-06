@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, Panel, PanelTitle } from "@/components/common/page";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useApp } from "@/features/app/app-context";
 import { MemberAvatar } from "@/components/profile/member-avatar";
 import { PartnerSettings } from "@/features/workspace/partner";
@@ -26,11 +32,15 @@ const ROLE_HINT: Record<string, string> = {
 };
 
 function Pessoas() {
-  const { members, memberProfiles, userId, availableWorkspaces, workspaceId, switchWorkspace } = useApp();
+  const { members, memberProfiles, userId, availableWorkspaces, workspaceId, switchWorkspace } =
+    useApp();
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Pessoas" subtitle="Quem participa deste espaço e o que cada papel permite." />
+      <PageHeader
+        title="Pessoas"
+        subtitle="Quem participa deste espaço e o que cada papel permite."
+      />
       <Panel>
         <PanelTitle>Membros</PanelTitle>
         <ul className="divide-y divide-border">
@@ -39,10 +49,20 @@ function Pessoas() {
             return (
               <li key={member.id} className="flex items-center justify-between gap-3 py-3">
                 <span className="flex min-w-0 items-center gap-3">
-                  <MemberAvatar name={person?.name} email={person?.email} src={person?.avatar_url} className="size-9 shrink-0" fallbackClassName="text-[11px]" />
+                  <MemberAvatar
+                    name={person?.name}
+                    email={person?.email}
+                    src={person?.avatar_url}
+                    className="size-9 shrink-0"
+                    fallbackClassName="text-[11px]"
+                  />
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium">{person?.name || person?.email || "Pessoa"}</span>
-                    <span className="block text-xs text-muted-foreground">{ROLE_LABEL[member.role] ?? member.role} · Ativo</span>
+                    <span className="block truncate text-sm font-medium">
+                      {person?.name || person?.email || "Pessoa"}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {ROLE_LABEL[member.role] ?? member.role} · Ativo
+                    </span>
                   </span>
                 </span>
                 {member.user_id === userId ? <Badge variant="outline">Você</Badge> : null}
@@ -74,9 +94,15 @@ function Pessoas() {
           <PanelTitle>Espaço ativo</PanelTitle>
           <Label className="sr-only">Espaço ativo</Label>
           <Select value={workspaceId ?? ""} onValueChange={(value) => void switchWorkspace(value)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {availableWorkspaces.map((ws) => <SelectItem key={ws.id} value={ws.id}>{ws.name}</SelectItem>)}
+              {availableWorkspaces.map((ws) => (
+                <SelectItem key={ws.id} value={ws.id}>
+                  {ws.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </Panel>

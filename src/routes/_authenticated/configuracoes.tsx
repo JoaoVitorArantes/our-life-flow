@@ -7,7 +7,10 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
     meta: [
       { title: "Configurações — Life OS" },
-      { name: "description", content: "Centro de controle do seu Life OS: perfil, espaço, pessoas e dados." },
+      {
+        name: "description",
+        content: "Centro de controle do seu Life OS: perfil, espaço, pessoas e dados.",
+      },
       { property: "og:title", content: "Configurações — Life OS" },
       { property: "og:description", content: "Administre e personalize o seu Life OS." },
     ],

@@ -20,9 +20,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { removeStoredImage, saveWorkspaceIdentity, storedPath, uploadWorkspaceImage } from "@/features/workspace/identity";
+import {
+  removeStoredImage,
+  saveWorkspaceIdentity,
+  storedPath,
+  uploadWorkspaceImage,
+} from "@/features/workspace/identity";
 import { cn } from "@/lib/utils";
-
 
 export function WorkspaceAvatarMenu({ collapsed = false }: { collapsed?: boolean }) {
   const { workspace, workspaceId, workspaceName, refetchWorkspace } = useApp();
@@ -32,9 +36,12 @@ export function WorkspaceAvatarMenu({ collapsed = false }: { collapsed?: boolean
   const [selected, setSelected] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => () => {
-    if (preview) URL.revokeObjectURL(preview);
-  }, [preview]);
+  useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview);
+    },
+    [preview],
+  );
 
   function chooseFile(file?: File) {
     if (!file) return;
@@ -130,23 +137,38 @@ export function WorkspaceAvatarMenu({ collapsed = false }: { collapsed?: boolean
             className="size-9 shrink-0 overflow-hidden rounded-xl p-0 shadow-lift ring-offset-background hover:ring-2 hover:ring-primary/50"
           >
             {workspace?.avatar_url ? (
-              <img src={workspace.avatar_url} alt={`Foto de ${workspaceName}`} className="size-full object-cover" />
+              <img
+                src={workspace.avatar_url}
+                alt={`Foto de ${workspaceName}`}
+                className="size-full object-cover"
+              />
             ) : (
-              <span className="flex size-full items-center justify-center bg-primary text-sm font-semibold text-primary-foreground">L</span>
+              <span className="flex size-full items-center justify-center bg-primary text-sm font-semibold text-primary-foreground">
+                L
+              </span>
             )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align={collapsed ? "start" : "end"} className="w-64">
           <DropdownMenuLabel>
             <p className="text-sm">Foto do Life OS</p>
-            <p className="text-xs font-normal text-muted-foreground">Compartilhada com os membros deste espaço.</p>
+            <p className="text-xs font-normal text-muted-foreground">
+              Compartilhada com os membros deste espaço.
+            </p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => inputRef.current?.click()}>
-            {workspace?.avatar_url ? <Camera className="size-4" /> : <ImagePlus className="size-4" />}
+            {workspace?.avatar_url ? (
+              <Camera className="size-4" />
+            ) : (
+              <ImagePlus className="size-4" />
+            )}
             {workspace?.avatar_url ? "Trocar foto" : "Adicionar foto"}
           </DropdownMenuItem>
-          <DropdownMenuItem disabled={!workspace?.avatar_url || busy} onClick={() => void removePhoto()}>
+          <DropdownMenuItem
+            disabled={!workspace?.avatar_url || busy}
+            onClick={() => void removePhoto()}
+          >
             <Trash2 className="size-4" /> Remover foto
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -159,11 +181,21 @@ export function WorkspaceAvatarMenu({ collapsed = false }: { collapsed?: boolean
             <DialogDescription>Essa imagem será exibida para vocês dois.</DialogDescription>
           </DialogHeader>
           <div className="mx-auto size-56 overflow-hidden rounded-xl border border-border bg-muted">
-            {preview ? <img src={preview} alt="Prévia da foto compartilhada" className="size-full object-cover" /> : null}
+            {preview ? (
+              <img
+                src={preview}
+                alt="Prévia da foto compartilhada"
+                className="size-full object-cover"
+              />
+            ) : null}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={closePreview} disabled={busy}>Cancelar</Button>
-            <Button onClick={() => void savePhoto()} disabled={busy}>{busy ? "Salvando..." : "Usar esta foto"}</Button>
+            <Button variant="outline" onClick={closePreview} disabled={busy}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void savePhoto()} disabled={busy}>
+              {busy ? "Salvando..." : "Usar esta foto"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
