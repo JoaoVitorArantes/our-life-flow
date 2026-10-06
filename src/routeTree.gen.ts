@@ -15,7 +15,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedComprasRouteImport } from './routes/_authenticated/compras'
-import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEsporteRouteImport } from './routes/_authenticated/esporte'
 import { Route as AuthenticatedFaculdadeRouteImport } from './routes/_authenticated/faculdade'
@@ -62,12 +61,6 @@ const AuthenticatedComprasRoute = AuthenticatedComprasRouteImport.update({
   path: '/compras',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConfiguracoesRoute =
-  AuthenticatedConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -158,7 +151,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/compras': typeof AuthenticatedComprasRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/esporte': typeof AuthenticatedEsporteRoute
   '/faculdade': typeof AuthenticatedFaculdadeRoute
@@ -182,7 +174,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/compras': typeof AuthenticatedComprasRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/esporte': typeof AuthenticatedEsporteRoute
   '/faculdade': typeof AuthenticatedFaculdadeRoute
@@ -208,7 +199,6 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/compras': typeof AuthenticatedComprasRoute
-  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/esporte': typeof AuthenticatedEsporteRoute
   '/_authenticated/faculdade': typeof AuthenticatedFaculdadeRoute
@@ -234,7 +224,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/agenda'
     | '/compras'
-    | '/configuracoes'
     | '/dashboard'
     | '/esporte'
     | '/faculdade'
@@ -258,7 +247,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/agenda'
     | '/compras'
-    | '/configuracoes'
     | '/dashboard'
     | '/esporte'
     | '/faculdade'
@@ -283,7 +271,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/agenda'
     | '/_authenticated/compras'
-    | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
     | '/_authenticated/esporte'
     | '/_authenticated/faculdade'
@@ -352,13 +339,6 @@ declare module '@tanstack/react-router' {
       path: '/compras'
       fullPath: '/compras'
       preLoaderRoute: typeof AuthenticatedComprasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/configuracoes': {
-      id: '/_authenticated/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -490,7 +470,6 @@ const AuthenticatedMetasRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedComprasRoute: typeof AuthenticatedComprasRoute
-  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEsporteRoute: typeof AuthenticatedEsporteRoute
   AuthenticatedFaculdadeRoute: typeof AuthenticatedFaculdadeRoute
@@ -510,7 +489,6 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedComprasRoute: AuthenticatedComprasRoute,
-  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEsporteRoute: AuthenticatedEsporteRoute,
   AuthenticatedFaculdadeRoute: AuthenticatedFaculdadeRoute,
