@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { resolveHomeRoute } from "@/features/preferences/queries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -37,7 +38,7 @@ function AuthPage() {
   useEffect(() => {
     if (!loading && user) {
       if (invite) window.sessionStorage.setItem("lifeos-invite", invite);
-      navigate({ to: "/dashboard", replace: true });
+      void resolveHomeRoute().then((to) => navigate({ to, replace: true }));
     }
   }, [loading, user, invite, navigate]);
 
@@ -50,7 +51,7 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/dashboard", replace: true });
+    void resolveHomeRoute().then((to) => navigate({ to, replace: true }));
   }
 
   async function signUp() {
@@ -82,7 +83,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
+    void resolveHomeRoute().then((to) => navigate({ to, replace: true }));
   }
 
   async function resetPassword() {

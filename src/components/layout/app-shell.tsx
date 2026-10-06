@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 import { BottomNav } from "./bottom-nav";
 import { Header } from "./header";
@@ -16,6 +16,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   const syncStatus = useRealtimeSync(workspaceId);
   // Mantém os ciclos de fatura carregados para o cálculo de vencimento em todas as telas.
   useCards(workspaceId);
+  // Cor de destaque do espaço: só troca o tom de destaque (estados ativos, seleção, progresso).
+  const accent = workspace?.accent_color;
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!accent) return;
+    root.style.setProperty("--primary", accent);
+    root.style.setProperty("--ring", accent);
+    return () => {
+      root.style.removeProperty("--primary");
+      root.style.removeProperty("--ring");
+    };
+  }, [accent]);
 
   return (
     <div className="flex min-h-dvh bg-background">

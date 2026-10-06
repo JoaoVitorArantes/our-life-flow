@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { moveToTrash } from "@/features/trash/api";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckSquare } from "lucide-react";
@@ -45,10 +46,9 @@ function Tarefas() {
 
   async function remove(task: Task) {
     try {
-      const { error } = await supabase.from("tasks").delete().eq("id", task.id);
-      if (error) throw error;
+      await moveToTrash("tasks", task.id);
       await queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast.success("Tarefa excluída.");
+      toast.success("Tarefa movida para a lixeira.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível excluir.");
     }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { moveToTrash } from "@/features/trash/api";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -226,15 +227,14 @@ function ContextDetail() {
   }
 
   async function removeSimple(table: "events" | "tasks" | "notes" | "goals", recordId: string) {
-    const { error } = await supabase.from(table).delete().eq("id", recordId);
-    if (error) throw error;
+    await moveToTrash(table, recordId);
   }
 
   async function removeContext() {
     try {
       await deleteContext(id);
       await refresh(["contexts", "transactions", "tasks", "events", "notes", "goals"]);
-      toast.success("Contexto excluído. Os registros continuam no Nós.");
+      toast.success("Contexto movido para a lixeira. Restaure em Configurações → Dados.");
       void navigate({ to: "/contextos" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível excluir.");

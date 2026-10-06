@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { resolveHomeRoute } from "@/features/preferences/queries";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ function Landing() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
+    if (!loading && user) void resolveHomeRoute().then((to) => navigate({ to, replace: true }));
   }, [loading, user, navigate]);
 
   return (

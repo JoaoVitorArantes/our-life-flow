@@ -30,13 +30,15 @@ export function InstallmentDialog({ open, onOpenChange, defaultContextId }: Prop
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useAccounts(workspaceId);
   const { data: cards = [] } = useCards(workspaceId);
-  const { data: categories = [] } = useCategories(workspaceId);
+  const { data: allCategories = [] } = useCategories(workspaceId);
 
   const [description, setDescription] = useState("");
   const [total, setTotal] = useState("");
   const [count, setCount] = useState("12");
   const [startDate, setStartDate] = useState(toDateInput());
   const [categoryId, setCategoryId] = useState("");
+  // Arquivadas não aparecem em novos lançamentos, mas continuam no registro que já as usa.
+  const categories = allCategories.filter((c) => !c.archived_at || c.id === categoryId);
   const [payment, setPayment] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
   const [firstPaid, setFirstPaid] = useState(false);

@@ -24,7 +24,7 @@ export function FinancingDialog({ open, onOpenChange }: Props) {
   const { workspaceId, userId, activeContextId } = useApp();
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useAccounts(workspaceId);
-  const { data: categories = [] } = useCategories(workspaceId);
+  const { data: allCategories = [] } = useCategories(workspaceId);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -36,6 +36,8 @@ export function FinancingDialog({ open, onOpenChange }: Props) {
   const [paidCount, setPaidCount] = useState("0");
   const [accountId, setAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  // Arquivadas não aparecem em novos lançamentos, mas continuam no registro que já as usa.
+  const categories = allCategories.filter((c) => !c.archived_at || c.id === categoryId);
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
   const [saving, setSaving] = useState(false);
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { moveToTrash } from "@/features/trash/api";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Target } from "lucide-react";
@@ -41,10 +42,9 @@ function Metas() {
 
   async function remove(goal: Goal) {
     try {
-      const { error } = await supabase.from("goals").delete().eq("id", goal.id);
-      if (error) throw error;
+      await moveToTrash("goals", goal.id);
       await queryClient.invalidateQueries({ queryKey: ["goals"] });
-      toast.success("Meta excluída.");
+      toast.success("Meta movida para a lixeira.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível excluir.");
     }

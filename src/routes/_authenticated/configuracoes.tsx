@@ -1,182 +1,66 @@
-import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Monitor, Moon, Sun } from "lucide-react";
-import { PageHeader, Panel, PanelTitle } from "@/components/common/page";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
-import { useApp } from "@/features/app/app-context";
-import { useTheme, type ThemeMode } from "@/lib/theme";
-import { clearDemoData, seedDemoData } from "@/features/demo/seed";
-import { AvatarMenu } from "@/components/profile/avatar-menu";
-import { MemberAvatar } from "@/components/profile/member-avatar";
-import { PartnerSettings } from "@/features/workspace/partner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { ChevronLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { SETTINGS_SECTIONS } from "@/features/settings/sections";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
     meta: [
       { title: "Configurações — Life OS" },
-      { name: "description", content: "Perfil, tema, workspace e dados de demonstração." },
+      {
+        name: "description",
+        content: "Centro de controle do seu Life OS: perfil, espaço, pessoas e dados.",
+      },
       { property: "og:title", content: "Configurações — Life OS" },
-      { property: "og:description", content: "Ajustes do seu Life OS." },
+      { property: "og:description", content: "Administre e personalize o seu Life OS." },
     ],
   }),
-  component: Configuracoes,
+  component: SettingsLayout,
 });
 
-const THEMES: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
-  { value: "dark", label: "Escuro", icon: Moon },
-  { value: "light", label: "Claro", icon: Sun },
-  { value: "system", label: "Sistema", icon: Monitor },
-];
-
-function Configuracoes() {
-  const { profile, workspace, workspaceId, workspaceName, memberProfiles, userId, refetchWorkspace, availableWorkspaces, switchWorkspace } = useApp();
-  const { mode, setMode } = useTheme();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [name, setName] = useState(profile?.name ?? "");
-  const [busy, setBusy] = useState(false);
-
-  async function saveProfile() {
-    if (!userId) return;
-    setBusy(true);
-    const { error } = await supabase.from("profiles").update({ name }).eq("id", userId);
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    refetchWorkspace();
-    toast.success("Perfil atualizado.");
-  }
-
-  async function loadDemo() {
-    if (!workspaceId || !workspace?.is_demo) return;
-    setBusy(true);
-    try {
-      await seedDemoData(workspaceId);
-      await queryClient.invalidateQueries();
-      toast.success("Dados fictícios recriados.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível criar.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function removeDemo() {
-    if (!workspaceId || !workspace?.is_demo) return;
-    setBusy(true);
-    try {
-      await clearDemoData(workspaceId);
-      await queryClient.invalidateQueries();
-      toast.success("Dados fictícios removidos.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível remover.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
+function SettingsLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const atIndex = pathname === "/configuracoes" || pathname === "/configuracoes/";
 
   return (
-    <div className="space-y-8">
-      <PageHeader title="Configurações" subtitle="Perfil, aparência e workspace" />
-
-      <Panel className="space-y-4">
-        <PanelTitle>Perfil</PanelTitle>
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-background/40 p-3">
-          <AvatarMenu />
-          <div><p className="text-sm font-medium">Foto de perfil</p><p className="text-xs text-muted-foreground">Clique na foto para alterar ou remover.</p></div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="name">Nome</Label>
-          <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
-        </div>
-        <p className="text-xs text-muted-foreground">{profile?.email}</p>
-        <Button size="sm" disabled={busy} onClick={saveProfile}>
-          Salvar
-        </Button>
-      </Panel>
-
-      <Panel>
-        <PanelTitle>Aparência</PanelTitle>
-        <div className="flex flex-wrap gap-2">
-          {THEMES.map((theme) => (
-            <Button
-              key={theme.value}
-              size="sm"
-              variant={mode === theme.value ? "default" : "outline"}
-              onClick={() => setMode(theme.value)}
-            >
-              <theme.icon className="size-4" />
-              {theme.label}
-            </Button>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel>
-        <PanelTitle>Workspace</PanelTitle>
-        {availableWorkspaces.length > 1 ? (
-          <div className="mb-4 space-y-2">
-            <Label>Espaço ativo</Label>
-            <Select value={workspaceId ?? ""} onValueChange={(value) => void switchWorkspace(value)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{availableWorkspaces.map((workspace) => <SelectItem key={workspace.id} value={workspace.id}>{workspace.name}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-        ) : null}
-        <p className="text-sm font-medium">{workspaceName}</p>
-        <ul className="mt-3 divide-y divide-border">
-          {memberProfiles.map((member) => (
-            <li key={member.id} className="flex items-center justify-between gap-3 py-3 text-sm">
-              <span className="flex min-w-0 items-center gap-2.5">
-                <MemberAvatar name={member.name} email={member.email} src={member.avatar_url} className="size-8 shrink-0" fallbackClassName="text-[10px]" />
-                <span className="truncate">{member.name || member.email}</span>
-              </span>
-              {member.id === userId ? <Badge variant="outline">Você</Badge> : null}
-            </li>
-          ))}
+    <div className="grid gap-8 md:grid-cols-[220px_minmax(0,1fr)]">
+      <nav aria-label="Seções de configurações" className="hidden md:block">
+        <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Configurações
+        </p>
+        <ul className="sticky top-6 space-y-0.5">
+          {SETTINGS_SECTIONS.map((section) => {
+            const active = pathname.startsWith(section.to);
+            return (
+              <li key={section.to}>
+                <Link
+                  to={section.to}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                    active
+                      ? "bg-primary/10 font-medium text-foreground"
+                      : "text-muted-foreground hover:bg-accent/45 hover:text-foreground",
+                  )}
+                >
+                  <section.icon className={cn("size-4", active && "text-primary")} />
+                  {section.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
-        <div className="mt-4 border-t border-border pt-4"><PartnerSettings /></div>
-      </Panel>
-
-      {workspace?.is_demo ? (
-        <Panel className="space-y-3 border-warning/40">
-          <PanelTitle>Dados de demonstração</PanelTitle>
-          <p className="text-sm text-muted-foreground">
-            Este é um workspace de demonstração. "Preparar" apaga os registros fictícios e recria o conjunto completo; "Remover" apaga somente os registros fictícios.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" disabled={busy} onClick={loadDemo}>
-              Preparar / resetar demonstração
-            </Button>
-            <Button size="sm" variant="ghost" disabled={busy} onClick={removeDemo}>
-              Remover dados fictícios
-            </Button>
-          </div>
-        </Panel>
-      ) : null}
-
-      <Panel>
-        <PanelTitle>Conta</PanelTitle>
-        <Button size="sm" variant="outline" onClick={signOut}>
-          Sair
-        </Button>
-      </Panel>
+      </nav>
+      <div className="min-w-0 space-y-6">
+        {atIndex ? null : (
+          <Link
+            to="/configuracoes"
+            className="-ml-1 inline-flex min-h-10 items-center gap-1 text-sm text-muted-foreground hover:text-foreground md:hidden"
+          >
+            <ChevronLeft className="size-4" /> Configurações
+          </Link>
+        )}
+        <Outlet />
+      </div>
     </div>
   );
 }

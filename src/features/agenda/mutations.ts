@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { moveToTrash } from "@/features/trash/api";
 import type { TablesInsert } from "@/integrations/supabase/types";
 import type { Event } from "@/features/planner/queries";
 import { addDays, isoOf, parseISO, type EventStatus } from "./queries";
@@ -89,8 +90,7 @@ export async function deleteEventOccurrence(
   scope: EventScope = "all",
 ) {
   if (!event.recurrence || scope === "all") {
-    const { error } = await supabase.from("events").delete().eq("id", event.id);
-    if (error) throw error;
+    await moveToTrash("events", event.id);
     return;
   }
   if (scope === "this") {
