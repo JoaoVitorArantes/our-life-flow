@@ -33,7 +33,7 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useAccounts(workspaceId);
   const { data: cards = [] } = useCards(workspaceId);
-  const { data: categories = [] } = useCategories(workspaceId);
+  const { data: allCategories = [] } = useCategories(workspaceId);
 
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -43,6 +43,8 @@ export function RecurringDialog({ open, onOpenChange, record, defaultContextId }
   const [startDate, setStartDate] = useState(toDateInput());
   const [endDate, setEndDate] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  // Arquivadas não aparecem em novos lançamentos, mas continuam no registro que já as usa.
+  const categories = allCategories.filter((c) => !c.archived_at || c.id === categoryId);
   const [payment, setPayment] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
   const [active, setActive] = useState(true);

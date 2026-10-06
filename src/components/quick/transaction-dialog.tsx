@@ -63,13 +63,15 @@ export function TransactionDialog({
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useAccounts(workspaceId);
   const { data: cards = [] } = useCards(workspaceId);
-  const { data: categories = [] } = useCategories(workspaceId);
+  const { data: allCategories = [] } = useCategories(workspaceId);
   const division = useTransactionDivision(transaction?.id, open && !!transaction);
 
 
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
+  // Arquivadas não aparecem em novos lançamentos, mas continuam no registro que já as usa.
+  const categories = allCategories.filter((c) => !c.archived_at || c.id === categoryId);
   const [payment, setPayment] = useState<string>("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
   const [date, setDate] = useState(toDateInput());
