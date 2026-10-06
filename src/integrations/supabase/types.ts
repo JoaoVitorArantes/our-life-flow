@@ -272,36 +272,52 @@ export type Database = {
       }
       categories: {
         Row: {
+          archived_at: string | null
           color: string | null
           created_at: string
           icon: string | null
           id: string
           monthly_budget: number | null
           name: string
+          parent_id: string | null
+          sort_order: number
           type: Database["public"]["Enums"]["category_type"]
           workspace_id: string
         }
         Insert: {
+          archived_at?: string | null
           color?: string | null
           created_at?: string
           icon?: string | null
           id?: string
           monthly_budget?: number | null
           name: string
+          parent_id?: string | null
+          sort_order?: number
           type?: Database["public"]["Enums"]["category_type"]
           workspace_id: string
         }
         Update: {
+          archived_at?: string | null
           color?: string | null
           created_at?: string
           icon?: string | null
           id?: string
           monthly_budget?: number | null
           name?: string
+          parent_id?: string | null
+          sort_order?: number
           type?: Database["public"]["Enums"]["category_type"]
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "categories_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -317,6 +333,8 @@ export type Database = {
           color: string | null
           cover_image: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           end_date: string | null
           id: string
@@ -336,6 +354,8 @@ export type Database = {
           color?: string | null
           cover_image?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
@@ -355,6 +375,8 @@ export type Database = {
           color?: string | null
           cover_image?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
@@ -383,6 +405,8 @@ export type Database = {
         Row: {
           context_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           ends_at: string | null
           id: string
@@ -404,6 +428,8 @@ export type Database = {
         Insert: {
           context_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           ends_at?: string | null
           id?: string
@@ -425,6 +451,8 @@ export type Database = {
         Update: {
           context_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           ends_at?: string | null
           id?: string
@@ -617,6 +645,8 @@ export type Database = {
           context_id: string | null
           created_at: string
           current_amount: number
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -633,6 +663,8 @@ export type Database = {
           context_id?: string | null
           created_at?: string
           current_amount?: number
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -649,6 +681,8 @@ export type Database = {
           context_id?: string | null
           created_at?: string
           current_amount?: number
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -912,6 +946,8 @@ export type Database = {
           content: string | null
           context_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           is_demo: boolean
           note_date: string | null
@@ -925,6 +961,8 @@ export type Database = {
           content?: string | null
           context_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           is_demo?: boolean
           note_date?: string | null
@@ -938,6 +976,8 @@ export type Database = {
           content?: string | null
           context_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           is_demo?: boolean
           note_date?: string | null
@@ -1084,6 +1124,8 @@ export type Database = {
           context_id: string | null
           created_at: string
           created_by: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           desired_date: string | null
           found_price: number | null
@@ -1107,6 +1149,8 @@ export type Database = {
           context_id?: string | null
           created_at?: string
           created_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           desired_date?: string | null
           found_price?: number | null
@@ -1130,6 +1174,8 @@ export type Database = {
           context_id?: string | null
           created_at?: string
           created_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           desired_date?: string | null
           found_price?: number | null
@@ -1504,6 +1550,8 @@ export type Database = {
         Row: {
           context_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           due_date: string | null
           id: string
           is_demo: boolean
@@ -1518,6 +1566,8 @@ export type Database = {
         Insert: {
           context_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           due_date?: string | null
           id?: string
           is_demo?: boolean
@@ -1532,6 +1582,8 @@ export type Database = {
         Update: {
           context_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           due_date?: string | null
           id?: string
           is_demo?: boolean
@@ -1815,6 +1867,80 @@ export type Database = {
           },
         ]
       }
+      user_preferences: {
+        Row: {
+          currency: string
+          date_format: string
+          density: string
+          favorites: Json
+          home_route: string
+          nav_hidden: string[]
+          nav_order: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          currency?: string
+          date_format?: string
+          density?: string
+          favorites?: Json
+          home_route?: string
+          nav_hidden?: string[]
+          nav_order?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          currency?: string
+          date_format?: string
+          density?: string
+          favorites?: Json
+          home_route?: string
+          nav_hidden?: string[]
+          nav_order?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workspace_activity: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_label: string | null
+          entity_type: string
+          id: number
+          workspace_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_label?: string | null
+          entity_type: string
+          id?: never
+          workspace_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_label?: string | null
+          entity_type?: string
+          id?: never
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_activity_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_invitations: {
         Row: {
           created_at: string
@@ -1952,8 +2078,11 @@ export type Database = {
       }
       workspaces: {
         Row: {
+          accent_color: string | null
           avatar_url: string | null
+          cover_url: string | null
           created_at: string
+          description: string | null
           id: string
           is_demo: boolean
           name: string
@@ -1961,8 +2090,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accent_color?: string | null
           avatar_url?: string | null
+          cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           is_demo?: boolean
           name: string
@@ -1970,8 +2102,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accent_color?: string | null
           avatar_url?: string | null
+          cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           is_demo?: boolean
           name?: string
@@ -1986,6 +2121,7 @@ export type Database = {
     }
     Functions: {
       bootstrap_account: { Args: { _name?: string }; Returns: string }
+      category_usage: { Args: { _category_id: string }; Returns: number }
       create_partner_invitation: {
         Args: { _email: string; _workspace_id: string }
         Returns: {
@@ -1994,8 +2130,27 @@ export type Database = {
           invitation_token: string
         }[]
       }
+      delete_category_safe: {
+        Args: { _category_id: string }
+        Returns: undefined
+      }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
+      list_trash: {
+        Args: { _workspace_id: string }
+        Returns: {
+          can_manage: boolean
+          deleted_at: string
+          deleted_by: string
+          id: string
+          label: string
+          table_name: string
+        }[]
+      }
+      log_activity: {
+        Args: { _action: string; _label: string; _type: string; _ws: string }
+        Returns: undefined
+      }
       prepare_demo_workspace: {
         Args: { _workspace_id: string }
         Returns: undefined
@@ -2019,8 +2174,29 @@ export type Database = {
         Returns: undefined
       }
       set_active_workspace: { Args: { _workspace_id: string }; Returns: string }
+      trash_record: {
+        Args: { _id: string; _op: string; _table: string }
+        Returns: undefined
+      }
+      update_workspace_identity: {
+        Args: {
+          _accent_color: string
+          _avatar_url: string
+          _cover_url: string
+          _description: string
+          _name: string
+          _set_avatar: boolean
+          _set_cover: boolean
+          _workspace_id: string
+        }
+        Returns: undefined
+      }
       user_is_workspace_member: {
         Args: { _workspace_id: string }
+        Returns: boolean
+      }
+      workspace_can: {
+        Args: { _action: string; _workspace_id: string }
         Returns: boolean
       }
     }
