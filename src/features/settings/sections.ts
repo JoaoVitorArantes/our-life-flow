@@ -3,6 +3,7 @@ import {
   Database,
   Home,
   Paintbrush,
+  Plug,
   Settings2,
   Tags,
   User,
@@ -22,6 +23,7 @@ export type SettingsSection = {
     | "/configuracoes/dados"
     | "/configuracoes/atividade"
     | "/configuracoes/sistema";
+    
   label: string;
   hint: string;
   icon: LucideIcon;

@@ -7,6 +7,8 @@ import { dueDateOf, isOpen, registerCardCycles, sumBy } from "@/features/finance
 import { netBalance } from "@/features/nos/settlements";
 import { occursOn } from "@/features/routines/queries";
 import { actionSchema } from "@/lib/inbox/ai.server";
+import { intentAllowed, toolAllowed } from "@/features/plugins/registry";
+import { loadPluginAccess } from "@/features/plugins/access.server";
 
 /**
  * Camada de ferramentas do Life OS AI. Todas as consultas usam o cliente do PRÓPRIO usuário
@@ -19,6 +21,7 @@ export type AgentCtx = {
   workspaceId: string;
   userId: string;
   today: string;
+  enabledPlugins: ReadonlySet<string>;
 };
 
 const r2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
@@ -32,12 +35,12 @@ function fail(area: string, error: unknown) {
 export async function loadBase(ctx: AgentCtx) {
   const { supabase: sb, workspaceId: w } = ctx;
   const [accounts, cards, categories, contexts, members, goals, workspace] = await Promise.all([
-    sb.from("accounts").select("*").eq("workspace_id", w),
-    sb.from("cards").select("*").eq("workspace_id", w),
-    sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null),
-    sb.from("contexts").select("id, name, type, status").eq("workspace_id", w).neq("status", "ARCHIVED"),
+    ctx.enabledPlugins.has("finance") ? sb.from("accounts").select("*").eq("workspace_id", w) : { data: [] },
+    ctx.enabledPlugins.has("finance") ? sb.from("cards").select("*").eq("workspace_id", w) : { data: [] },
+    ctx.enabledPlugins.has("finance") ? sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null) : { data: [] },
+    ctx.enabledPlugins.has("contexts") ? sb.from("contexts").select("id, name, type, status").eq("workspace_id", w).neq("status", "ARCHIVED") : { data: [] },
     sb.from("workspace_members").select("user_id").eq("workspace_id", w),
-    sb.from("goals").select("id, title, status").eq("workspace_id", w),
+    ctx.enabledPlugins.has("goals") ? sb.from("goals").select("id, title, status").eq("workspace_id", w) : { data: [] },
     sb.from("workspaces").select("name, description").eq("id", w).maybeSingle(),
   ]);
   const ids = (members.data ?? []).map((m) => m.user_id);
@@ -85,7 +88,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     quem_registrou: personName.get(t.owner_id) ?? null,
   });
 
-  return {
+  const tools = {
     financial_overview: tool({
       description:
         "Dinheiro Livre (quanto podem gastar com segurança) e projeção: saldo disponível, receitas previstas, compromissos e menor saldo projetado. Use para 'quanto posso gastar', 'como está meu dinheiro', 'posso comprar X'. É EXATAMENTE o mesmo cálculo do cockpit do Financeiro.",
@@ -398,6 +401,8 @@ export function buildTools(ctx: AgentCtx, base: Base) {
         "Propõe um REGISTRO (despesa, receita, tarefa, compromisso, nota, desejo de compra, atividade, meta) ou renomear o espaço (rename_workspace: description = novo nome). NÃO salva nada: o app mostra uma prévia e o usuário confirma. Use só ids reais das listas do sistema. Se faltar a forma de pagamento de uma despesa ou houver ambiguidade (ex.: dois Nubank), pergunte ANTES de propor.",
       inputSchema: actionSchema,
       execute: async (a) => {
+        const enabled = await loadPluginAccess(sb, userId, w);
+        if (!intentAllowed(a.intent, enabled)) return { error: "Plugin desativado ou permissão necessária. Nenhuma ação foi proposta." };
         const ok = (set: { id: string }[], id: string | null) => (id && set.some((x) => x.id === id) ? id : null);
         return {
           ...a,
@@ -415,4 +420,5 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       },
     }),
   };
+  return Object.fromEntries(Object.entries(tools).filter(([name]) => toolAllowed(name, ctx.enabledPlugins)));
 }
