@@ -59,16 +59,17 @@ export function ContextDialog({
     setEndDate(context?.end_date ?? "");
     setLocation(context?.location ?? "");
     setBudget(
-      context?.budget_amount != null
-        ? String(Number(context.budget_amount)).replace(".", ",")
-        : "",
+      context?.budget_amount != null ? String(Number(context.budget_amount)).replace(".", ",") : "",
     );
     setColor(context?.color ?? "#7C5CFC");
     setCoverImage(context?.cover_image ?? "");
   }, [open, context]);
 
   async function handleSubmit() {
-    if (!workspaceId || !userId) { toast.error("Entre na sua conta e selecione um espaço para salvar."); return; }
+    if (!workspaceId || !userId) {
+      toast.error("Entre na sua conta e selecione um espaço para salvar.");
+      return;
+    }
     if (!name.trim()) {
       toast.error("Informe um nome.");
       return;
@@ -233,7 +234,6 @@ export function ContextDialog({
               onChange={(event) => setDescription(event.target.value)}
             />
           </div>
-
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar"}

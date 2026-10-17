@@ -73,8 +73,11 @@ export const Route = createFileRoute("/api/agent")({
         const today = spToday();
         const { loadPluginAccess } = await import("@/features/plugins/access.server");
         let enabledPlugins: Set<string>;
-        try { enabledPlugins = await loadPluginAccess(supabase, userId, workspaceId); }
-        catch { return json(403, "Não foi possível verificar os plugins e permissões deste espaço."); }
+        try {
+          enabledPlugins = await loadPluginAccess(supabase, userId, workspaceId);
+        } catch {
+          return json(403, "Não foi possível verificar os plugins e permissões deste espaço.");
+        }
         const ctx = { supabase, workspaceId, userId, today: today.iso, enabledPlugins };
         const { loadBase, buildTools } = await import("@/lib/agent/tools.server");
         const base = await loadBase(ctx);

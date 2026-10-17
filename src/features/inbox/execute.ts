@@ -38,7 +38,9 @@ export function missingFields(a: InboxAction): string[] {
 }
 
 export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<ExecResult> {
-  const authorized = await authorizePluginAction({ data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId } });
+  const authorized = await authorizePluginAction({
+    data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId },
+  });
   const { workspaceId, userId } = authorized;
   const { queryClient } = ctx;
   const invalidate = (...keys: string[]) =>

@@ -60,7 +60,11 @@ export function useContext_(id?: string) {
     enabled: !!id,
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase.from("contexts").select("*").eq("id", id).maybeSingle();
+      const { data, error } = await supabase
+        .from("contexts")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
       if (error) throw error;
       return data as Context | null;
     },
@@ -97,10 +101,19 @@ export async function createContext(
 }
 
 export async function updateContext(id: string, input: Partial<ContextInput>) {
-  const { data: current, error: readError } = await supabase.from("contexts").select("*").eq("id", id).single();
+  const { data: current, error: readError } = await supabase
+    .from("contexts")
+    .select("*")
+    .eq("id", id)
+    .single();
   if (readError) throw readError;
   const validated = contextSchema.parse({ ...current, ...input });
-  const { error } = await supabase.from("contexts").update(validated).eq("id", id).select("id").single();
+  const { error } = await supabase
+    .from("contexts")
+    .update(validated)
+    .eq("id", id)
+    .select("id")
+    .single();
   if (error) throw error;
 }
 

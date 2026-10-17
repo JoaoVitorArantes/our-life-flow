@@ -35,18 +35,38 @@ function fail(area: string, error: unknown) {
 export async function loadBase(ctx: AgentCtx) {
   const { supabase: sb, workspaceId: w } = ctx;
   const [accounts, cards, categories, contexts, members, goals, workspace] = await Promise.all([
-    ctx.enabledPlugins.has("finance") ? sb.from("accounts").select("*").eq("workspace_id", w) : { data: [] },
-    ctx.enabledPlugins.has("finance") ? sb.from("cards").select("*").eq("workspace_id", w) : { data: [] },
-    ctx.enabledPlugins.has("finance") ? sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null) : { data: [] },
-    ctx.enabledPlugins.has("contexts") ? sb.from("contexts").select("id, name, type, status").eq("workspace_id", w).neq("status", "ARCHIVED") : { data: [] },
+    ctx.enabledPlugins.has("finance")
+      ? sb.from("accounts").select("*").eq("workspace_id", w)
+      : { data: [] },
+    ctx.enabledPlugins.has("finance")
+      ? sb.from("cards").select("*").eq("workspace_id", w)
+      : { data: [] },
+    ctx.enabledPlugins.has("finance")
+      ? sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null)
+      : { data: [] },
+    ctx.enabledPlugins.has("contexts")
+      ? sb
+          .from("contexts")
+          .select("id, name, type, status")
+          .eq("workspace_id", w)
+          .neq("status", "ARCHIVED")
+      : { data: [] },
     sb.from("workspace_members").select("user_id").eq("workspace_id", w),
-    ctx.enabledPlugins.has("goals") ? sb.from("goals").select("id, title, status").eq("workspace_id", w) : { data: [] },
+    ctx.enabledPlugins.has("goals")
+      ? sb.from("goals").select("id, title, status").eq("workspace_id", w)
+      : { data: [] },
     sb.from("workspaces").select("name, description").eq("id", w).maybeSingle(),
   ]);
   const ids = (members.data ?? []).map((m) => m.user_id);
-  const { data: profiles } = ids.length ? await sb.from("profiles").select("id, name").in("id", ids) : { data: [] };
+  const { data: profiles } = ids.length
+    ? await sb.from("profiles").select("id, name").in("id", ids)
+    : { data: [] };
   return {
-    workspace: { name: workspace.data?.name ?? "Life OS", description: workspace.data?.description ?? null, members: ids.length },
+    workspace: {
+      name: workspace.data?.name ?? "Life OS",
+      description: workspace.data?.description ?? null,
+      members: ids.length,
+    },
     accounts: accounts.data ?? [],
     cards: cards.data ?? [],
     categories: categories.data ?? [],
@@ -62,13 +82,25 @@ export function buildTools(ctx: AgentCtx, base: Base) {
   registerCardCycles(base.cards);
   const catName = new Map(base.categories.map((c) => [c.id, c.name]));
   const personName = new Map(base.people.map((p) => [p.id, p.name.split(" ")[0] ?? p.name]));
-  const payName = new Map<string, string>([...base.cards.map((c) => [c.id, c.name] as const), ...base.accounts.map((a) => [a.id, a.name] as const)]);
+  const payName = new Map<string, string>([
+    ...base.cards.map((c) => [c.id, c.name] as const),
+    ...base.accounts.map((a) => [a.id, a.name] as const),
+  ]);
 
-  let finance: Promise<{ tx: Tables<"transactions">[]; rec: Tables<"recurring_transactions">[]; pay: Tables<"card_invoice_payments">[] }> | null = null;
+  let finance: Promise<{
+    tx: Tables<"transactions">[];
+    rec: Tables<"recurring_transactions">[];
+    pay: Tables<"card_invoice_payments">[];
+  }> | null = null;
   const loadFinance = () =>
     (finance ??= (async () => {
       const [tx, rec, pay] = await Promise.all([
-        sb.from("transactions").select("*").eq("workspace_id", w).neq("status", "CANCELLED").limit(5000),
+        sb
+          .from("transactions")
+          .select("*")
+          .eq("workspace_id", w)
+          .neq("status", "CANCELLED")
+          .limit(5000),
         sb.from("recurring_transactions").select("*").eq("workspace_id", w),
         sb.from("card_invoice_payments").select("*").eq("workspace_id", w),
       ]);
@@ -83,7 +115,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     data: t.transaction_date,
     vencimento: dueDateOf(t),
     status: t.status,
-    categoria: t.category_id ? catName.get(t.category_id) ?? null : null,
+    categoria: t.category_id ? (catName.get(t.category_id) ?? null) : null,
     pagamento: payName.get(t.card_id ?? t.account_id ?? "") ?? null,
     quem_registrou: personName.get(t.owner_id) ?? null,
   });
@@ -96,7 +128,14 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       execute: async ({ horizon_days }) => {
         try {
           const { tx, rec, pay } = await loadFinance();
-          const s = calculateSafeToSpend(base.accounts, tx, Math.min(365, Math.max(1, horizon_days || 30)), today, rec, pay);
+          const s = calculateSafeToSpend(
+            base.accounts,
+            tx,
+            Math.min(365, Math.max(1, horizon_days || 30)),
+            today,
+            rec,
+            pay,
+          );
           return {
             dinheiro_livre: r2(s.spendable),
             saldo_disponivel_contas: r2(s.available),
@@ -143,23 +182,42 @@ export function buildTools(ctx: AgentCtx, base: Base) {
               t.transaction_date <= q.to &&
               (!cat || (catName.get(t.category_id ?? "") ?? "").toLowerCase().includes(cat)) &&
               (!q.person_id || t.owner_id === q.person_id) &&
-              (!q.search || `${t.description} ${t.notes ?? ""}`.toLowerCase().includes(q.search.toLowerCase())) &&
+              (!q.search ||
+                `${t.description} ${t.notes ?? ""}`
+                  .toLowerCase()
+                  .includes(q.search.toLowerCase())) &&
               (q.status === "ANY" || (q.status === "PAID" ? t.status === "PAID" : isOpen(t))),
           );
           const group = (key: (t: Tables<"transactions">) => string) => {
             const m = new Map<string, number>();
             rows.forEach((t) => m.set(key(t), (m.get(key(t)) ?? 0) + Number(t.amount)));
-            return [...m].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([nome, total]) => ({ nome, total: r2(total) }));
+            return [...m]
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 10)
+              .map(([nome, total]) => ({ nome, total: r2(total) }));
           };
           return {
             periodo: { de: q.from, ate: q.to },
             quantidade: rows.length,
-            total: r2(sumBy(rows, (t) => (q.type === "ALL" && t.type === "EXPENSE" ? -1 : 1) * Number(t.amount))),
-            pago_ou_recebido: r2(sumBy(rows.filter((t) => t.status === "PAID"), (t) => Number(t.amount))),
+            total: r2(
+              sumBy(
+                rows,
+                (t) => (q.type === "ALL" && t.type === "EXPENSE" ? -1 : 1) * Number(t.amount),
+              ),
+            ),
+            pago_ou_recebido: r2(
+              sumBy(
+                rows.filter((t) => t.status === "PAID"),
+                (t) => Number(t.amount),
+              ),
+            ),
             pendente_ou_previsto: r2(sumBy(rows.filter(isOpen), (t) => Number(t.amount))),
             por_categoria: group((t) => catName.get(t.category_id ?? "") ?? "Sem categoria"),
             por_pessoa: group((t) => personName.get(t.owner_id) ?? "—"),
-            principais: [...rows].sort((a, b) => Number(b.amount) - Number(a.amount)).slice(0, 10).map(txLine),
+            principais: [...rows]
+              .sort((a, b) => Number(b.amount) - Number(a.amount))
+              .slice(0, 10)
+              .map(txLine),
           };
         } catch (e) {
           return fail("seus lançamentos", e);
@@ -168,8 +226,13 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     }),
 
     monthly_trend: tool({
-      description: "Totais mês a mês (últimos N meses, incluindo o atual) de despesas ou receitas, opcionalmente de uma categoria. Use para comparar com a média histórica.",
-      inputSchema: z.object({ type: z.enum(["EXPENSE", "INCOME"]), months: z.number(), category: z.string().nullable() }),
+      description:
+        "Totais mês a mês (últimos N meses, incluindo o atual) de despesas ou receitas, opcionalmente de uma categoria. Use para comparar com a média histórica.",
+      inputSchema: z.object({
+        type: z.enum(["EXPENSE", "INCOME"]),
+        months: z.number(),
+        category: z.string().nullable(),
+      }),
       execute: async ({ type, months, category }) => {
         try {
           const { tx } = await loadFinance();
@@ -181,7 +244,12 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             const d = new Date(y!, m! - 1 - i, 1);
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
             const total = sumBy(
-              tx.filter((t) => t.type === type && t.transaction_date.startsWith(key) && (!cat || (catName.get(t.category_id ?? "") ?? "").toLowerCase().includes(cat))),
+              tx.filter(
+                (t) =>
+                  t.type === type &&
+                  t.transaction_date.startsWith(key) &&
+                  (!cat || (catName.get(t.category_id ?? "") ?? "").toLowerCase().includes(cat)),
+              ),
               (t) => Number(t.amount),
             );
             out.push({ mes: key, total: r2(total), mes_atual_parcial: i === 0 });
@@ -194,7 +262,8 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     }),
 
     cards_status: tool({
-      description: "Cartões: limite, quanto está usado, disponível, fatura atual (vencimento, total, já pago parcialmente, restante), fechamento e vencimento.",
+      description:
+        "Cartões: limite, quanto está usado, disponível, fatura atual (vencimento, total, já pago parcialmente, restante), fechamento e vencimento.",
       inputSchema: z.object({}),
       execute: async () => {
         try {
@@ -203,13 +272,24 @@ export function buildTools(ctx: AgentCtx, base: Base) {
           return base.cards
             .filter((c) => c.is_active)
             .map((c) => {
-              const open = tx.filter((t) => t.card_id === c.id && t.type === "EXPENSE" && isOpen(t));
+              const open = tx.filter(
+                (t) => t.card_id === c.id && t.type === "EXPENSE" && isOpen(t),
+              );
               const byDue = new Map<string, number>();
-              open.forEach((t) => byDue.set(dueDateOf(t), (byDue.get(dueDateOf(t)) ?? 0) + Number(t.amount)));
-              const invoices = [...byDue].sort((a, b) => a[0].localeCompare(b[0])).map(([due, total]) => {
-                const already = paid.get(invoiceKey(c.id, due)) ?? 0;
-                return { vencimento: due, total: r2(total), ja_pago: r2(already), restante: r2(Math.max(0, total - already)) };
-              });
+              open.forEach((t) =>
+                byDue.set(dueDateOf(t), (byDue.get(dueDateOf(t)) ?? 0) + Number(t.amount)),
+              );
+              const invoices = [...byDue]
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([due, total]) => {
+                  const already = paid.get(invoiceKey(c.id, due)) ?? 0;
+                  return {
+                    vencimento: due,
+                    total: r2(total),
+                    ja_pago: r2(already),
+                    restante: r2(Math.max(0, total - already)),
+                  };
+                });
               const used = sumBy(invoices, (i) => i.restante);
               return {
                 cartao: c.name,
@@ -229,16 +309,33 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     }),
 
     upcoming_bills: tool({
-      description: "Próximas contas/compromissos a pagar (inclui faturas de cartão pelo vencimento da fatura, parcelas e recorrentes previstas) e contas atrasadas.",
+      description:
+        "Próximas contas/compromissos a pagar (inclui faturas de cartão pelo vencimento da fatura, parcelas e recorrentes previstas) e contas atrasadas.",
       inputSchema: z.object({ days: z.number() }),
       execute: async ({ days }) => {
         try {
           const { tx, rec, pay } = await loadFinance();
-          const s = calculateSafeToSpend(base.accounts, tx, Math.min(180, Math.max(1, days || 30)), today, rec, pay);
+          const s = calculateSafeToSpend(
+            base.accounts,
+            tx,
+            Math.min(180, Math.max(1, days || 30)),
+            today,
+            rec,
+            pay,
+          );
           const list = s.expenses
-            .map((t) => ({ ...txLine(t), previsto_recorrente: !!t.projected, atrasada: dueDateOf(t) < today }))
+            .map((t) => ({
+              ...txLine(t),
+              previsto_recorrente: !!t.projected,
+              atrasada: dueDateOf(t) < today,
+            }))
             .sort((a, b) => a.vencimento.localeCompare(b.vencimento));
-          return { ate: s.horizon, total: r2(s.commitments), atrasadas: list.filter((x) => x.atrasada).slice(0, 15), proximas: list.filter((x) => !x.atrasada).slice(0, 20) };
+          return {
+            ate: s.horizon,
+            total: r2(s.commitments),
+            atrasadas: list.filter((x) => x.atrasada).slice(0, 15),
+            proximas: list.filter((x) => !x.atrasada).slice(0, 20),
+          };
         } catch (e) {
           return fail("suas contas", e);
         }
@@ -246,13 +343,19 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     }),
 
     installments: tool({
-      description: "Compras parceladas: total, parcelas pagas, restantes, valor que falta e última parcela.",
+      description:
+        "Compras parceladas: total, parcelas pagas, restantes, valor que falta e última parcela.",
       inputSchema: z.object({}),
       execute: async () => {
         try {
-          const [{ tx }, plans] = await Promise.all([loadFinance(), sb.from("installment_plans").select("*").eq("workspace_id", w)]);
+          const [{ tx }, plans] = await Promise.all([
+            loadFinance(),
+            sb.from("installment_plans").select("*").eq("workspace_id", w),
+          ]);
           return (plans.data ?? []).map((p) => {
-            const items = tx.filter((t) => t.installment_plan_id === p.id).sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
+            const items = tx
+              .filter((t) => t.installment_plan_id === p.id)
+              .sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
             const open = items.filter(isOpen);
             return {
               descricao: p.description,
@@ -272,7 +375,8 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     }),
 
     nos_balance: tool({
-      description: "Nós (casal): quem deve quanto para quem (acertos pendentes) e despesas compartilhadas num período. Acertos NÃO são receitas nem despesas.",
+      description:
+        "Nós (casal): quem deve quanto para quem (acertos pendentes) e despesas compartilhadas num período. Acertos NÃO são receitas nem despesas.",
       inputSchema: z.object({ from: iso, to: iso }),
       execute: async ({ from, to }) => {
         try {
@@ -283,14 +387,28 @@ export function buildTools(ctx: AgentCtx, base: Base) {
           ]);
           const nb = netBalance(st.data ?? [], userId);
           const splitIds = new Set((splits.data ?? []).map((s) => s.transaction_id));
-          const shared = tx.filter((t) => t.type === "EXPENSE" && (t.is_shared || splitIds.has(t.id)) && t.transaction_date >= from && t.transaction_date <= to);
+          const shared = tx.filter(
+            (t) =>
+              t.type === "EXPENSE" &&
+              (t.is_shared || splitIds.has(t.id)) &&
+              t.transaction_date >= from &&
+              t.transaction_date <= to,
+          );
           return {
             eu_devo: nb.owedByMe,
             me_devem: nb.owedToMe,
             saldo_liquido_para_mim: nb.net,
-            transferencias_para_acertar: nb.transfers.map((t) => ({ de: personName.get(t.fromUserId), para: personName.get(t.toUserId), valor: r2(t.amount) })),
+            transferencias_para_acertar: nb.transfers.map((t) => ({
+              de: personName.get(t.fromUserId),
+              para: personName.get(t.toUserId),
+              valor: r2(t.amount),
+            })),
             acertos_pendentes: nb.pending.length,
-            despesas_compartilhadas_no_periodo: { total: r2(sumBy(shared, (t) => Number(t.amount))), quantidade: shared.length, itens: shared.slice(0, 10).map(txLine) },
+            despesas_compartilhadas_no_periodo: {
+              total: r2(sumBy(shared, (t) => Number(t.amount))),
+              quantidade: shared.length,
+              itens: shared.slice(0, 10).map(txLine),
+            },
           };
         } catch (e) {
           return fail("o Nós", e);
@@ -302,69 +420,167 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       description: "Metas: alvo, valor atual, quanto falta, prazo e status.",
       inputSchema: z.object({}),
       execute: async () => {
-        const { data, error } = await sb.from("goals").select("title, target_amount, current_amount, due_date, status").eq("workspace_id", w);
+        const { data, error } = await sb
+          .from("goals")
+          .select("title, target_amount, current_amount, due_date, status")
+          .eq("workspace_id", w);
         if (error) return fail("suas metas", error);
-        return data.map((g) => ({ ...g, falta: g.target_amount != null ? r2(Number(g.target_amount) - Number(g.current_amount ?? 0)) : null }));
+        return data.map((g) => ({
+          ...g,
+          falta:
+            g.target_amount != null
+              ? r2(Number(g.target_amount) - Number(g.current_amount ?? 0))
+              : null,
+        }));
       },
     }),
 
     tasks: tool({
-      description: "Tarefas não concluídas (ou todas). scope: overdue (atrasadas), today, upcoming (próximos 7 dias), open (todas abertas).",
+      description:
+        "Tarefas não concluídas (ou todas). scope: overdue (atrasadas), today, upcoming (próximos 7 dias), open (todas abertas).",
       inputSchema: z.object({ scope: z.enum(["overdue", "today", "upcoming", "open"]) }),
       execute: async ({ scope }) => {
-        const { data, error } = await sb.from("tasks").select("title, due_date, status, owner_id").eq("workspace_id", w).neq("status", "DONE").order("due_date", { nullsFirst: false });
+        const { data, error } = await sb
+          .from("tasks")
+          .select("title, due_date, status, owner_id")
+          .eq("workspace_id", w)
+          .neq("status", "DONE")
+          .order("due_date", { nullsFirst: false });
         if (error) return fail("suas tarefas", error);
         const week = new Date(`${today}T12:00:00`);
         week.setDate(week.getDate() + 7);
         const wk = week.toISOString().slice(0, 10);
         const f = data.filter((t) =>
-          scope === "overdue" ? !!t.due_date && t.due_date < today : scope === "today" ? t.due_date === today : scope === "upcoming" ? !!t.due_date && t.due_date >= today && t.due_date <= wk : true,
+          scope === "overdue"
+            ? !!t.due_date && t.due_date < today
+            : scope === "today"
+              ? t.due_date === today
+              : scope === "upcoming"
+                ? !!t.due_date && t.due_date >= today && t.due_date <= wk
+                : true,
         );
-        return { quantidade: f.length, tarefas: f.slice(0, 25).map((t) => ({ titulo: t.title, prazo: t.due_date, status: t.status, de: personName.get(t.owner_id) })) };
+        return {
+          quantidade: f.length,
+          tarefas: f
+            .slice(0, 25)
+            .map((t) => ({
+              titulo: t.title,
+              prazo: t.due_date,
+              status: t.status,
+              de: personName.get(t.owner_id),
+            })),
+        };
       },
     }),
 
     agenda: tool({
-      description: "Compromissos da Agenda num intervalo de datas, mais eventos recorrentes e rotinas que ocorrem nesses dias.",
+      description:
+        "Compromissos da Agenda num intervalo de datas, mais eventos recorrentes e rotinas que ocorrem nesses dias.",
       inputSchema: z.object({ from: iso, to: iso }),
       execute: async ({ from, to }) => {
         const [ev, rec, routines] = await Promise.all([
-          sb.from("events").select("title, starts_at, ends_at, location, status").eq("workspace_id", w).is("recurrence", null).gte("starts_at", `${from}T00:00:00-03:00`).lte("starts_at", `${to}T23:59:59-03:00`).order("starts_at"),
-          sb.from("events").select("title, starts_at, recurrence, recurrence_until").eq("workspace_id", w).not("recurrence", "is", null).lte("starts_at", `${to}T23:59:59-03:00`),
+          sb
+            .from("events")
+            .select("title, starts_at, ends_at, location, status")
+            .eq("workspace_id", w)
+            .is("recurrence", null)
+            .gte("starts_at", `${from}T00:00:00-03:00`)
+            .lte("starts_at", `${to}T23:59:59-03:00`)
+            .order("starts_at"),
+          sb
+            .from("events")
+            .select("title, starts_at, recurrence, recurrence_until")
+            .eq("workspace_id", w)
+            .not("recurrence", "is", null)
+            .lte("starts_at", `${to}T23:59:59-03:00`),
           sb.from("routines").select("*").eq("workspace_id", w).eq("status", "ACTIVE"),
         ]);
         if (ev.error) return fail("sua agenda", ev.error);
         const days: string[] = [];
-        for (let d = new Date(`${from}T12:00:00`); d.toISOString().slice(0, 10) <= to && days.length < 31; d.setDate(d.getDate() + 1)) days.push(d.toISOString().slice(0, 10));
-        const fmt = (s: string) => new Date(s).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+        for (
+          let d = new Date(`${from}T12:00:00`);
+          d.toISOString().slice(0, 10) <= to && days.length < 31;
+          d.setDate(d.getDate() + 1)
+        )
+          days.push(d.toISOString().slice(0, 10));
+        const fmt = (s: string) =>
+          new Date(s).toLocaleString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+            weekday: "short",
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
         return {
-          compromissos: ev.data.map((e) => ({ titulo: e.title, inicio: fmt(e.starts_at), local: e.location, status: e.status })),
-          recorrentes: (rec.data ?? []).filter((e) => !e.recurrence_until || e.recurrence_until >= from).map((e) => ({ titulo: e.title, desde: fmt(e.starts_at), repete: e.recurrence })),
-          rotinas: days.flatMap((d) => (routines.data ?? []).filter((r) => occursOn(r, d)).map((r) => ({ dia: d, titulo: r.title, horario: r.start_time, tipo: r.kind }))).slice(0, 30),
+          compromissos: ev.data.map((e) => ({
+            titulo: e.title,
+            inicio: fmt(e.starts_at),
+            local: e.location,
+            status: e.status,
+          })),
+          recorrentes: (rec.data ?? [])
+            .filter((e) => !e.recurrence_until || e.recurrence_until >= from)
+            .map((e) => ({ titulo: e.title, desde: fmt(e.starts_at), repete: e.recurrence })),
+          rotinas: days
+            .flatMap((d) =>
+              (routines.data ?? [])
+                .filter((r) => occursOn(r, d))
+                .map((r) => ({ dia: d, titulo: r.title, horario: r.start_time, tipo: r.kind })),
+            )
+            .slice(0, 30),
         };
       },
     }),
 
     activities: tool({
-      description: "Atividades físicas registradas (Esporte) num período: total de minutos, quantidade, última atividade.",
+      description:
+        "Atividades físicas registradas (Esporte) num período: total de minutos, quantidade, última atividade.",
       inputSchema: z.object({ from: iso, to: iso }),
       execute: async ({ from, to }) => {
-        const { data, error } = await sb.from("physical_activities").select("title, activity_type, activity_date, duration_minutes, distance_km, person_scope").eq("workspace_id", w).gte("activity_date", from).lte("activity_date", to).order("activity_date", { ascending: false });
+        const { data, error } = await sb
+          .from("physical_activities")
+          .select(
+            "title, activity_type, activity_date, duration_minutes, distance_km, person_scope",
+          )
+          .eq("workspace_id", w)
+          .gte("activity_date", from)
+          .lte("activity_date", to)
+          .order("activity_date", { ascending: false });
         if (error) return fail("suas atividades", error);
-        const last = await sb.from("physical_activities").select("title, activity_date").eq("workspace_id", w).order("activity_date", { ascending: false }).limit(1).maybeSingle();
-        return { quantidade: data.length, minutos_total: sumBy(data, (a) => a.duration_minutes ?? 0), atividades: data.slice(0, 20), ultima_atividade_geral: last.data };
+        const last = await sb
+          .from("physical_activities")
+          .select("title, activity_date")
+          .eq("workspace_id", w)
+          .order("activity_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        return {
+          quantidade: data.length,
+          minutos_total: sumBy(data, (a) => a.duration_minutes ?? 0),
+          atividades: data.slice(0, 20),
+          ultima_atividade_geral: last.data,
+        };
       },
     }),
 
     purchases: tool({
-      description: "Lista de Compras/desejos: itens, orçamento planejado, prioridade e status (WANT_TO_BUY, RESEARCHING, DECIDED, PURCHASED, DISCARDED).",
+      description:
+        "Lista de Compras/desejos: itens, orçamento planejado, prioridade e status (WANT_TO_BUY, RESEARCHING, DECIDED, PURCHASED, DISCARDED).",
       inputSchema: z.object({ include_done: z.boolean() }),
       execute: async ({ include_done }) => {
-        let q = sb.from("purchases").select("title, budget_amount, found_price, priority, status, desired_date").eq("workspace_id", w);
+        let q = sb
+          .from("purchases")
+          .select("title, budget_amount, found_price, priority, status, desired_date")
+          .eq("workspace_id", w);
         if (!include_done) q = q.not("status", "in", "(PURCHASED,DISCARDED)");
         const { data, error } = await q;
         if (error) return fail("suas compras", error);
-        return { quantidade: data.length, total_planejado: r2(sumBy(data, (p) => Number(p.budget_amount ?? p.found_price ?? 0))), itens: data.slice(0, 30) };
+        return {
+          quantidade: data.length,
+          total_planejado: r2(sumBy(data, (p) => Number(p.budget_amount ?? p.found_price ?? 0))),
+          itens: data.slice(0, 30),
+        };
       },
     }),
 
@@ -374,22 +590,47 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       execute: async ({ date }) => {
         const [rs, logs] = await Promise.all([
           sb.from("routines").select("*").eq("workspace_id", w).eq("status", "ACTIVE"),
-          sb.from("routine_logs").select("routine_id, status").eq("workspace_id", w).eq("log_date", date),
+          sb
+            .from("routine_logs")
+            .select("routine_id, status")
+            .eq("workspace_id", w)
+            .eq("log_date", date),
         ]);
         if (rs.error) return fail("suas rotinas", rs.error);
         const st = new Map((logs.data ?? []).map((l) => [l.routine_id, l.status]));
-        return rs.data.filter((r) => occursOn(r, date)).map((r) => ({ titulo: r.title, tipo: r.kind, horario: r.start_time, feito: st.get(r.id) ?? "pendente" }));
+        return rs.data
+          .filter((r) => occursOn(r, date))
+          .map((r) => ({
+            titulo: r.title,
+            tipo: r.kind,
+            horario: r.start_time,
+            feito: st.get(r.id) ?? "pendente",
+          }));
       },
     }),
 
     contexts: tool({
-      description: "Contextos (viagens, projetos, eventos) com orçamento e quanto já foi gasto em cada um.",
+      description:
+        "Contextos (viagens, projetos, eventos) com orçamento e quanto já foi gasto em cada um.",
       inputSchema: z.object({}),
       execute: async () => {
         try {
           const { tx } = await loadFinance();
-          const { data } = await sb.from("contexts").select("id, name, type, status, start_date, end_date, budget_amount").eq("workspace_id", w).neq("status", "ARCHIVED");
-          return (data ?? []).map((c) => ({ ...c, id: undefined, gasto: r2(sumBy(tx.filter((t) => t.context_id === c.id && t.type === "EXPENSE"), (t) => Number(t.amount))) }));
+          const { data } = await sb
+            .from("contexts")
+            .select("id, name, type, status, start_date, end_date, budget_amount")
+            .eq("workspace_id", w)
+            .neq("status", "ARCHIVED");
+          return (data ?? []).map((c) => ({
+            ...c,
+            id: undefined,
+            gasto: r2(
+              sumBy(
+                tx.filter((t) => t.context_id === c.id && t.type === "EXPENSE"),
+                (t) => Number(t.amount),
+              ),
+            ),
+          }));
         } catch (e) {
           return fail("seus contextos", e);
         }
@@ -402,31 +643,51 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       inputSchema: actionSchema,
       execute: async (a) => {
         const enabled = await loadPluginAccess(sb, userId, w);
-        if (!intentAllowed(a.intent, enabled)) throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
-        const ok = (set: { id: string }[], id: string | null) => (id && set.some((x) => x.id === id) ? id : null);
+        if (!intentAllowed(a.intent, enabled))
+          throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
+        const ok = (set: { id: string }[], id: string | null) =>
+          id && set.some((x) => x.id === id) ? id : null;
         return {
           ...a,
-          amount: a.amount != null && Number.isFinite(a.amount) && a.amount > 0 ? r2(a.amount) : null,
+          amount:
+            a.amount != null && Number.isFinite(a.amount) && a.amount > 0 ? r2(a.amount) : null,
           date: a.date && /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? a.date : today,
           time: a.time && /^\d{2}:\d{2}$/.test(a.time) ? a.time : null,
           card_id: ok(base.cards, a.card_id),
           account_id: ok(base.accounts, a.account_id),
           category_id: ok(base.categories, a.category_id),
           context_id: ok(base.contexts, a.context_id),
-          payer_user_id: base.people.some((p) => p.id === a.payer_user_id) ? a.payer_user_id : userId,
-          installments: a.installments && a.installments > 1 ? Math.min(48, Math.round(a.installments)) : null,
-          my_share_percent: a.my_share_percent != null ? Math.min(100, Math.max(0, a.my_share_percent)) : 50,
+          payer_user_id: base.people.some((p) => p.id === a.payer_user_id)
+            ? a.payer_user_id
+            : userId,
+          installments:
+            a.installments && a.installments > 1 ? Math.min(48, Math.round(a.installments)) : null,
+          my_share_percent:
+            a.my_share_percent != null ? Math.min(100, Math.max(0, a.my_share_percent)) : 50,
         };
       },
     }),
   };
   const registered: ToolSet = tools;
-  return Object.fromEntries(Object.entries(registered).filter(([name]) => toolAllowed(name, ctx.enabledPlugins)).map(([name, definition]) => {
-    const execute = definition.execute;
-    return [name, { ...definition, execute: execute ? async (input, options) => {
-      const enabled = await loadPluginAccess(sb, userId, w);
-      if (!toolAllowed(name, enabled)) throw new Error("Plugin desativado ou permissão necessária.");
-      return execute(input, options);
-    } : undefined }];
-  })) as ToolSet;
+  return Object.fromEntries(
+    Object.entries(registered)
+      .filter(([name]) => toolAllowed(name, ctx.enabledPlugins))
+      .map(([name, definition]) => {
+        const execute = definition.execute;
+        return [
+          name,
+          {
+            ...definition,
+            execute: execute
+              ? async (input, options) => {
+                  const enabled = await loadPluginAccess(sb, userId, w);
+                  if (!toolAllowed(name, enabled))
+                    throw new Error("Plugin desativado ou permissão necessária.");
+                  return execute(input, options);
+                }
+              : undefined,
+          },
+        ];
+      }),
+  ) as ToolSet;
 }

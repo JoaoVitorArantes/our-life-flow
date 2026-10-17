@@ -30,7 +30,12 @@ export type SettingsSection = {
 };
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
-  { to: "/configuracoes/plugins", label: "Plugins por IA", hint: "Ferramentas do Life AI e conexões", icon: Plug },
+  {
+    to: "/configuracoes/plugins",
+    label: "Plugins por IA",
+    hint: "Ferramentas do Life AI e conexões",
+    icon: Plug,
+  },
   {
     to: "/configuracoes/perfil",
     label: "Meu perfil",
