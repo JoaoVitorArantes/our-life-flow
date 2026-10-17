@@ -140,7 +140,8 @@ export function AgentChat({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [providerSelection, setProviderSelection] = useState<ProviderSelection | null>(null);
   const selection =
-    providerSelection && providerSelection.consent.userId === userId &&
+    providerSelection &&
+    providerSelection.consent.userId === userId &&
     providerSelection.consent.workspaceId === workspaceId
       ? providerSelection
       : null;
