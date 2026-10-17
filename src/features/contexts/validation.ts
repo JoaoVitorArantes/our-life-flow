@@ -12,7 +12,7 @@ export const contextSchema = z.object({
   status: z.enum(["PLANNED", "ACTIVE", "COMPLETED", "ARCHIVED"]),
   start_date: date, end_date: date, location: nullableText(500),
   color: z.string().regex(/^#[0-9a-f]{6}$/i, "Escolha uma cor válida.").nullable().optional(),
-  cover_image: z.string().url("Informe uma URL de imagem válida.").refine((v) => /^https?:\/\//.test(v), "Use uma URL http ou https.").max(2048).nullable().optional(),
+  cover_image: z.string().max(2048).url("Informe uma URL de imagem válida.").refine((v) => /^https?:\/\//.test(v), "Use uma URL http ou https.").nullable().optional(),
   budget_amount: z.number().finite().nonnegative("O orçamento não pode ser negativo.").nullable().optional(),
   visibility: z.enum(["PRIVATE", "SHARED"]),
 }).refine((v) => !v.start_date || !v.end_date || v.end_date >= v.start_date, { message: "A data final deve ser igual ou posterior ao início.", path: ["end_date"] });

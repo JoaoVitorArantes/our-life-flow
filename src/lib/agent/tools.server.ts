@@ -1,4 +1,4 @@
-import { tool } from "ai";
+import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Tables } from "@/integrations/supabase/types";
@@ -402,7 +402,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       inputSchema: actionSchema,
       execute: async (a) => {
         const enabled = await loadPluginAccess(sb, userId, w);
-        if (!intentAllowed(a.intent, enabled)) return { error: "Plugin desativado ou permissão necessária. Nenhuma ação foi proposta." };
+        if (!intentAllowed(a.intent, enabled)) throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
         const ok = (set: { id: string }[], id: string | null) => (id && set.some((x) => x.id === id) ? id : null);
         return {
           ...a,
@@ -420,5 +420,13 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       },
     }),
   };
-  return Object.fromEntries(Object.entries(tools).filter(([name]) => toolAllowed(name, ctx.enabledPlugins)));
+  const registered: ToolSet = tools;
+  return Object.fromEntries(Object.entries(registered).filter(([name]) => toolAllowed(name, ctx.enabledPlugins)).map(([name, definition]) => {
+    const execute = definition.execute;
+    return [name, { ...definition, execute: execute ? async (input, options) => {
+      const enabled = await loadPluginAccess(sb, userId, w);
+      if (!toolAllowed(name, enabled)) throw new Error("Plugin desativado ou permissão necessária.");
+      return execute(input, options);
+    } : undefined }];
+  })) as ToolSet;
 }
