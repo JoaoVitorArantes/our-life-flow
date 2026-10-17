@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const nullableText = (max: number) => z.string().trim().max(max).nullable().optional();
+const nullableText = (max: number) => z.string().trim().max(max).nullable().default(null);
 const date = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida.")
@@ -9,7 +9,7 @@ const date = z
     return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === v;
   }, "Informe uma data válida.")
   .nullable()
-  .optional();
+  .default(null);
 export const contextSchema = z
   .object({
     name: z.string().trim().min(1, "Informe um nome.").max(200),
@@ -23,20 +23,20 @@ export const contextSchema = z
       .string()
       .regex(/^#[0-9a-f]{6}$/i, "Escolha uma cor válida.")
       .nullable()
-      .optional(),
+      .default(null),
     cover_image: z
       .string()
       .max(2048)
       .url("Informe uma URL de imagem válida.")
       .refine((v) => /^https?:\/\//.test(v), "Use uma URL http ou https.")
       .nullable()
-      .optional(),
+      .default(null),
     budget_amount: z
       .number()
       .finite()
       .nonnegative("O orçamento não pode ser negativo.")
       .nullable()
-      .optional(),
+      .default(null),
     visibility: z.enum(["PRIVATE", "SHARED"]),
   })
   .refine((v) => !v.start_date || !v.end_date || v.end_date >= v.start_date, {
