@@ -1,5 +1,9 @@
 # Roadmap
 
+- [x] Fase 2 Ecosystem: adaptadores server-side, seleção explícita, consentimento e credenciais compartilhadas vinculadas ao espaço
+- [x] Testes sem credenciais e documentação da configuração segura; credenciais pessoais bloqueadas sem cofre por usuário
+- [ ] Verificar provedores em chamadas reais — depende de credenciais compartilhadas configuradas pelo dono e autorização de uso; modo pessoal depende de cofre seguro por usuário
+
 - [x] Retirar apenas o catálogo/plugins adicionados nesta execução; preservar Contextos e histórico de migrations aplicado
 - [x] Fase 1 Life AI: inventário revalidado, contratos e despacho tipados compatíveis; sem OAuth, chaves ou novos conectores
 - [x] Documentar arquitetura incremental, testes seguros e dependências da Fase 2 em docs/life-ai-phase-1.md

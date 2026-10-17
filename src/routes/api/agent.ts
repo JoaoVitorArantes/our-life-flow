@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { CURRENT_PROVIDER } from "@/lib/agent/contracts";
+import { selectionSchema } from "@/lib/agent/providers/contracts";
 
 const bodySchema = z.object({
   threadId: z.string().uuid(),
   messages: z.array(z.any()).min(1).max(200),
   pageContext: z.string().max(300).optional(),
+  providerSelection: selectionSchema,
 });
 
 function spToday() {
@@ -46,8 +46,7 @@ export const Route = createFileRoute("/api/agent")({
         const auth = request.headers.get("authorization");
         const url = process.env["SUPABASE_URL"];
         const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
-        const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!url || !key || !apiKey) return json(500, "O assistente não está configurado.");
+        if (!url || !key) return json(500, "O assistente não está configurado.");
         if (!auth?.startsWith("Bearer ")) return json(401, "Entre na sua conta para conversar.");
 
         const supabase = createClient<Database>(url, key, {
@@ -70,6 +69,18 @@ export const Route = createFileRoute("/api/agent")({
           .maybeSingle();
         if (!thread) return json(404, "Conversa não encontrada.");
         const workspaceId = thread.workspace_id;
+        const { resolveProvider } = await import("@/lib/agent/providers/provider.server");
+        let selected;
+        try {
+          selected = await resolveProvider(parsed.data.providerSelection, userId, workspaceId);
+        } catch (error) {
+          return json(
+            400,
+            error instanceof Error
+              ? error.message
+              : "Provedor indisponível. Nenhum outro provedor foi usado.",
+          );
+        }
 
         const today = spToday();
         const ctx = { supabase, workspaceId, userId, today: today.iso };
@@ -108,39 +119,15 @@ COMO AGIR
 - Respostas curtas por padrão (1–3 frases). Pergunta complexa → mais detalhe, com listas curtas. Valores em R$ no formato brasileiro (R$ 1.234,56). Use markdown leve (negrito em números-chave).
 - Ao final de respostas de consulta, quando fizer sentido, ofereça UMA próxima ação curta. Não mostre nomes de ferramentas, ids ou códigos internos.`;
 
-        const provider = createOpenAI({
-          baseURL: "https://ai.gateway.lovable.dev/v1",
-          apiKey,
-          headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-          fetch: (() => {
-            let runId: string | undefined;
-            return async (input: RequestInfo | URL, init?: RequestInit) => {
-              const headers = new Headers(init?.headers);
-              if (runId && !headers.has("X-Lovable-AIG-Run-ID"))
-                headers.set("X-Lovable-AIG-Run-ID", runId);
-              const res = await fetch(input, { ...init, headers });
-              runId ??= res.headers.get("X-Lovable-AIG-Run-ID")?.trim() || undefined;
-              return res;
-            };
-          })(),
-        });
-
         const result = streamText({
-          model: provider.responses(CURRENT_PROVIDER.model),
+          model: selected.model,
           instructions,
           messages: await convertToModelMessages(messages.slice(-40)),
           tools,
           stopWhen: stepCountIs(50),
           abortSignal: request.signal,
-          providerOptions: {
-            openai: {
-              forceReasoning: true,
-              reasoningEffort: "low",
-              reasoningSummary: "auto",
-              store: false,
-              include: ["reasoning.encrypted_content"],
-            },
-          },
+          providerOptions: selected.providerOptions,
+          maxRetries: 0,
         });
 
         const lastUser = [...messages].reverse().find((m) => m.role === "user");
@@ -148,8 +135,11 @@ COMO AGIR
           originalMessages: messages,
           sendReasoning: false,
           onError: (error) => {
-            console.error("[agent] stream", error);
             const status = (error as { statusCode?: number })?.statusCode;
+            if (status === 401 || status === 403)
+              return "O provedor recusou o acesso. Confira as credenciais e permissões; nenhum outro provedor foi usado.";
+            if (status === 404)
+              return "O modelo ou serviço selecionado não está disponível. Nenhum outro modelo foi usado.";
             if (status === 402)
               return "Os créditos de IA do espaço acabaram. Adicione créditos para continuar.";
             if (status === 429)
