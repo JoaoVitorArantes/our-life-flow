@@ -1,10 +1,15 @@
 # Roadmap
 
+- [ ] Prioridade atual: verificar correção de Contextos e fluxos autenticados sem alterar dados reais
+- [ ] Auditoria estruturada: RLS, autenticação, Life AI, storage, exportação/lixeira e riscos confirmados
+- [ ] Varredura de regressões: testes existentes, lint, verificação automática de tipos e prévia
+- [ ] Relatório com evidências, limitações e próximos passos; plugins novos pausados
+
 - [x] Corrigir auditoria que bloqueava contextos; validar campos e erros sem expor detalhes internos
 - [x] Plugins por IA: catálogo, registro, preferências individuais e autorização nas ferramentas/confirmacões
 - [x] Testes automatizados de validação e plugins; limitações de conexões em docs/ai-plugins.md
 - [ ] Validar criação/edição/reload/isolamento de contextos e catálogo na prévia autenticada — bloqueado: sessão não autorizada neste ambiente
-- [ ] Habilitar integração externa pessoal — bloqueado: cliente App User Connector configurado/vinculado e consentimento individual
+- Integrações externas pessoais pausadas por solicitação do dono; não conectar nem implementar nesta etapa
 
 - [x] Auditar tabelas, consultas, criação de conta e regras de acesso
 - [x] Modelar relacionamento e workspace ativo sem alterar dados existentes
