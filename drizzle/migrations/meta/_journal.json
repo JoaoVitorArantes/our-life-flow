@@ -92,6 +92,13 @@
       "when": 1792268935847,
       "tag": "0012_ai_plugin_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792269529390,
+      "tag": "0013_restrict_shared_profile_avatar_reads",
+      "breakpoints": true
     }
   ]
 }
