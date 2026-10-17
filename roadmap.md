@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Retirar apenas o catálogo/plugins adicionados nesta execução; preservar Contextos e histórico de migrations aplicado
+- [ ] Fase 1 Life AI: inventário revalidado, contratos e despacho tipados compatíveis; sem OAuth, chaves ou novos conectores
+- [ ] Documentar arquitetura incremental, testes seguros e dependências da Fase 2
 - [ ] Validar Contextos e todos os módulos com sessão autenticada — bloqueado: não há sessão autorizada disponível
 - [x] Auditoria estruturada: evidências e riscos documentados em docs/security-functionality-audit.md
 - [x] Varredura possível sem sessão: 29 testes, lint direcionado, verificação automática e telas públicas
