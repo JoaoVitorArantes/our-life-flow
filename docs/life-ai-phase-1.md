@@ -75,7 +75,7 @@ Nenhum novo achado Crítico confirmado. Não foi feita nova varredura completa d
 - Alterados: `tools.server.ts`, `src/routes/api/agent.ts`, `src/features/inbox/execute.ts`, `src/features/settings/sections.ts`, `AGENTS.md`, `roadmap.md`; exclusões do catálogo descritas acima.
 - Testes seguros: Vitest, 9 arquivos / 23 testes, incluindo 3 testes de despacho (registro fechado, associação negada sem execução, parâmetros inválidos/retorno preservado), 1 teste do handler real de proposta com cliente simulado (IDs inacessíveis descartados, sem gravação), Contextos, orçamento, exportação, finanças e rotinas. A contagem difere dos 29 anteriores porque foram removidos os 10 testes exclusivos do catálogo e adicionados 4 da fundação. Testes simulados não comprovam acesso autenticado real.
 - Lint direcionado aos arquivos desta fase: passou. Lint geral já documentado com 3.118 erros/47 avisos, não corrigido fora do escopo.
-- Tipos/compilação: verificação automática da plataforma, sem execução manual de build/typecheck; resultado final conferir nos logs da prévia.
+- Tipos/compilação: verificação automática da plataforma, sem execução manual de build/typecheck; última entrada conferida em `/tmp/observability/build-errors.log`: `build OK`, 17/10/2026 20:52:41 UTC. Incompatibilidades de tipos nos novos testes foram corrigidas antes dessa verificação.
 - Sessão: estado `signed_out`; tentativa anterior de sessão própria falhou. Nenhuma conta alheia selecionada. Sem validação ponta a ponta autenticada ou criação de registros temporários, sem limpeza pendente.
 
 ## Fase 2 — requisitos, não implementados
