@@ -4,7 +4,7 @@ import { z } from "zod";
 import { registerAgentTools } from "./dispatch";
 import { TOOL_CONTRACTS } from "./contracts";
 
-const options = { toolCallId: "test", messages: [] };
+const options = { toolCallId: "test", messages: [], context: undefined };
 test("only registered current tools can be exposed", () => {
   expect(() =>
     registerAgentTools(

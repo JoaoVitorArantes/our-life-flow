@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { CURRENT_PROVIDER } from "@/lib/agent/contracts";
 
 const bodySchema = z.object({
   threadId: z.string().uuid(),
@@ -125,7 +126,7 @@ COMO AGIR
         });
 
         const result = streamText({
-          model: provider.responses("openai/gpt-6-astra"),
+          model: provider.responses(CURRENT_PROVIDER.model),
           instructions,
           messages: await convertToModelMessages(messages.slice(-40)),
           tools,

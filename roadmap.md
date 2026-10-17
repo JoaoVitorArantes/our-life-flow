@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Retirar apenas o catálogo/plugins adicionados nesta execução; preservar Contextos e histórico de migrations aplicado
-- [ ] Fase 1 Life AI: inventário revalidado, contratos e despacho tipados compatíveis; sem OAuth, chaves ou novos conectores
-- [ ] Documentar arquitetura incremental, testes seguros e dependências da Fase 2
+- [x] Retirar apenas o catálogo/plugins adicionados nesta execução; preservar Contextos e histórico de migrations aplicado
+- [x] Fase 1 Life AI: inventário revalidado, contratos e despacho tipados compatíveis; sem OAuth, chaves ou novos conectores
+- [x] Documentar arquitetura incremental, testes seguros e dependências da Fase 2 em docs/life-ai-phase-1.md
 - [ ] Validar Contextos e todos os módulos com sessão autenticada — bloqueado: não há sessão autorizada disponível
 - [x] Auditoria estruturada: evidências e riscos documentados em docs/security-functionality-audit.md
 - [x] Varredura possível sem sessão: 29 testes, lint direcionado, verificação automática e telas públicas
@@ -10,8 +10,7 @@
 - [ ] Endurecer histórico do Life AI e visibilidade de aportes — depende de aprovação das mudanças amplas descritas no relatório
 
 - [x] Corrigir auditoria que bloqueava contextos; validar campos e erros sem expor detalhes internos
-- [x] Plugins por IA: catálogo, registro, preferências individuais e autorização nas ferramentas/confirmacões
-- [x] Testes automatizados de validação e plugins; limitações de conexões em docs/ai-plugins.md
+- [x] Catálogo novo de plugins retirado; migration 0012 já aplicada preservada, incluindo validação de Contextos
 - Integrações externas pessoais pausadas por solicitação do dono; não conectar nem implementar nesta etapa
 
 - [x] Auditar tabelas, consultas, criação de conta e regras de acesso
