@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { CURRENT_PROVIDER } from "@/lib/agent/contracts";
 
 const bodySchema = z.object({
   threadId: z.string().uuid(),
@@ -71,14 +72,7 @@ export const Route = createFileRoute("/api/agent")({
         const workspaceId = thread.workspace_id;
 
         const today = spToday();
-        const { loadPluginAccess } = await import("@/features/plugins/access.server");
-        let enabledPlugins: Set<string>;
-        try {
-          enabledPlugins = await loadPluginAccess(supabase, userId, workspaceId);
-        } catch {
-          return json(403, "Não foi possível verificar os plugins e permissões deste espaço.");
-        }
-        const ctx = { supabase, workspaceId, userId, today: today.iso, enabledPlugins };
+        const ctx = { supabase, workspaceId, userId, today: today.iso };
         const { loadBase, buildTools } = await import("@/lib/agent/tools.server");
         const base = await loadBase(ctx);
         const tools = buildTools(ctx, base);
@@ -97,8 +91,7 @@ Contextos: ${list(base.contexts)}
 Contexto da tela atual: ${parsed.data.pageContext ?? "não informado"}. Use isso apenas para entender referências como “aqui”, “esta meta” ou “essa compra”. O contexto não limita suas consultas nem ações e nunca substitui os dados das ferramentas.
 
 COMO AGIR
-- Plugins internos autorizados: ${[...enabledPlugins].join(", ")}. Apenas as ferramentas disponibilizadas nesta chamada podem ser usadas. Se um plugin estiver desativado, sem permissão ou sem conexão, explique isso e indique Plugins por IA nas Configurações. Não simule ferramentas, não use resultados antigos como consulta atual e não alegue acesso a serviços externos. Não tente contornar plugins desativados usando outra ferramenta.
-- Você tem acesso aos dados reais apenas pelas ferramentas habilitadas. Para perguntas sobre os dados, chame as ferramentas disponíveis antes de responder.
+- Você TEM acesso aos dados reais pelas ferramentas. NUNCA peça ao usuário dados que estão no app e NUNCA diga que não tem acesso. Para qualquer pergunta sobre a vida/dados dele, chame as ferramentas antes de responder.
 - NUNCA invente números. Use apenas o que as ferramentas devolverem. Se uma ferramenta devolver erro, diga com naturalidade que não conseguiu consultar aquilo agora.
 - Converta datas relativas (hoje, ontem, semana passada, mês passado, setembro, últimos 30 dias, até o fim do mês, sexta) em datas reais a partir de hoje antes de consultar. "Esse mês" = do dia 1 até o último dia do mês atual.
 - Os dados são do casal: fale em "vocês" para finanças compartilhadas. Quem registrou é só identificação. Para "quanto a Renifer gastou", filtre por person_id dela.
@@ -133,7 +126,7 @@ COMO AGIR
         });
 
         const result = streamText({
-          model: provider.responses("openai/gpt-6-astra"),
+          model: provider.responses(CURRENT_PROVIDER.model),
           instructions,
           messages: await convertToModelMessages(messages.slice(-40)),
           tools,

@@ -1,4 +1,4 @@
-import { tool, type ToolSet } from "ai";
+import { tool } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Tables } from "@/integrations/supabase/types";
@@ -7,8 +7,7 @@ import { dueDateOf, isOpen, registerCardCycles, sumBy } from "@/features/finance
 import { netBalance } from "@/features/nos/settlements";
 import { occursOn } from "@/features/routines/queries";
 import { actionSchema } from "@/lib/inbox/ai.server";
-import { intentAllowed, toolAllowed } from "@/features/plugins/registry";
-import { loadPluginAccess } from "@/features/plugins/access.server";
+import { registerAgentTools } from "./dispatch";
 
 /**
  * Camada de ferramentas do Life OS AI. Todas as consultas usam o cliente do PRÓPRIO usuário
@@ -21,7 +20,6 @@ export type AgentCtx = {
   workspaceId: string;
   userId: string;
   today: string;
-  enabledPlugins: ReadonlySet<string>;
 };
 
 const r2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
@@ -35,26 +33,16 @@ function fail(area: string, error: unknown) {
 export async function loadBase(ctx: AgentCtx) {
   const { supabase: sb, workspaceId: w } = ctx;
   const [accounts, cards, categories, contexts, members, goals, workspace] = await Promise.all([
-    ctx.enabledPlugins.has("finance")
-      ? sb.from("accounts").select("*").eq("workspace_id", w)
-      : { data: [] },
-    ctx.enabledPlugins.has("finance")
-      ? sb.from("cards").select("*").eq("workspace_id", w)
-      : { data: [] },
-    ctx.enabledPlugins.has("finance")
-      ? sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null)
-      : { data: [] },
-    ctx.enabledPlugins.has("contexts")
-      ? sb
-          .from("contexts")
-          .select("id, name, type, status")
-          .eq("workspace_id", w)
-          .neq("status", "ARCHIVED")
-      : { data: [] },
+    sb.from("accounts").select("*").eq("workspace_id", w),
+    sb.from("cards").select("*").eq("workspace_id", w),
+    sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null),
+    sb
+      .from("contexts")
+      .select("id, name, type, status")
+      .eq("workspace_id", w)
+      .neq("status", "ARCHIVED"),
     sb.from("workspace_members").select("user_id").eq("workspace_id", w),
-    ctx.enabledPlugins.has("goals")
-      ? sb.from("goals").select("id, title, status").eq("workspace_id", w)
-      : { data: [] },
+    sb.from("goals").select("id, title, status").eq("workspace_id", w),
     sb.from("workspaces").select("name, description").eq("id", w).maybeSingle(),
   ]);
   const ids = (members.data ?? []).map((m) => m.user_id);
@@ -640,9 +628,6 @@ export function buildTools(ctx: AgentCtx, base: Base) {
         "Propõe um REGISTRO (despesa, receita, tarefa, compromisso, nota, desejo de compra, atividade, meta) ou renomear o espaço (rename_workspace: description = novo nome). NÃO salva nada: o app mostra uma prévia e o usuário confirma. Use só ids reais das listas do sistema. Se faltar a forma de pagamento de uma despesa ou houver ambiguidade (ex.: dois Nubank), pergunte ANTES de propor.",
       inputSchema: actionSchema,
       execute: async (a) => {
-        const enabled = await loadPluginAccess(sb, userId, w);
-        if (!intentAllowed(a.intent, enabled))
-          throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
         const ok = (set: { id: string }[], id: string | null) =>
           id && set.some((x) => x.id === id) ? id : null;
         return {
@@ -666,26 +651,8 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       },
     }),
   };
-  const registered: ToolSet = tools;
-  return Object.fromEntries(
-    Object.entries(registered)
-      .filter(([name]) => toolAllowed(name, ctx.enabledPlugins))
-      .map(([name, definition]) => {
-        const execute = definition.execute;
-        return [
-          name,
-          {
-            ...definition,
-            execute: execute
-              ? async (input, options) => {
-                  const enabled = await loadPluginAccess(sb, userId, w);
-                  if (!toolAllowed(name, enabled))
-                    throw new Error("Plugin desativado ou permissão necessária.");
-                  return execute(input, options);
-                }
-              : undefined,
-          },
-        ];
-      }),
-  ) as ToolSet;
+  return registerAgentTools(tools, async () => {
+    const { data, error } = await sb.rpc("is_workspace_member", { _workspace_id: w });
+    if (error || data !== true) throw new Error("Você não tem acesso às ferramentas deste espaço.");
+  });
 }
