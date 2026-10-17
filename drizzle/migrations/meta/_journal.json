@@ -78,6 +78,13 @@
       "when": 1791256209969,
       "tag": "0010_activity_member_delete_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792268879943,
+      "tag": "0011_fix_context_creation_audit",
+      "breakpoints": true
     }
   ]
 }
