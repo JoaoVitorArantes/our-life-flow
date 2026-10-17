@@ -70,14 +70,12 @@ export const setPluginEnabled = createServerFn({ method: "POST" })
       });
       if (!allowed) throw new Error("Você não tem permissão para administrar este espaço.");
     }
-    const { error: saveError } = await context.supabase
-      .from("ai_plugin_preferences")
-      .upsert({
-        workspace_id: profile.active_workspace_id,
-        user_id: context.userId,
-        plugin_id: plugin.id,
-        enabled: data.enabled,
-      });
+    const { error: saveError } = await context.supabase.from("ai_plugin_preferences").upsert({
+      workspace_id: profile.active_workspace_id,
+      user_id: context.userId,
+      plugin_id: plugin.id,
+      enabled: data.enabled,
+    });
     if (saveError) throw new Error("Não foi possível atualizar o plugin.");
     return { ok: true };
   });

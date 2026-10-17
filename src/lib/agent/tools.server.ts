@@ -461,14 +461,12 @@ export function buildTools(ctx: AgentCtx, base: Base) {
         );
         return {
           quantidade: f.length,
-          tarefas: f
-            .slice(0, 25)
-            .map((t) => ({
-              titulo: t.title,
-              prazo: t.due_date,
-              status: t.status,
-              de: personName.get(t.owner_id),
-            })),
+          tarefas: f.slice(0, 25).map((t) => ({
+            titulo: t.title,
+            prazo: t.due_date,
+            status: t.status,
+            de: personName.get(t.owner_id),
+          })),
         };
       },
     }),
