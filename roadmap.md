@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Corrigir salvamento de contextos e validar criação/edição/isolamento
+- [ ] Plugins por IA: catálogo, registro, preferências e autorização nas ferramentas
+- [ ] Validar plugins e registrar conexões externas pendentes
+
 - [x] Auditar tabelas, consultas, criação de conta e regras de acesso
 - [x] Modelar relacionamento e workspace ativo sem alterar dados existentes
 - [x] Criar convite seguro para um único parceiro por workspace
