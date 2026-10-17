@@ -1,15 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { selectionSchema } from "@/lib/agent/providers/contracts";
 
 const bodySchema = z.object({
   threadId: z.string().uuid(),
   messages: z.array(z.any()).min(1).max(200),
   pageContext: z.string().max(300).optional(),
-  providerSelection: selectionSchema,
 });
 
 function spToday() {
@@ -46,7 +45,8 @@ export const Route = createFileRoute("/api/agent")({
         const auth = request.headers.get("authorization");
         const url = process.env["SUPABASE_URL"];
         const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
-        if (!url || !key) return json(500, "O assistente não está configurado.");
+        const apiKey = process.env["LOVABLE_API_KEY"];
+        if (!url || !key || !apiKey) return json(500, "O assistente não está configurado.");
         if (!auth?.startsWith("Bearer ")) return json(401, "Entre na sua conta para conversar.");
 
         const supabase = createClient<Database>(url, key, {
@@ -69,21 +69,16 @@ export const Route = createFileRoute("/api/agent")({
           .maybeSingle();
         if (!thread) return json(404, "Conversa não encontrada.");
         const workspaceId = thread.workspace_id;
-        const { resolveProvider } = await import("@/lib/agent/providers/provider.server");
-        let selected;
-        try {
-          selected = await resolveProvider(parsed.data.providerSelection, userId, workspaceId);
-        } catch (error) {
-          return json(
-            400,
-            error instanceof Error
-              ? error.message
-              : "Provedor indisponível. Nenhum outro provedor foi usado.",
-          );
-        }
 
         const today = spToday();
-        const ctx = { supabase, workspaceId, userId, today: today.iso };
+        const { loadPluginAccess } = await import("@/features/plugins/access.server");
+        let enabledPlugins: Set<string>;
+        try {
+          enabledPlugins = await loadPluginAccess(supabase, userId, workspaceId);
+        } catch {
+          return json(403, "Não foi possível verificar os plugins e permissões deste espaço.");
+        }
+        const ctx = { supabase, workspaceId, userId, today: today.iso, enabledPlugins };
         const { loadBase, buildTools } = await import("@/lib/agent/tools.server");
         const base = await loadBase(ctx);
         const tools = buildTools(ctx, base);
@@ -102,7 +97,8 @@ Contextos: ${list(base.contexts)}
 Contexto da tela atual: ${parsed.data.pageContext ?? "não informado"}. Use isso apenas para entender referências como “aqui”, “esta meta” ou “essa compra”. O contexto não limita suas consultas nem ações e nunca substitui os dados das ferramentas.
 
 COMO AGIR
-- Você TEM acesso aos dados reais pelas ferramentas. NUNCA peça ao usuário dados que estão no app e NUNCA diga que não tem acesso. Para qualquer pergunta sobre a vida/dados dele, chame as ferramentas antes de responder.
+- Plugins internos autorizados: ${[...enabledPlugins].join(", ")}. Apenas as ferramentas disponibilizadas nesta chamada podem ser usadas. Se um plugin estiver desativado, sem permissão ou sem conexão, explique isso e indique Plugins por IA nas Configurações. Não simule ferramentas, não use resultados antigos como consulta atual e não alegue acesso a serviços externos. Não tente contornar plugins desativados usando outra ferramenta.
+- Você tem acesso aos dados reais apenas pelas ferramentas habilitadas. Para perguntas sobre os dados, chame as ferramentas disponíveis antes de responder.
 - NUNCA invente números. Use apenas o que as ferramentas devolverem. Se uma ferramenta devolver erro, diga com naturalidade que não conseguiu consultar aquilo agora.
 - Converta datas relativas (hoje, ontem, semana passada, mês passado, setembro, últimos 30 dias, até o fim do mês, sexta) em datas reais a partir de hoje antes de consultar. "Esse mês" = do dia 1 até o último dia do mês atual.
 - Os dados são do casal: fale em "vocês" para finanças compartilhadas. Quem registrou é só identificação. Para "quanto a Renifer gastou", filtre por person_id dela.
@@ -119,15 +115,39 @@ COMO AGIR
 - Respostas curtas por padrão (1–3 frases). Pergunta complexa → mais detalhe, com listas curtas. Valores em R$ no formato brasileiro (R$ 1.234,56). Use markdown leve (negrito em números-chave).
 - Ao final de respostas de consulta, quando fizer sentido, ofereça UMA próxima ação curta. Não mostre nomes de ferramentas, ids ou códigos internos.`;
 
+        const provider = createOpenAI({
+          baseURL: "https://ai.gateway.lovable.dev/v1",
+          apiKey,
+          headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+          fetch: (() => {
+            let runId: string | undefined;
+            return async (input: RequestInfo | URL, init?: RequestInit) => {
+              const headers = new Headers(init?.headers);
+              if (runId && !headers.has("X-Lovable-AIG-Run-ID"))
+                headers.set("X-Lovable-AIG-Run-ID", runId);
+              const res = await fetch(input, { ...init, headers });
+              runId ??= res.headers.get("X-Lovable-AIG-Run-ID")?.trim() || undefined;
+              return res;
+            };
+          })(),
+        });
+
         const result = streamText({
-          model: selected.model,
+          model: provider.responses("openai/gpt-6-astra"),
           instructions,
           messages: await convertToModelMessages(messages.slice(-40)),
           tools,
           stopWhen: stepCountIs(50),
           abortSignal: request.signal,
-          providerOptions: selected.providerOptions,
-          maxRetries: 0,
+          providerOptions: {
+            openai: {
+              forceReasoning: true,
+              reasoningEffort: "low",
+              reasoningSummary: "auto",
+              store: false,
+              include: ["reasoning.encrypted_content"],
+            },
+          },
         });
 
         const lastUser = [...messages].reverse().find((m) => m.role === "user");
@@ -135,11 +155,8 @@ COMO AGIR
           originalMessages: messages,
           sendReasoning: false,
           onError: (error) => {
+            console.error("[agent] stream", error);
             const status = (error as { statusCode?: number })?.statusCode;
-            if (status === 401 || status === 403)
-              return "O provedor recusou o acesso. Confira as credenciais e permissões; nenhum outro provedor foi usado.";
-            if (status === 404)
-              return "O modelo ou serviço selecionado não está disponível. Nenhum outro modelo foi usado.";
             if (status === 402)
               return "Os créditos de IA do espaço acabaram. Adicione créditos para continuar.";
             if (status === 429)

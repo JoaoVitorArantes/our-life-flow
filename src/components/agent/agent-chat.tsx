@@ -43,8 +43,6 @@ import { saveActionState, type ActionState } from "@/features/agent/conversation
 import type { InboxAction } from "@/lib/inbox/inbox.functions";
 import aiMark from "@/assets/lifeos-ai.png";
 import { cn } from "@/lib/utils";
-import { ProviderSelector } from "./provider-selector";
-import type { ProviderSelection } from "@/lib/agent/providers/contracts";
 
 /** Rótulos amigáveis: o usuário vê o que está sendo consultado, nunca nomes técnicos. */
 const TOOL_UI: Record<string, { label: string; done: string; icon: typeof Wallet }> = {
@@ -138,21 +136,12 @@ export function AgentChat({
   const [edits, setEdits] = useState<Record<string, InboxAction>>({});
   const sentAuto = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [providerSelection, setProviderSelection] = useState<ProviderSelection | null>(null);
-  const selection =
-    providerSelection &&
-    providerSelection.consent.userId === userId &&
-    providerSelection.consent.workspaceId === workspaceId
-      ? providerSelection
-      : null;
-  const selectionRef = useRef(selection);
-  selectionRef.current = selection;
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/agent",
-        body: () => ({ threadId, pageContext, providerSelection: selectionRef.current }),
+        body: { threadId, pageContext },
         headers: async (): Promise<Record<string, string>> => {
           const { data } = await supabase.auth.getSession();
           return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {};
@@ -178,14 +167,14 @@ export function AgentChat({
   }, [busy]);
 
   useEffect(() => {
-    if (!autoSend || sentAuto.current || initialMessages.length > 0 || !selection) return;
+    if (!autoSend || sentAuto.current || initialMessages.length > 0) return;
     // adiado: em modo estrito o primeiro efeito é desmontado antes do envio
     const t = window.setTimeout(() => {
       sentAuto.current = true;
       void sendMessage({ text: autoSend });
     }, 60);
     return () => window.clearTimeout(t);
-  }, [autoSend, initialMessages.length, sendMessage, selection]);
+  }, [autoSend, initialMessages.length, sendMessage]);
 
   const nameOf = useMemo(() => {
     const m = new Map<string, string>();
@@ -199,10 +188,6 @@ export function AgentChat({
   function send(value: string) {
     const t = value.trim();
     if (!t || busy) return;
-    if (!selection) {
-      toast.error("Selecione a IA e confirme o envio de dados antes de conversar.");
-      return;
-    }
     setText("");
     void sendMessage({ text: t });
   }
@@ -248,18 +233,6 @@ export function AgentChat({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-border pb-3">
-        {userId && workspaceId && (
-          <ProviderSelector
-            key={`${userId}:${workspaceId}`}
-            userId={userId}
-            workspaceId={workspaceId}
-            selection={selection}
-            onChange={setProviderSelection}
-            disabled={busy}
-          />
-        )}
-      </div>
       <Conversation className="min-h-0 flex-1">
         <ConversationContent className="gap-5 px-0 pb-6">
           {messages.length === 0 && !autoSend ? (
@@ -415,11 +388,7 @@ export function AgentChat({
           className="text-base md:text-sm"
         />
         <PromptInputFooter className="justify-end">
-          <PromptInputSubmit
-            status={status}
-            onStop={stop}
-            disabled={!busy && (!text.trim() || !selection)}
-          />
+          <PromptInputSubmit status={status} onStop={stop} disabled={!busy && !text.trim()} />
         </PromptInputFooter>
       </PromptInput>
     </div>
