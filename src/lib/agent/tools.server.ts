@@ -37,10 +37,10 @@ export async function loadBase(ctx: AgentCtx) {
     sb.from("cards").select("*").eq("workspace_id", w),
     sb.from("categories").select("id, name, type").eq("workspace_id", w).is("archived_at", null),
     sb
-          .from("contexts")
-          .select("id, name, type, status")
-          .eq("workspace_id", w)
-          .neq("status", "ARCHIVED"),
+      .from("contexts")
+      .select("id, name, type, status")
+      .eq("workspace_id", w)
+      .neq("status", "ARCHIVED"),
     sb.from("workspace_members").select("user_id").eq("workspace_id", w),
     sb.from("goals").select("id, title, status").eq("workspace_id", w),
     sb.from("workspaces").select("name, description").eq("id", w).maybeSingle(),

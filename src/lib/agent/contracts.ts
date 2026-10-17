@@ -17,9 +17,21 @@ export type ConnectorContract = {
 };
 
 export const toolIdSchema = z.enum([
-  "financial_overview", "transactions_summary", "monthly_trend", "cards_status",
-  "upcoming_bills", "installments", "nos_balance", "goals", "tasks", "agenda",
-  "activities", "purchases", "routines_today", "contexts", "propose_action",
+  "financial_overview",
+  "transactions_summary",
+  "monthly_trend",
+  "cards_status",
+  "upcoming_bills",
+  "installments",
+  "nos_balance",
+  "goals",
+  "tasks",
+  "agenda",
+  "activities",
+  "purchases",
+  "routines_today",
+  "contexts",
+  "propose_action",
 ]);
 export type AgentToolId = z.infer<typeof toolIdSchema>;
 export type ToolContract = {
