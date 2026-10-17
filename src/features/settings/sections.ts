@@ -3,7 +3,6 @@ import {
   Database,
   Home,
   Paintbrush,
-  Plug,
   Settings2,
   Tags,
   User,
@@ -22,20 +21,13 @@ export type SettingsSection = {
     | "/configuracoes/financeiro"
     | "/configuracoes/dados"
     | "/configuracoes/atividade"
-    | "/configuracoes/sistema"
-    | "/configuracoes/plugins";
+    | "/configuracoes/sistema";
   label: string;
   hint: string;
   icon: LucideIcon;
 };
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
-  {
-    to: "/configuracoes/plugins",
-    label: "Plugins por IA",
-    hint: "Ferramentas do Life AI e conexões",
-    icon: Plug,
-  },
   {
     to: "/configuracoes/perfil",
     label: "Meu perfil",
