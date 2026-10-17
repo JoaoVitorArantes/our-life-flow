@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -149,6 +149,41 @@ export type Database = {
           },
           {
             foreignKeyName: "ai_messages_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_plugin_preferences: {
+        Row: {
+          configuration: Json
+          enabled: boolean
+          plugin_id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          configuration?: Json
+          enabled?: boolean
+          plugin_id: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          configuration?: Json
+          enabled?: boolean
+          plugin_id?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_plugin_preferences_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"

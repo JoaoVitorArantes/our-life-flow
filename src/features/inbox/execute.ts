@@ -10,6 +10,7 @@ import {
 } from "@/features/purchases/queries";
 import { createActivity, type ActivityPerson } from "@/features/activities/queries";
 import type { InboxAction } from "@/lib/inbox/inbox.functions";
+import { authorizePluginAction } from "@/features/plugins/plugins.functions";
 
 /**
  * Executor da Inbox: transforma uma ação JÁ confirmada em chamadas às MESMAS mutações usadas
@@ -37,7 +38,11 @@ export function missingFields(a: InboxAction): string[] {
 }
 
 export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<ExecResult> {
-  const { workspaceId, userId, queryClient } = ctx;
+  const authorized = await authorizePluginAction({
+    data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId },
+  });
+  const { workspaceId, userId } = authorized;
+  const { queryClient } = ctx;
   const invalidate = (...keys: string[]) =>
     Promise.all(keys.map((k) => queryClient.invalidateQueries({ queryKey: [k] })));
 

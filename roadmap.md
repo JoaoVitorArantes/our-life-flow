@@ -1,5 +1,11 @@
 # Roadmap
 
+- [x] Corrigir auditoria que bloqueava contextos; validar campos e erros sem expor detalhes internos
+- [x] Plugins por IA: catálogo, registro, preferências individuais e autorização nas ferramentas/confirmacões
+- [x] Testes automatizados de validação e plugins; limitações de conexões em docs/ai-plugins.md
+- [ ] Validar criação/edição/reload/isolamento de contextos e catálogo na prévia autenticada — bloqueado: sessão não autorizada neste ambiente
+- [ ] Habilitar integração externa pessoal — bloqueado: cliente App User Connector configurado/vinculado e consentimento individual
+
 - [x] Auditar tabelas, consultas, criação de conta e regras de acesso
 - [x] Modelar relacionamento e workspace ativo sem alterar dados existentes
 - [x] Criar convite seguro para um único parceiro por workspace

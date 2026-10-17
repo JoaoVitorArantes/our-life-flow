@@ -24,3 +24,4 @@
 - `workspace_activity` is written only by SECURITY DEFINER functions/triggers with minimal metadata (actor, action, entity type, short label). Why: useful history without storing sensitive content or letting clients forge entries.
 - Per-person preferences (menu order/hidden/favorites, home screen) live in `user_preferences` and are applied by `useNavGroups`. Why: hiding a module never removes features and never affects the partner.
 - Settings is a layout route (`/configuracoes`) with one sub-route per Control Center section. Why: each area stays small and linkable on mobile.
+- AI plugins use a closed registry mapping existing tools and intents, with per-user/per-workspace preferences checked by the caller's RLS client at discovery, dispatch, proposal and confirmation; external entries are non-executable until a real App User Connector client and consent exist. Why: disabling a plugin affects only its user's AI, never the partner or ordinary module forms.

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { moveToTrash } from "@/features/trash/api";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, Enums } from "@/integrations/supabase/types";
+import { contextSchema } from "./validation";
 
 export type Context = Tables<"contexts">;
 export type ContextType = Enums<"context_type">;
@@ -41,10 +42,11 @@ export function useContexts(workspaceId?: string) {
     queryKey: ["contexts", workspaceId],
     enabled: !!workspaceId,
     queryFn: async () => {
+      if (!workspaceId) return [];
       const { data, error } = await supabase
         .from("contexts")
         .select("*")
-        .eq("workspace_id", workspaceId!)
+        .eq("workspace_id", workspaceId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Context[];
@@ -57,7 +59,12 @@ export function useContext_(id?: string) {
     queryKey: ["context", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase.from("contexts").select("*").eq("id", id!).maybeSingle();
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from("contexts")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
       if (error) throw error;
       return data as Context | null;
     },
@@ -83,9 +90,10 @@ export async function createContext(
   ownerId: string,
   input: ContextInput,
 ): Promise<Context> {
+  const validated = contextSchema.parse(input);
   const { data, error } = await supabase
     .from("contexts")
-    .insert({ ...input, workspace_id: workspaceId, owner_id: ownerId })
+    .insert({ ...validated, workspace_id: workspaceId, owner_id: ownerId })
     .select("*")
     .single();
   if (error) throw error;
@@ -93,7 +101,19 @@ export async function createContext(
 }
 
 export async function updateContext(id: string, input: Partial<ContextInput>) {
-  const { error } = await supabase.from("contexts").update(input).eq("id", id);
+  const { data: current, error: readError } = await supabase
+    .from("contexts")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (readError) throw readError;
+  const validated = contextSchema.parse({ ...current, ...input });
+  const { error } = await supabase
+    .from("contexts")
+    .update(validated)
+    .eq("id", id)
+    .select("id")
+    .single();
   if (error) throw error;
 }
 
