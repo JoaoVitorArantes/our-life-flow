@@ -1,5 +1,4 @@
-/// <reference types="bun" />
-import { expect, test } from "bun:test";
+import { expect, test } from "vitest";
 import { contextSchema, contextSaveError } from "./validation";
 const base = { name: "Projeto de teste", type: "PROJECT", status: "ACTIVE", visibility: "SHARED" };
 test("blank optional context fields are accepted", () => {

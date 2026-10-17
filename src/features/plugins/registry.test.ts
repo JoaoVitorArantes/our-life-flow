@@ -1,5 +1,4 @@
-/// <reference types="bun" />
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { enabledIds, intentAllowed, toolAllowed, PLUGINS } from "./registry";
 describe("Life AI plugin authorization", () => {
   test("internal capabilities preserve existing defaults", () => {
