@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { useApp } from "@/features/app/app-context";
 import { parseAmount } from "@/lib/format";
+import { contextSaveError, contextSchema } from "@/features/contexts/validation";
 import {
   CONTEXT_STATUSES,
   CONTEXT_TYPES,
@@ -67,14 +68,18 @@ export function ContextDialog({
   }, [open, context]);
 
   async function handleSubmit() {
-    if (!workspaceId || !userId) return;
+    if (!workspaceId || !userId) { toast.error("Entre na sua conta e selecione um espaço para salvar."); return; }
     if (!name.trim()) {
       toast.error("Informe um nome.");
       return;
     }
     setSaving(true);
     try {
-      const payload = {
+      if (budget.trim() && !/^(?:R\$\s*)?-?[\d.,]+$/.test(budget.trim())) {
+        toast.error("Informe um orçamento válido.");
+        return;
+      }
+      const payload = contextSchema.parse({
         name: name.trim(),
         description: description.trim() || null,
         type,
@@ -86,7 +91,7 @@ export function ContextDialog({
         color: color || null,
         cover_image: coverImage.trim() || null,
         visibility: "SHARED" as const,
-      };
+      });
       if (context) {
         await updateContext(context.id, payload);
       } else {
@@ -97,7 +102,7 @@ export function ContextDialog({
       toast.success(context ? "Contexto atualizado." : "Contexto criado.");
       onOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");
+      toast.error(contextSaveError(error));
     } finally {
       setSaving(false);
     }
