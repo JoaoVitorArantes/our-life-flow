@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApp } from "@/features/app/app-context";
-import { parseAmount } from "@/lib/format";
+import { parseContextBudget } from "@/features/contexts/budget";
 import { contextSaveError, contextSchema } from "@/features/contexts/validation";
 import {
   CONTEXT_STATUSES,
@@ -76,7 +76,10 @@ export function ContextDialog({
     }
     setSaving(true);
     try {
-      if (budget.trim() && !/^(?:R\$\s*)?-?[\d.,]+$/.test(budget.trim())) {
+      let budgetAmount: number | null;
+      try {
+        budgetAmount = parseContextBudget(budget);
+      } catch {
         toast.error("Informe um orçamento válido.");
         return;
       }
@@ -88,7 +91,7 @@ export function ContextDialog({
         start_date: startDate || null,
         end_date: endDate || null,
         location: location.trim() || null,
-        budget_amount: budget.trim() ? parseAmount(budget) : null,
+        budget_amount: budgetAmount,
         color: color || null,
         cover_image: coverImage.trim() || null,
         visibility: "SHARED" as const,

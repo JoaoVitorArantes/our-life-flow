@@ -53,10 +53,14 @@ function download(name: string, content: string, type: string) {
 
 export function toCsv(rows: Record<string, unknown>[]) {
   if (!rows.length) return "";
-  const columns = Object.keys(rows[0]!);
+  const first = rows[0];
+  if (!first) return "";
+  const columns = Object.keys(first);
   const cell = (value: unknown) => {
     if (value === null || value === undefined) return "";
-    const text = typeof value === "object" ? JSON.stringify(value) : String(value);
+    const raw = typeof value === "object" ? JSON.stringify(value) : String(value);
+    // Preserve numeric values, but prevent user-controlled text becoming spreadsheet formulas.
+    const text = typeof value !== "number" && /^[\s\uFEFF]*[=+\-@]/.test(raw) ? `'${raw}` : raw;
     return /[",\n;]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   };
   return [columns.join(","), ...rows.map((row) => columns.map((c) => cell(row[c])).join(","))].join(

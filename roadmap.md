@@ -1,10 +1,15 @@
 # Roadmap
 
+- [ ] Validar Contextos e todos os módulos com sessão autenticada — bloqueado: não há sessão autorizada disponível
+- [x] Auditoria estruturada: evidências e riscos documentados em docs/security-functionality-audit.md
+- [x] Varredura possível sem sessão: 29 testes, lint direcionado, verificação automática e telas públicas
+- [x] Relatório com evidências e limites; nenhuma implementação nova de plugins
+- [ ] Endurecer histórico do Life AI e visibilidade de aportes — depende de aprovação das mudanças amplas descritas no relatório
+
 - [x] Corrigir auditoria que bloqueava contextos; validar campos e erros sem expor detalhes internos
 - [x] Plugins por IA: catálogo, registro, preferências individuais e autorização nas ferramentas/confirmacões
 - [x] Testes automatizados de validação e plugins; limitações de conexões em docs/ai-plugins.md
-- [ ] Validar criação/edição/reload/isolamento de contextos e catálogo na prévia autenticada — bloqueado: sessão não autorizada neste ambiente
-- [ ] Habilitar integração externa pessoal — bloqueado: cliente App User Connector configurado/vinculado e consentimento individual
+- Integrações externas pessoais pausadas por solicitação do dono; não conectar nem implementar nesta etapa
 
 - [x] Auditar tabelas, consultas, criação de conta e regras de acesso
 - [x] Modelar relacionamento e workspace ativo sem alterar dados existentes
