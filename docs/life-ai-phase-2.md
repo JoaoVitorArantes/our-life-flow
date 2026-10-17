@@ -56,7 +56,7 @@ Referências consultadas: https://ai-sdk.dev/providers/ai-sdk-providers/openai, 
 
 ## Validação e pendências
 
-Testes unitários sem credenciais cobrem isolamento de nomes de secrets por workspace, consentimento por identidade/workspace/modelo/provedor, bloqueio pessoal, bloqueio sem credencial, filtro de capacidades e rejeição de campos de chave/URL. Resultados finais são registrados ao concluir a execução.
+Testes unitários sem credenciais cobrem isolamento de nomes de secrets por workspace, consentimento por identidade/workspace/modelo/provedor, bloqueio pessoal, bloqueio sem credencial, filtro de capacidades e rejeição de campos de chave/URL. `bunx vitest run`: 30 testes passaram em 10 arquivos, incluindo 7 testes desta fase. Lint direcionado: zero erros e 4 avisos no AgentChat (Fast Refresh e dependências de hooks). Validação da interface autenticada permanece bloqueada por ausência de sessão autorizada; não foi contornado o login.
 
 Nenhuma chamada de geração foi feita nesta fase; disponibilidade, validade, faturamento e tool-calling real de cada provedor permanecem não verificados até o dono configurar credenciais e autorizar uso real. Testes simulados não substituem esse fluxo. A autorização da conversa compartilhada continua sujeita à auditoria existente; histórico cliente amplo não foi endurecido fora do escopo.
 
