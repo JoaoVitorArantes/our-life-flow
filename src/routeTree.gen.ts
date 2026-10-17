@@ -36,7 +36,6 @@ import { Route as AuthenticatedConfiguracoesFinanceiroRouteImport } from './rout
 import { Route as AuthenticatedConfiguracoesPerfilRouteImport } from './routes/_authenticated/configuracoes.perfil'
 import { Route as AuthenticatedConfiguracoesPersonalizacaoRouteImport } from './routes/_authenticated/configuracoes.personalizacao'
 import { Route as AuthenticatedConfiguracoesPessoasRouteImport } from './routes/_authenticated/configuracoes.pessoas'
-import { Route as AuthenticatedConfiguracoesPluginsRouteImport } from './routes/_authenticated/configuracoes.plugins'
 import { Route as AuthenticatedConfiguracoesSistemaRouteImport } from './routes/_authenticated/configuracoes.sistema'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
 import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
@@ -188,12 +187,6 @@ const AuthenticatedConfiguracoesPessoasRoute =
     path: '/pessoas',
     getParentRoute: () => AuthenticatedConfiguracoesRoute,
   } as any)
-const AuthenticatedConfiguracoesPluginsRoute =
-  AuthenticatedConfiguracoesPluginsRouteImport.update({
-    id: '/plugins',
-    path: '/plugins',
-    getParentRoute: () => AuthenticatedConfiguracoesRoute,
-  } as any)
 const AuthenticatedConfiguracoesSistemaRoute =
   AuthenticatedConfiguracoesSistemaRouteImport.update({
     id: '/sistema',
@@ -255,7 +248,6 @@ export interface FileRoutesByFullPath {
   '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   '/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
-  '/configuracoes/plugins': typeof AuthenticatedConfiguracoesPluginsRoute
   '/configuracoes/sistema': typeof AuthenticatedConfiguracoesSistemaRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
@@ -289,7 +281,6 @@ export interface FileRoutesByTo {
   '/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   '/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
-  '/configuracoes/plugins': typeof AuthenticatedConfiguracoesPluginsRoute
   '/configuracoes/sistema': typeof AuthenticatedConfiguracoesSistemaRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
@@ -326,7 +317,6 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes/perfil': typeof AuthenticatedConfiguracoesPerfilRoute
   '/_authenticated/configuracoes/personalizacao': typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   '/_authenticated/configuracoes/pessoas': typeof AuthenticatedConfiguracoesPessoasRoute
-  '/_authenticated/configuracoes/plugins': typeof AuthenticatedConfiguracoesPluginsRoute
   '/_authenticated/configuracoes/sistema': typeof AuthenticatedConfiguracoesSistemaRoute
   '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
   '/_authenticated/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
@@ -363,7 +353,6 @@ export interface FileRouteTypes {
     | '/configuracoes/perfil'
     | '/configuracoes/personalizacao'
     | '/configuracoes/pessoas'
-    | '/configuracoes/plugins'
     | '/configuracoes/sistema'
     | '/contextos/$id'
     | '/inbox/$threadId'
@@ -397,7 +386,6 @@ export interface FileRouteTypes {
     | '/configuracoes/perfil'
     | '/configuracoes/personalizacao'
     | '/configuracoes/pessoas'
-    | '/configuracoes/plugins'
     | '/configuracoes/sistema'
     | '/contextos/$id'
     | '/inbox/$threadId'
@@ -433,7 +421,6 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes/perfil'
     | '/_authenticated/configuracoes/personalizacao'
     | '/_authenticated/configuracoes/pessoas'
-    | '/_authenticated/configuracoes/plugins'
     | '/_authenticated/configuracoes/sistema'
     | '/_authenticated/contextos/$id'
     | '/_authenticated/inbox/$threadId'
@@ -642,13 +629,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesPessoasRouteImport
       parentRoute: typeof AuthenticatedConfiguracoesRoute
     }
-    '/_authenticated/configuracoes/plugins': {
-      id: '/_authenticated/configuracoes/plugins'
-      path: '/plugins'
-      fullPath: '/configuracoes/plugins'
-      preLoaderRoute: typeof AuthenticatedConfiguracoesPluginsRouteImport
-      parentRoute: typeof AuthenticatedConfiguracoesRoute
-    }
     '/_authenticated/configuracoes/sistema': {
       id: '/_authenticated/configuracoes/sistema'
       path: '/sistema'
@@ -703,7 +683,6 @@ interface AuthenticatedConfiguracoesRouteChildren {
   AuthenticatedConfiguracoesPerfilRoute: typeof AuthenticatedConfiguracoesPerfilRoute
   AuthenticatedConfiguracoesPersonalizacaoRoute: typeof AuthenticatedConfiguracoesPersonalizacaoRoute
   AuthenticatedConfiguracoesPessoasRoute: typeof AuthenticatedConfiguracoesPessoasRoute
-  AuthenticatedConfiguracoesPluginsRoute: typeof AuthenticatedConfiguracoesPluginsRoute
   AuthenticatedConfiguracoesSistemaRoute: typeof AuthenticatedConfiguracoesSistemaRoute
   AuthenticatedConfiguracoesIndexRoute: typeof AuthenticatedConfiguracoesIndexRoute
 }
@@ -725,8 +704,6 @@ const AuthenticatedConfiguracoesRouteChildren: AuthenticatedConfiguracoesRouteCh
       AuthenticatedConfiguracoesPersonalizacaoRoute,
     AuthenticatedConfiguracoesPessoasRoute:
       AuthenticatedConfiguracoesPessoasRoute,
-    AuthenticatedConfiguracoesPluginsRoute:
-      AuthenticatedConfiguracoesPluginsRoute,
     AuthenticatedConfiguracoesSistemaRoute:
       AuthenticatedConfiguracoesSistemaRoute,
     AuthenticatedConfiguracoesIndexRoute: AuthenticatedConfiguracoesIndexRoute,
