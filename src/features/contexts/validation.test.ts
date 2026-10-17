@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { expect, test } from "bun:test";
 import { contextSchema, contextSaveError } from "./validation";
 const base = { name: "Projeto de teste", type: "PROJECT", status: "ACTIVE", visibility: "SHARED" };

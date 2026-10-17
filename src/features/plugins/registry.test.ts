@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { enabledIds, intentAllowed, toolAllowed, PLUGINS } from "./registry";
 describe("Life AI plugin authorization", () => {
