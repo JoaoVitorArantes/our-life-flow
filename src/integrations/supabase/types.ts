@@ -156,6 +156,41 @@ export type Database = {
           },
         ]
       }
+      ai_plugin_preferences: {
+        Row: {
+          configuration: Json
+          enabled: boolean
+          plugin_id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          configuration?: Json
+          enabled?: boolean
+          plugin_id: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          configuration?: Json
+          enabled?: boolean
+          plugin_id?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_plugin_preferences_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_invoice_payments: {
         Row: {
           amount: number
