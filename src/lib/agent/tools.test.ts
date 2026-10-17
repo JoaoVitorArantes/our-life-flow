@@ -22,7 +22,7 @@ test("real proposal handler resolves accessible IDs and never writes before conf
       categories: [],
       contexts: [],
       goals: [],
-      people: [{ id: "caller", name: "Test" }],
+      people: [{ id: "caller", name: "Test", me: true }],
     },
   );
   const result = await tools.propose_action.execute?.(
@@ -48,7 +48,7 @@ test("real proposal handler resolves accessible IDs and never writes before conf
       priority: null,
       purchase_category: null,
     },
-    { toolCallId: "proposal", messages: [], context: undefined },
+    { toolCallId: "proposal", messages: [], context: {} },
   );
   expect(result).toMatchObject({
     amount: 10.13,
