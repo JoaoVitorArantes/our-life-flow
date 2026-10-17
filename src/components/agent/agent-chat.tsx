@@ -139,7 +139,11 @@ export function AgentChat({
   const sentAuto = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [providerSelection, setProviderSelection] = useState<ProviderSelection | null>(null);
-  const selection = providerSelection?.consent.userId === userId && providerSelection.consent.workspaceId === workspaceId ? providerSelection : null;
+  const selection =
+    providerSelection?.consent.userId === userId &&
+    providerSelection.consent.workspaceId === workspaceId
+      ? providerSelection
+      : null;
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
 
@@ -194,7 +198,10 @@ export function AgentChat({
   function send(value: string) {
     const t = value.trim();
     if (!t || busy) return;
-    if (!selection) { toast.error("Selecione a IA e confirme o envio de dados antes de conversar."); return; }
+    if (!selection) {
+      toast.error("Selecione a IA e confirme o envio de dados antes de conversar.");
+      return;
+    }
     setText("");
     void sendMessage({ text: t });
   }
@@ -241,7 +248,16 @@ export function AgentChat({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-border pb-3">
-        {userId && workspaceId && <ProviderSelector key={`${userId}:${workspaceId}`} userId={userId} workspaceId={workspaceId} selection={selection} onChange={setProviderSelection} disabled={busy} />}
+        {userId && workspaceId && (
+          <ProviderSelector
+            key={`${userId}:${workspaceId}`}
+            userId={userId}
+            workspaceId={workspaceId}
+            selection={selection}
+            onChange={setProviderSelection}
+            disabled={busy}
+          />
+        )}
       </div>
       <Conversation className="min-h-0 flex-1">
         <ConversationContent className="gap-5 px-0 pb-6">
@@ -398,7 +414,11 @@ export function AgentChat({
           className="text-base md:text-sm"
         />
         <PromptInputFooter className="justify-end">
-          <PromptInputSubmit status={status} onStop={stop} disabled={!busy && (!text.trim() || !selection)} />
+          <PromptInputSubmit
+            status={status}
+            onStop={stop}
+            disabled={!busy && (!text.trim() || !selection)}
+          />
         </PromptInputFooter>
       </PromptInput>
     </div>

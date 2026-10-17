@@ -74,7 +74,12 @@ export const Route = createFileRoute("/api/agent")({
         try {
           selected = await resolveProvider(parsed.data.providerSelection, userId, workspaceId);
         } catch (error) {
-          return json(400, error instanceof Error ? error.message : "Provedor indisponível. Nenhum outro provedor foi usado.");
+          return json(
+            400,
+            error instanceof Error
+              ? error.message
+              : "Provedor indisponível. Nenhum outro provedor foi usado.",
+          );
         }
 
         const today = spToday();
@@ -131,8 +136,10 @@ COMO AGIR
           sendReasoning: false,
           onError: (error) => {
             const status = (error as { statusCode?: number })?.statusCode;
-            if (status === 401 || status === 403) return "O provedor recusou o acesso. Confira as credenciais e permissões; nenhum outro provedor foi usado.";
-            if (status === 404) return "O modelo ou serviço selecionado não está disponível. Nenhum outro modelo foi usado.";
+            if (status === 401 || status === 403)
+              return "O provedor recusou o acesso. Confira as credenciais e permissões; nenhum outro provedor foi usado.";
+            if (status === 404)
+              return "O modelo ou serviço selecionado não está disponível. Nenhum outro modelo foi usado.";
             if (status === 402)
               return "Os créditos de IA do espaço acabaram. Adicione créditos para continuar.";
             if (status === 429)
