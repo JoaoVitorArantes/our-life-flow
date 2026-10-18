@@ -28,7 +28,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 import { executeContextAction } from "./execute-confirmed";
-import { draft } from "@/features/plugins/references.test";
+import { contextTestAction as draft } from "./test-action";
 beforeEach(() => vi.resetAllMocks());
 test("creates via existing form service and reads back server scoped id", async () => {
   mocks.create.mockResolvedValue({ id: "actual-id" });

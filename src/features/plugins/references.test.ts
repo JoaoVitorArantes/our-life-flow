@@ -78,3 +78,14 @@ test("ambiguous payment rejects before any reads", async () => {
   ).rejects.toThrow("não ambos");
   expect(sb.from).not.toHaveBeenCalled();
 });
+test("context editing rejects other-workspace or missing records through caller RLS", async () => {
+  const { sb, filters } = client({ data: null, error: null });
+  await expect(validateActionReferences(sb, "active-workspace", { ...draft, intent: "update_context", context_id: "other-context", description: "Habilitação", amount: null })).rejects.toThrow("não está disponível");
+  expect(filters).toHaveBeenCalledWith("workspace_id", "active-workspace");
+  expect(filters).toHaveBeenCalledWith("id", "other-context");
+});
+test("context editing validates merged dates while preserving omitted fields", async () => {
+  const { sb } = client({ data: { id: "known", name: "Habilitação", type: "PROJECT", status: "ARCHIVED", visibility: "SHARED", start_date: "2026-10-20", end_date: null }, error: null });
+  await expect(validateActionReferences(sb, "workspace", { ...draft, intent: "update_context", context_id: "known", context_data: { end_date: "2026-10-18" } })).rejects.toThrow();
+  await expect(validateActionReferences(sb, "workspace", { ...draft, intent: "update_context", context_id: "known", context_data: { budget_amount: 120 } })).resolves.toBeUndefined();
+});

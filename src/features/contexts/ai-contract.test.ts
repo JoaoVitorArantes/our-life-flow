@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { contextCreateInput, contextProposalSchema } from "./ai-contract";
 import { actionSchema } from "@/features/plugins/action-schema";
-import { draft } from "@/features/plugins/references.test";
+import { contextTestAction as draft } from "./test-action";
 import { enabledIds, intentAllowed } from "@/features/plugins/registry";
 
 test("Habilitação needs only a name and uses form defaults", () => {
