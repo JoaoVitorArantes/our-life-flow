@@ -11,9 +11,15 @@ export default defineConfig({
     build: {
       rolldownOptions: {
         output: {
-          // Mermaid's graphlib shares lodash's Symbol export across diagram chunks.
-          // Keep ESM initialization ordered even when those chunks form a cycle.
-          strictExecutionOrder: true,
+          codeSplitting: {
+            groups: [
+              {
+                name: "diagram-engine",
+                test: /node_modules\/(?:mermaid|dagre-d3-es|lodash-es)\//,
+                includeDependenciesRecursively: true,
+              },
+            ],
+          },
         },
       },
     },
