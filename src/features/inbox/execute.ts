@@ -44,7 +44,10 @@ export function missingFields(a: z.infer<typeof actionSchema>): string[] {
   return missing;
 }
 
-export async function executeAction(a: z.infer<typeof actionSchema>, ctx: ExecContext): Promise<ExecResult> {
+export async function executeAction(
+  a: z.infer<typeof actionSchema>,
+  ctx: ExecContext,
+): Promise<ExecResult> {
   actionSchema.parse(a);
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);

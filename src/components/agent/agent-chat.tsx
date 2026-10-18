@@ -200,7 +200,9 @@ export function AgentChat({
     try {
       await saveActionState(threadId, id, state);
     } catch {
-      toast.warning("O estado da prévia não foi sincronizado. Confira o módulo antes de repetir a ação após recarregar.");
+      toast.warning(
+        "O estado da prévia não foi sincronizado. Confira o módulo antes de repetir a ação após recarregar.",
+      );
     }
   }
 
