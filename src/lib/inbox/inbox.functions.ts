@@ -56,6 +56,7 @@ Contextos: ${list(contexts.data)}
 
 Regras:
 - intents: expense (gasto já realizado), income (dinheiro recebido), task (lembrete/afazer), event (compromisso com data/hora), note (anotar ideia), purchase (desejo/compra FUTURA planejada, ex.: "quero comprar", "queremos comprar até X"), activity (exercício/movimento feito), goal (meta).
+- Contextos: create_context (nome em description, padrões PERSONAL/ACTIVE/SHARED; context_data contém apenas campos opcionais solicitados), update_context, archive_context, delete_context (lixeira, nunca exclusão permanente). Para alterar, context_id precisa corresponder inequivocamente à lista real. Se houver ambiguidade, pergunte. Para criar contexto e depois gasto nele, prepare só o contexto primeiro: não invente id nem gasto desvinculado; a próxima etapa só após confirmação e consulta do id real.
 - "Comprei X por 700" é expense. "Quero comprar X até 800" é purchase (amount = orçamento). Nunca confunda.
 - Use SOMENTE ids das listas acima. Nunca invente ids. Se o usuário citar um cartão/conta, ache o correspondente (prefira os do usuário que escreve quando houver um de cada pessoa com o mesmo banco, ex.: "Nubank" escrito por João → cartão do João). Se ainda houver mais de um possível, NÃO escolha: faça uma pergunta.
 - Para expense sem forma de pagamento informada (nem cartão, nem conta, nem "dinheiro"/"pix" que case com uma conta), pergunte "Como você pagou?" e preencha options com os nomes reais dos cartões e contas. Mesmo assim devolva a ação parcial em actions com card_id e account_id null.

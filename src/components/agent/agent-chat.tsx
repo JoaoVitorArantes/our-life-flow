@@ -82,6 +82,8 @@ const TOOL_UI: Record<string, { label: string; done: string; icon: typeof Wallet
   },
   routines_today: { label: "Vendo suas rotinas…", done: "Rotinas consultadas", icon: Repeat },
   contexts: { label: "Consultando contextos…", done: "Contextos consultados", icon: Layers },
+  context_details: { label: "Conferindo o contexto…", done: "Contexto verificado", icon: Layers },
+  notes: { label: "Consultando notas…", done: "Notas consultadas", icon: Layers },
 };
 
 const FOLLOW_UPS: Record<string, string[]> = {
@@ -219,7 +221,10 @@ export function AgentChat({
         threadId,
       });
       await record(id, { status: "confirmed", module: ref.module, href: ref.href });
-      toast.success(`${INTENT[action.intent].label} registrada em ${ref.module}.`);
+      toast.success(`Operação confirmada em ${ref.module}.`);
+      // Advisory continuation; server reads verify records before subsequent proposals.
+      if (action.intent === "create_context" && !busy)
+        void sendMessage({ text: `Confirmei a prévia do contexto “${action.description}”. Verifique o contexto salvo e continue o pedido anterior, sem repetir etapas concluídas; qualquer próxima escrita precisa de nova confirmação.` });
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Erro ao salvar.";
       await record(id, { status: "error", error: msg });
@@ -309,7 +314,7 @@ export function AgentChat({
                           className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm"
                         >
                           <Check className="size-4 text-success" /> {INTENT[action.intent].emoji}{" "}
-                          {action.description} — salvo em {st.module}
+                          {action.description} — {action.intent === "delete_context" ? "movido para lixeira" : action.intent === "archive_context" ? "arquivado" : "salvo"} em {st.module}
                           {st.href ? (
                             <Link
                               to={st.href}
