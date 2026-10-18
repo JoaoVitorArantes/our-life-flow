@@ -96,17 +96,28 @@ export const getCalendarEvents = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { activeIdentity, loadConnection } = await import("./connection.server");
     const identity = await activeIdentity(context.supabase, context.userId);
-    if (identity.workspaceId !== data.workspaceId) throw new Error("O espaço ativo mudou. Atualize a Agenda.");
+    if (identity.workspaceId !== data.workspaceId)
+      throw new Error("O espaço ativo mudou. Atualize a Agenda.");
     const connection = await loadConnection(identity.userId, identity.workspaceId);
     if (!connection) return { state: "not_connected" as const, events: [], truncated: false };
     const { decryptConnectionKey } = await import("./crypto.server");
-    const { callAsAppUser, appUserReconnectRequired } = await import("@/integrations/lovable/appUserConnector");
+    const { callAsAppUser, appUserReconnectRequired } =
+      await import("@/integrations/lovable/appUserConnector");
     const { readCalendarEvents } = await import("./events.server");
     let reconnect = false;
     try {
       const result = await readCalendarEvents(async (path) => {
-        const response = await callAsAppUser({ gatewayBaseUrl: GATEWAY_BASE_URL, connectorId: CONNECTOR_ID, connectionAPIKey: decryptConnectionKey(connection.connection_key_ciphertext), path, requiredScopes: GOOGLE_CALENDAR_SCOPES });
-        if (await appUserReconnectRequired(response)) { reconnect = true; throw new Error("reconnect"); }
+        const response = await callAsAppUser({
+          gatewayBaseUrl: GATEWAY_BASE_URL,
+          connectorId: CONNECTOR_ID,
+          connectionAPIKey: decryptConnectionKey(connection.connection_key_ciphertext),
+          path,
+          requiredScopes: GOOGLE_CALENDAR_SCOPES,
+        });
+        if (await appUserReconnectRequired(response)) {
+          reconnect = true;
+          throw new Error("reconnect");
+        }
         if (!response.ok) {
           console.error(`Calendar events request failed: status=${response.status}`);
           throw new Error("provider");
@@ -118,7 +129,11 @@ export const getCalendarEvents = createServerFn({ method: "POST" })
       if (current.workspaceId !== identity.workspaceId) throw new Error("workspace");
       return { state: "connected" as const, ...result };
     } catch {
-      return { state: reconnect ? "reconnect_required" as const : "error" as const, events: [], truncated: false };
+      return {
+        state: reconnect ? ("reconnect_required" as const) : ("error" as const),
+        events: [],
+        truncated: false,
+      };
     }
   });
 

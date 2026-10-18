@@ -25,7 +25,11 @@ export function CalendarConnectionControls({ workspaceId }: { workspaceId: strin
     queryFn: () => getStatus(),
     retry: false,
   });
-  const refresh = () => Promise.all([client.invalidateQueries({ queryKey: ["google_calendar_connection"] }), client.invalidateQueries({ queryKey: ["google_calendar_events"] })]);
+  const refresh = () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: ["google_calendar_connection"] }),
+      client.invalidateQueries({ queryKey: ["google_calendar_events"] }),
+    ]);
   const connect = useMutation({
     mutationFn: async () => {
       const popup = window.open("", "lifeos-calendar-oauth", "width=600,height=720");

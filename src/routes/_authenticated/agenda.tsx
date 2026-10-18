@@ -50,7 +50,13 @@ import {
   type EventScope,
 } from "@/features/agenda/mutations";
 import { setTransactionStatus } from "@/features/finance/mutations";
-import { MonthView, WeekView, DayView, ListView, type ViewHandlers } from "@/components/agenda/views";
+import {
+  MonthView,
+  WeekView,
+  DayView,
+  ListView,
+  type ViewHandlers,
+} from "@/components/agenda/views";
 import { EventDialog } from "@/components/agenda/event-dialog";
 import { SimpleRecordDialog, type SimpleKind } from "@/components/quick/simple-record-dialog";
 import { TransactionDialog } from "@/components/quick/transaction-dialog";
@@ -106,8 +112,16 @@ function Agenda() {
   const [googleDetail, setGoogleDetail] = useState<AgendaItem | null>(null);
   const range = useMemo(() => {
     const base = view === "list" ? new Date() : cursor;
-    const from = view === "month" ? new Date(base.getFullYear(), base.getMonth(), 1) : view === "week" ? startOfWeek(base) : new Date(base.getFullYear(), base.getMonth(), base.getDate());
-    const to = view === "month" ? new Date(base.getFullYear(), base.getMonth() + 1, 1) : addDays(from, view === "list" ? 90 : view === "week" ? 7 : 1);
+    const from =
+      view === "month"
+        ? new Date(base.getFullYear(), base.getMonth(), 1)
+        : view === "week"
+          ? startOfWeek(base)
+          : new Date(base.getFullYear(), base.getMonth(), base.getDate());
+    const to =
+      view === "month"
+        ? new Date(base.getFullYear(), base.getMonth() + 1, 1)
+        : addDays(from, view === "list" ? 90 : view === "week" ? 7 : 1);
     return { from, to };
   }, [view, cursor]);
   const google = useCalendarAgenda(userId, workspaceId, range.from, range.to);
@@ -119,9 +133,11 @@ function Agenda() {
   const [txEdit, setTxEdit] = useState<AgendaItem | null>(null);
   const [txCreate, setTxCreate] = useState(false);
   const [dayMenu, setDayMenu] = useState<string | null>(null);
-  const [pendingMove, setPendingMove] = useState<
-    { item: AgendaItem; date: string; minutes: number } | null
-  >(null);
+  const [pendingMove, setPendingMove] = useState<{
+    item: AgendaItem;
+    date: string;
+    minutes: number;
+  } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AgendaItem | null>(null);
   const [scope, setScope] = useState<EventScope>("all");
 
@@ -172,7 +188,14 @@ function Agenda() {
         const rank = (i: AgendaItem) => (i.overdue ? 0 : i.date === todayIso ? 1 : 2);
         if (rank(a) !== rank(b)) return rank(a) - rank(b);
         if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-        const order: Record<AgendaKind, number> = { finance: 0, event: 1, task: 2, goal: 3, note: 4, routine: 5 };
+        const order: Record<AgendaKind, number> = {
+          finance: 0,
+          event: 1,
+          task: 2,
+          goal: 3,
+          note: 4,
+          routine: 5,
+        };
         return order[a.kind] - order[b.kind];
       })
       .slice(0, 12);
@@ -210,7 +233,9 @@ function Agenda() {
       list.push(`Há ${payingSoon.length} pagamento(s) vencendo nos próximos 3 dias.`);
     if (overdueTasks > 0)
       list.push(
-        overdueTasks === 1 ? "Uma tarefa está atrasada." : `${overdueTasks} tarefas estão atrasadas.`,
+        overdueTasks === 1
+          ? "Uma tarefa está atrasada."
+          : `${overdueTasks} tarefas estão atrasadas.`,
       );
     const goalSoon = filtered.filter(
       (item) => item.kind === "goal" && !item.done && item.date >= todayIso && item.date <= soon,
@@ -224,7 +249,10 @@ function Agenda() {
   }
 
   function openItem(item: AgendaItem) {
-    if (item.googleCalendar) { setGoogleDetail(item); return; }
+    if (item.googleCalendar) {
+      setGoogleDetail(item);
+      return;
+    }
     if (item.kind === "event") setEventEdit({ item });
     else if (item.kind === "finance") setTxEdit(item);
     else if (item.kind === "task") setSimpleEdit({ kind: "task", record: item.task });
@@ -274,7 +302,8 @@ function Agenda() {
     onOpen: openItem,
     onToggleTask: toggleTask,
     onPay: pay,
-    onCreateAt: (date, minutes) => setEventCreate({ date, ...(minutes != null ? { minutes } : {}) }),
+    onCreateAt: (date, minutes) =>
+      setEventCreate({ date, ...(minutes != null ? { minutes } : {}) }),
     onDayMenu: (date) => {
       setCursor(parseISO(date));
       setDayMenu(date);
@@ -283,7 +312,8 @@ function Agenda() {
   };
 
   const step = (direction: number) => {
-    if (view === "month") setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + direction, 1));
+    if (view === "month")
+      setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + direction, 1));
     else if (view === "week") setCursor(addDays(cursor, 7 * direction));
     else setCursor(addDays(cursor, direction));
   };
@@ -336,21 +366,56 @@ function Agenda() {
         }
       />
 
-      {workspaceId && <section className="space-y-3 border-b border-border pb-4" aria-label="Google Calendar pessoal">
-        <h2 className="text-sm font-medium">Meu Google Calendar</h2>
-        <CalendarConnectionControls workspaceId={workspaceId} />
-        {google.isFetching && <p role="status" className="text-xs text-muted-foreground">Consultando eventos…</p>}
-        {(google.isError || google.data?.state === "error") && <div className="flex flex-wrap items-center gap-2">
-          <p role="alert" className="text-sm text-destructive">Não foi possível carregar seus eventos Google.</p>
-          <Button size="sm" variant="outline" onClick={() => void google.refetch()}>Tentar novamente</Button>
-        </div>}
-        {google.data?.state === "reconnect_required" && <p role="alert" className="text-sm text-destructive">Reconecte seu Calendar para renovar o acesso aos eventos.</p>}
-        {google.data?.state === "connected" && <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span>{google.data.events.length} eventos Google no período · {google.timeZone}{view === "list" ? " · próximos 90 dias" : ""}</span>
-          <Button size="sm" variant="ghost" onClick={() => void google.refetch()} disabled={google.isFetching}>Atualizar Calendar</Button>
-        </div>}
-        {google.data?.truncated && <p role="status" className="text-xs text-muted-foreground">Resultado parcial: há mais eventos ou calendários do que o limite desta consulta.</p>}
-      </section>}
+      {workspaceId && (
+        <section
+          className="space-y-3 border-b border-border pb-4"
+          aria-label="Google Calendar pessoal"
+        >
+          <h2 className="text-sm font-medium">Meu Google Calendar</h2>
+          <CalendarConnectionControls workspaceId={workspaceId} />
+          {google.isFetching && (
+            <p role="status" className="text-xs text-muted-foreground">
+              Consultando eventos…
+            </p>
+          )}
+          {(google.isError || google.data?.state === "error") && (
+            <div className="flex flex-wrap items-center gap-2">
+              <p role="alert" className="text-sm text-destructive">
+                Não foi possível carregar seus eventos Google.
+              </p>
+              <Button size="sm" variant="outline" onClick={() => void google.refetch()}>
+                Tentar novamente
+              </Button>
+            </div>
+          )}
+          {google.data?.state === "reconnect_required" && (
+            <p role="alert" className="text-sm text-destructive">
+              Reconecte seu Calendar para renovar o acesso aos eventos.
+            </p>
+          )}
+          {google.data?.state === "connected" && (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>
+                {google.data.events.length} eventos Google no período · {google.timeZone}
+                {view === "list" ? " · próximos 90 dias" : ""}
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => void google.refetch()}
+                disabled={google.isFetching}
+              >
+                Atualizar Calendar
+              </Button>
+            </div>
+          )}
+          {google.data?.truncated && (
+            <p role="status" className="text-xs text-muted-foreground">
+              Resultado parcial: há mais eventos ou calendários do que o limite desta consulta.
+            </p>
+          )}
+        </section>
+      )}
 
       <Panel className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -378,11 +443,23 @@ function Agenda() {
             </Button>
             {view !== "list" ? (
               <>
-                <Button variant="ghost" size="icon" className="size-8" aria-label="Período anterior" onClick={() => step(-1)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Período anterior"
+                  onClick={() => step(-1)}
+                >
                   <ChevronLeft className="size-4" />
                 </Button>
                 <span className="min-w-[130px] text-center text-sm capitalize">{periodLabel}</span>
-                <Button variant="ghost" size="icon" className="size-8" aria-label="Próximo período" onClick={() => step(1)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Próximo período"
+                  onClick={() => step(1)}
+                >
                   <ChevronRight className="size-4" />
                 </Button>
               </>
@@ -449,8 +526,12 @@ function Agenda() {
         </Panel>
       </div>
 
-      {view === "month" ? <MonthView cursor={cursor} items={periodItems} handlers={handlers} /> : null}
-      {view === "week" ? <WeekView cursor={cursor} items={periodItems} handlers={handlers} /> : null}
+      {view === "month" ? (
+        <MonthView cursor={cursor} items={periodItems} handlers={handlers} />
+      ) : null}
+      {view === "week" ? (
+        <WeekView cursor={cursor} items={periodItems} handlers={handlers} />
+      ) : null}
       {view === "day" ? <DayView cursor={cursor} items={periodItems} handlers={handlers} /> : null}
       {view === "list" ? <ListView items={periodItems} handlers={handlers} /> : null}
 
@@ -475,19 +556,31 @@ function Agenda() {
       </Panel>
 
       {/* diálogos */}
-      <AlertDialog open={Boolean(googleDetail)} onOpenChange={(open) => !open && setGoogleDetail(null)}>
+      <AlertDialog
+        open={Boolean(googleDetail)}
+        onOpenChange={(open) => !open && setGoogleDetail(null)}
+      >
         <AlertDialogContent className="max-h-[85dvh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="break-words">{googleDetail?.title}</AlertDialogTitle>
-            <AlertDialogDescription className="break-words">Google Calendar · {googleDetail?.googleCalendar?.calendarName} · somente leitura</AlertDialogDescription>
+            <AlertDialogDescription className="break-words">
+              Google Calendar · {googleDetail?.googleCalendar?.calendarName} · somente leitura
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          {googleDetail?.googleCalendar && <div className="space-y-2 text-sm break-words">
-            <p>Início: {googleDetail.googleCalendar.start}</p>
-            <p>Fim{googleDetail.googleCalendar.allDay ? " (data exclusiva)" : ""}: {googleDetail.googleCalendar.end}</p>
-            <p>Fuso do evento: {googleDetail.googleCalendar.timeZone}</p>
-            <p>Horários na Agenda: {google.timeZone}</p>
-          </div>}
-          <AlertDialogFooter><AlertDialogCancel>Fechar</AlertDialogCancel></AlertDialogFooter>
+          {googleDetail?.googleCalendar && (
+            <div className="space-y-2 text-sm break-words">
+              <p>Início: {googleDetail.googleCalendar.start}</p>
+              <p>
+                Fim{googleDetail.googleCalendar.allDay ? " (data exclusiva)" : ""}:{" "}
+                {googleDetail.googleCalendar.end}
+              </p>
+              <p>Fuso do evento: {googleDetail.googleCalendar.timeZone}</p>
+              <p>Horários na Agenda: {google.timeZone}</p>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Fechar</AlertDialogCancel>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       <EventDialog
@@ -519,7 +612,11 @@ function Agenda() {
         />
       ) : null}
       {txCreate ? (
-        <TransactionDialog kind="expense" open onOpenChange={(open) => !open && setTxCreate(false)} />
+        <TransactionDialog
+          kind="expense"
+          open
+          onOpenChange={(open) => !open && setTxCreate(false)}
+        />
       ) : null}
       {txEdit?.transaction ? (
         <TransactionDialog

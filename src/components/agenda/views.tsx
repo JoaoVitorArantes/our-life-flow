@@ -287,9 +287,7 @@ export function DayView({
   const dayItems = items.filter((item) => item.date === iso);
   const open = dayItems.filter((item) => !item.done);
   const done = dayItems.filter((item) => item.done);
-  const next = items
-    .filter((item) => item.date > iso && !item.done)
-    .slice(0, 8);
+  const next = items.filter((item) => item.date > iso && !item.done).slice(0, 8);
 
   return (
     <div className="space-y-6">
