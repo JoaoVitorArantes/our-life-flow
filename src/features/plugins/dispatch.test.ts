@@ -18,7 +18,7 @@ function implementations() {
 const options = { toolCallId: "call", messages: [] };
 function run(tools: ToolSet, name: string, input: unknown) {
   const execute = tools[name]?.execute as
-    ((input: unknown, options: typeof options) => Promise<unknown>) | undefined;
+    ((input: unknown, executionOptions: typeof options) => Promise<unknown>) | undefined;
   if (!execute) throw new Error("Missing executable test tool");
   return execute(input, options);
 }

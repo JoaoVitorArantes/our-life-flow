@@ -1,13 +1,14 @@
 # Roadmap
 
-- [ ] Completar contratos e cobertura bidirecional das ferramentas/intents existentes
-- [ ] Revalidar autorização, registrar metadados mínimos e proteger histórico recebido pelo agente
-- [ ] Ajustar estados do catálogo/chat, documentar limites e executar testes focados
+- [x] Completar contratos e cobertura bidirecional das ferramentas/intents existentes
+- [x] Revalidar autorização, registrar metadados mínimos e proteger histórico recebido pelo agente
+- [x] Ajustar estados do catálogo/chat, documentar limites e executar testes focados
 - [ ] Validar Contextos e todos os módulos com sessão autenticada — bloqueado: não há sessão autorizada disponível
 - [x] Auditoria estruturada: evidências e riscos documentados em docs/security-functionality-audit.md
 - [x] Varredura possível sem sessão: 29 testes, lint direcionado, verificação automática e telas públicas
 - [x] Relatório com evidências e limites; nenhuma implementação nova de plugins
-- [ ] Endurecer histórico do Life AI e visibilidade de aportes — depende de aprovação das mudanças amplas descritas no relatório
+- [x] Endurecer replay do histórico do Life AI sem aceitar papéis/resultados fabricados como autoridade
+- [ ] Restringir visibilidade de aportes — fora desta etapa; depende de aprovação específica
 
 - [x] Corrigir auditoria que bloqueava contextos; validar campos e erros sem expor detalhes internos
 - [x] Plugins por IA: catálogo, registro, preferências individuais e autorização nas ferramentas/confirmacões
