@@ -140,7 +140,7 @@ const definitions: readonly Plugin[] = [
   external(
     "google_calendar",
     "Google Calendar",
-    "Agenda externa pessoal. Requer um cliente OAuth configurado e consentimento individual; ainda indisponível neste app.",
+    "Autorização pessoal e consulta dos calendários autorizados. Consultas de eventos pelo Life AI ainda não disponíveis.",
     ["calendar.events.readonly"],
   ),
   external(
