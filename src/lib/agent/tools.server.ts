@@ -5,7 +5,7 @@ import { calculateSafeToSpend, paidByInvoice, invoiceKey } from "@/features/fina
 import { dueDateOf, isOpen, registerCardCycles, sumBy } from "@/features/finance/calc";
 import { netBalance } from "@/features/nos/settlements";
 import { occursOn } from "@/features/routines/queries";
-import { actionSchema } from "@/features/plugins/action-schema";
+import { proposalInputSchema, normalizeProposal } from "@/features/plugins/action-schema";
 import { readInputSchemas } from "@/features/plugins/contracts";
 import { guardTools } from "@/features/plugins/dispatch.server";
 import { writeCapabilityAudit } from "@/features/plugins/audit.server";
@@ -677,8 +677,9 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     propose_action: tool({
       description:
         "Propõe registro ou operação de Contextos (create_context, update_context, archive_context, delete_context). description = nome; context_data = campos opcionais; context_id = id real apenas para alterar existente. Criar só exige nome (Pessoal, Ativo, Compartilhado). NÃO salva: usuário confirma. Despesas precisam forma de pagamento; pergunte quando ambíguo. Nunca substitua ids desconhecidos nem proponha gasto vinculado a contexto ainda não criado.",
-      inputSchema: actionSchema,
-      execute: async (a) => {
+      inputSchema: proposalInputSchema,
+      execute: async (input) => {
+        const a = normalizeProposal(input);
         const enabled = await loadPluginAccess(sb, userId, w);
         if (!intentAllowed(a.intent, enabled))
           throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
