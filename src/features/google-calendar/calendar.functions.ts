@@ -64,17 +64,15 @@ export const startCalendarConnect = createServerFn({ method: "POST" })
     returnUrl.searchParams.set("attempt", attemptId);
     returnUrl.hash = nonce;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("app_user_oauth_attempts")
-      .insert({
-        id: attemptId,
-        user_id: identity.userId,
-        workspace_id: identity.workspaceId,
-        connector_id: CONNECTOR_ID,
-        nonce_hash: hashNonce(nonce),
-        return_url: `${returnUrl.origin}${returnUrl.pathname}`,
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-      });
+    const { error } = await supabaseAdmin.from("app_user_oauth_attempts").insert({
+      id: attemptId,
+      user_id: identity.userId,
+      workspace_id: identity.workspaceId,
+      connector_id: CONNECTOR_ID,
+      nonce_hash: hashNonce(nonce),
+      return_url: `${returnUrl.origin}${returnUrl.pathname}`,
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    });
     if (error) throw new Error("Não foi possível preparar a autorização.");
     const { authorizeAppUserOAuth } = await import("@/integrations/lovable/appUserConnector");
     const result = await authorizeAppUserOAuth({
@@ -138,18 +136,16 @@ export const completeCalendarConnect = createServerFn({ method: "POST" })
       const current = await activeIdentity(context.supabase, context.userId);
       if (current.workspaceId !== identity.workspaceId)
         throw new Error("O espaço ativo mudou durante a autorização.");
-      const { error: saveError } = await supabaseAdmin
-        .from("app_user_connections")
-        .upsert(
-          {
-            user_id: identity.userId,
-            workspace_id: identity.workspaceId,
-            connector_id: CONNECTOR_ID,
-            connection_key_ciphertext: encryptConnectionKey(grant.connectionAPIKey),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id,connector_id" },
-        );
+      const { error: saveError } = await supabaseAdmin.from("app_user_connections").upsert(
+        {
+          user_id: identity.userId,
+          workspace_id: identity.workspaceId,
+          connector_id: CONNECTOR_ID,
+          connection_key_ciphertext: encryptConnectionKey(grant.connectionAPIKey),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,connector_id" },
+      );
       if (saveError) throw new Error("Não foi possível salvar a conexão. Inicie novamente.");
     } catch (error) {
       await disconnectAppUser({
