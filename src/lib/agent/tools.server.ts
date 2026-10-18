@@ -11,6 +11,7 @@ import { guardTools } from "@/features/plugins/dispatch.server";
 import { writeCapabilityAudit } from "@/features/plugins/audit.server";
 import { intentAllowed } from "@/features/plugins/registry";
 import { loadPluginAccess } from "@/features/plugins/access.server";
+import { validateActionReferences } from "@/features/plugins/references.server";
 
 /**
  * Camada de ferramentas do Life OS AI. Todas as consultas usam o cliente do PRÓPRIO usuário
@@ -51,7 +52,6 @@ export async function loadBase(ctx: AgentCtx) {
           .from("contexts")
           .select("id, name, type, status")
           .eq("workspace_id", w)
-          .neq("status", "ARCHIVED")
       : { data: [] },
     sb.from("workspace_members").select("user_id").eq("workspace_id", w),
     ctx.enabledPlugins.has("goals")
@@ -625,7 +625,6 @@ export function buildTools(ctx: AgentCtx, base: Base) {
           if (error) throw error;
           return (data ?? []).map((c) => ({
             ...c,
-            id: undefined,
             gasto: r2(
               sumBy(
                 tx.filter((t) => t.context_id === c.id && t.type === "EXPENSE"),
@@ -639,14 +638,36 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       },
     }),
 
+    context_details: tool({
+      description: "Consulta detalhes atuais de um contexto por id real, incluindo arquivados; use antes de propor edição, arquivamento ou lixeira.",
+      inputSchema: readInputSchemas.context_details,
+      execute: async ({ id }) => {
+        const { data, error } = await sb.from("contexts").select("id,name,description,type,status,start_date,end_date,location,budget_amount,visibility").eq("workspace_id", w).eq("id", id).maybeSingle();
+        if (error || !data) return fail("este contexto", error);
+        return data;
+      },
+    }),
+    notes: tool({
+      description: "Consulta notas acessíveis no espaço; busca literal opcional no título e conteúdo.",
+      inputSchema: readInputSchemas.notes,
+      execute: async ({ search }) => {
+        const { data, error } = await sb.from("notes").select("id,title,content,context_id").eq("workspace_id", w).order("created_at", { ascending: false }).limit(100);
+        if (error) return fail("suas notas", error);
+        const term = search?.trim().toLocaleLowerCase();
+        return { notas: (data ?? []).filter((n) => !term || `${n.title} ${n.content ?? ""}`.toLocaleLowerCase().includes(term)), limite: 100 };
+      },
+    }),
+
     propose_action: tool({
       description:
-        "Propõe um REGISTRO (despesa, receita, tarefa, compromisso, nota, desejo de compra, atividade, meta) ou renomear o espaço (rename_workspace: description = novo nome). NÃO salva nada: o app mostra uma prévia e o usuário confirma. Use só ids reais das listas do sistema. Se faltar a forma de pagamento de uma despesa ou houver ambiguidade (ex.: dois Nubank), pergunte ANTES de propor.",
+        "Propõe registro ou operação de Contextos (create_context, update_context, archive_context, delete_context). description = nome; context_data = campos opcionais; context_id = id real apenas para alterar existente. Criar só exige nome (Pessoal, Ativo, Compartilhado). NÃO salva: usuário confirma. Despesas precisam forma de pagamento; pergunte quando ambíguo. Nunca substitua ids desconhecidos nem proponha gasto vinculado a contexto ainda não criado.",
       inputSchema: actionSchema,
       execute: async (a) => {
         const enabled = await loadPluginAccess(sb, userId, w);
         if (!intentAllowed(a.intent, enabled))
           throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
+        await validateActionReferences(sb, w, a);
+        if (["create_context", "update_context", "archive_context", "delete_context"].includes(a.intent)) return a;
         const ok = (set: { id: string }[], id: string | null) =>
           id && set.some((x) => x.id === id) ? id : null;
         return {

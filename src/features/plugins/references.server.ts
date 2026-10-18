@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import type { z } from "zod";
 import type { actionSchema } from "./action-schema";
+import { contextCreateInput, contextProposalSchema, isContextIntent } from "@/features/contexts/ai-contract";
+import { contextSchema } from "@/features/contexts/validation";
 
 /** Re-check edited references at the point of confirmation, with the caller's RLS client. */
 export async function validateActionReferences(
@@ -10,6 +12,21 @@ export async function validateActionReferences(
   action: z.infer<typeof actionSchema>,
 ) {
   const { card_id, account_id, category_id, context_id, payer_user_id } = action;
+  if (isContextIntent(action.intent)) {
+    if (card_id || account_id || category_id || payer_user_id || action.shared)
+      throw new Error("Confira os campos do contexto; pagamentos não fazem parte desta ação.");
+    if (action.intent === "create_context") {
+      if (context_id) throw new Error("Um novo contexto não pode usar o identificador de outro.");
+      contextCreateInput(action.description, action.context_data);
+      return;
+    }
+    if (!context_id) throw new Error("Selecione o contexto antes de confirmar.");
+    const { data: current, error } = await sb.from("contexts").select("*").eq("workspace_id", workspaceId).eq("id", context_id).maybeSingle();
+    if (error || !current) throw new Error("Este contexto não está disponível neste espaço.");
+    if (action.intent === "update_context")
+      contextSchema.parse({ ...current, ...contextProposalSchema.parse(action.context_data ?? {}), name: action.description });
+    return;
+  }
   if (card_id && account_id) throw new Error("Escolha cartão ou conta, não ambos.");
   if (action.intent === "income" && card_id)
     throw new Error("Selecione uma conta para a receita, não um cartão.");
