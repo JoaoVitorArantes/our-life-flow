@@ -15,6 +15,8 @@ import { formatCurrency } from "@/lib/format";
 import { interpretInbox, type InboxAction } from "@/lib/inbox/inbox.functions";
 import { executeAction, missingFields } from "@/features/inbox/execute";
 import { useInboxHistory } from "@/features/inbox/history";
+import { ContextSelect, NO_CONTEXT } from "@/components/quick/context-select";
+import { useContexts } from "@/features/contexts/queries";
 
 type Msg = { role: "user" | "assistant"; content: string };
 export type Preview = { key: string; text: string; action: InboxAction };
@@ -270,6 +272,7 @@ export function PreviewCard({
   userId,
   hasPartner,
   partnerName,
+  error,
 }: {
   preview: Preview;
   nameOf: (id?: string | null) => string | undefined;
@@ -282,7 +285,10 @@ export function PreviewCard({
   userId?: string | undefined;
   hasPartner: boolean;
   partnerName?: string | undefined;
+  error?: string | undefined;
 }) {
+  const { workspaceId } = useApp();
+  const { data: contexts = [] } = useContexts(workspaceId);
   const a = preview.action;
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -306,15 +312,16 @@ export function PreviewCard({
   if (a.intent === "activity" && a.duration_minutes) rows.push(["Duração", `${Math.floor(a.duration_minutes / 60) ? `${Math.floor(a.duration_minutes / 60)}h` : ""}${a.duration_minutes % 60 ? `${a.duration_minutes % 60}min` : ""}`]);
   if (a.intent === "activity" && a.distance_km) rows.push(["Distância", `${a.distance_km} km`]);
   if (a.intent === "note" && a.content && a.content !== a.description) rows.push(["Conteúdo", a.content]);
+  if (a.context_id) rows.push(["Contexto", contexts.find((c) => c.id === a.context_id)?.name ?? "Indisponível — edite a prévia"]);
 
   return (
-    <div className="rounded-2xl border border-primary/30 bg-surface p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
+    <div className="min-w-0 rounded-2xl border border-primary/30 bg-surface p-4 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-primary">
             {meta.emoji} {meta.label}
           </p>
-          <p className="truncate text-lg font-semibold">{a.description || "Sem descrição"}</p>
+          <p className="break-words text-lg font-semibold">{a.description || "Sem descrição"}</p>
         </div>
         {a.amount ? (
           <p className={cn("shrink-0 text-lg font-semibold tabular-nums", a.intent === "income" && "text-success")}>
@@ -350,6 +357,9 @@ export function PreviewCard({
               </SelectContent>
             </Select>
           ) : null}
+          {a.intent === "note" ? <Textarea aria-label="Conteúdo da nota" value={a.content ?? a.description} onChange={(e) => onChange({ content: e.target.value })} className="text-base md:text-sm sm:col-span-2" /> : null}
+          {a.intent === "income" ? <Select value={a.account_id ?? "none"} onValueChange={(v) => onChange({ account_id: v === "none" ? null : v, card_id: null })}><SelectTrigger aria-label="Conta da receita"><SelectValue placeholder="Conta" /></SelectTrigger><SelectContent><SelectItem value="none">Sem conta</SelectItem>{accounts.map((account) => <SelectItem key={account.id} value={account.id}>{account.name}</SelectItem>)}</SelectContent></Select> : null}
+          <div className="sm:col-span-2"><ContextSelect value={a.context_id ?? NO_CONTEXT} onChange={(v) => onChange({ context_id: v === NO_CONTEXT ? null : v })} /></div>
         </div>
       ) : (
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
@@ -405,23 +415,24 @@ export function PreviewCard({
       ) : null}
 
       {missing.length ? <p className="mt-2 text-xs text-warning">Falta: {missing.join(", ")}</p> : null}
+      {error ? <p role="alert" className="mt-2 break-words text-sm text-destructive">{error}</p> : null}
 
       <div className="mt-4 flex gap-2">
         <Button
           className="min-h-11 flex-1"
           disabled={!!missing.length || saving}
           onClick={async () => {
+            if (saving) return;
             setSaving(true);
-            await onConfirm();
-            setSaving(false);
+            try { await onConfirm(); } finally { setSaving(false); }
           }}
         >
           {saving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Confirmar
         </Button>
-        <Button variant="outline" className="min-h-11" onClick={() => setEditing((v) => !v)} aria-label="Editar">
+        <Button variant="outline" className="min-h-11" disabled={saving} onClick={() => setEditing((v) => !v)} aria-label="Editar">
           <Pencil className="size-4" /> <span className="hidden sm:inline">{editing ? "Pronto" : "Editar"}</span>
         </Button>
-        <Button variant="ghost" className="min-h-11" onClick={onCancel} aria-label="Cancelar">
+        <Button variant="ghost" className="min-h-11" disabled={saving} onClick={onCancel} aria-label="Cancelar">
           <X className="size-4" /> <span className="hidden sm:inline">Cancelar</span>
         </Button>
       </div>

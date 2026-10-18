@@ -137,6 +137,7 @@ export function AgentChat({
   const [states, setStates] = useState(initialActionStates);
   const [edits, setEdits] = useState<Record<string, InboxAction>>({});
   const sentAuto = useRef(false);
+  const confirming = useRef(new Set<string>());
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const transport = useMemo(
@@ -204,13 +205,15 @@ export function AgentChat({
   }
 
   async function confirm(id: string, action: InboxAction) {
-    if (!workspaceId || !userId) return;
+    if (!workspaceId || !userId || confirming.current.has(id) || states[id]?.status === "confirmed") return;
+    confirming.current.add(id);
     try {
       const ref = await executeAction(action, {
         workspaceId,
         userId,
         memberIds: memberProfiles.map((m) => m.id),
         queryClient,
+        threadId,
       });
       await record(id, { status: "confirmed", module: ref.module, href: ref.href });
       toast.success(`${INTENT[action.intent].label} registrada em ${ref.module}.`);
@@ -218,6 +221,9 @@ export function AgentChat({
       const msg = error instanceof Error ? error.message : "Erro ao salvar.";
       await record(id, { status: "error", error: msg });
       toast.error(msg);
+    } finally {
+      confirming.current.delete(id);
+      void queryClient.invalidateQueries({ queryKey: ["ai_capability_history"] });
     }
   }
 
@@ -338,6 +344,7 @@ export function AgentChat({
                         userId={userId}
                         hasPartner={memberProfiles.length === 2}
                         partnerName={nameOf(memberProfiles.find((p) => p.id !== userId)?.id)}
+                        error={st?.status === "error" ? st.error : undefined}
                       />
                     );
                   }
