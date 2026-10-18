@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Integrações Google individuais
+- [ ] Mostrar eventos pessoais reais na Agenda, somente leitura e sem copiar registros; orientar consentimento separado e verificar fluxo disponível.
 - [x] Diagnosticar arquitetura existente e vincular cliente OAuth do Calendar com acesso offline.
 - [x] Implementar autorização pessoal do Calendar, reconexão e desconexão; abertura real do Google verificada na prévia autenticada, sem consentir nem publicar.
 - [ ] Implementar conexão pessoal segura, leitura Calendar e ferramentas reais do Life AI após vinculação do cliente.

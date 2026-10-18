@@ -35,6 +35,7 @@ export type AgendaItem = {
   goal?: Tables<"goals">;
   note?: Tables<"notes">;
   transaction?: Transaction;
+  googleCalendar?: { calendarName: string; timeZone: string; start: string; end: string; allDay: boolean };
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
