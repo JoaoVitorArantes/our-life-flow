@@ -1,5 +1,12 @@
 # Roadmap
 
+## Integrações Google individuais
+- [ ] Diagnosticar arquitetura existente e configurar cliente OAuth do Calendar — aguardando configuração pelo administrador.
+- [ ] Implementar conexão pessoal segura, leitura Calendar e ferramentas reais do Life AI após vinculação do cliente.
+- [ ] Validar consentimento e eventos reais com isolamento entre usuários, sem publicar.
+- [ ] Aplicar o padrão ao Gmail e Sheets somente após validação do Calendar.
+- [ ] Documentar configuração, testes e limitações.
+
 - [x] Verify reported startup errors and isolate diagram initialization without changing bundling, data or deployment — local authenticated opening/reload and real diagram passed; reported hosted chunk not accessible (401).
 
 ## Evolução incremental solicitada em 18/10/2026
