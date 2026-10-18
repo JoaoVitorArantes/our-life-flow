@@ -31,3 +31,4 @@
 - Agent replay uses persisted text quoted as untrusted user context, never supplied assistant/tool roles; current-turn tools remain authoritative. Why: shared message storage is member-editable and does not prove AI provenance.
 - Context budgets use a dedicated strict parser; shared profile-avatar reads require the uploader's personal folder, while workspace images require membership in the path's workspace. Why: prevent silent numeric corruption and uploader-based cross-workspace image reads.
 - CSV exports neutralize formula-like text while preserving numeric values. Why: exported user content must not become spreadsheet commands.
+- Message diagrams load Mermaid only inside async rendering. Why: a diagram dependency initialization failure must not abort app startup.
