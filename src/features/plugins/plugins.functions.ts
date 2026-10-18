@@ -113,7 +113,10 @@ export const authorizePluginAction = createServerFn({ method: "POST" })
     if (data.action.intent !== data.intent) throw new Error("A prévia mudou. Confira a ação.");
     if (data.threadId) {
       const { data: thread, error: threadError } = await context.supabase
-        .from("ai_conversations").select("workspace_id").eq("id", data.threadId).maybeSingle();
+        .from("ai_conversations")
+        .select("workspace_id")
+        .eq("id", data.threadId)
+        .maybeSingle();
       if (threadError || thread?.workspace_id !== profile.active_workspace_id)
         throw new Error("Esta conversa não pertence ao espaço ativo.");
     }

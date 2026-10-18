@@ -37,8 +37,10 @@ export function missingFields(a: InboxAction): string[] {
   if ((a.intent === "expense" || a.intent === "income") && !a.amount) missing.push("valor");
   if (a.intent === "expense" && !a.card_id && !a.account_id) missing.push("forma de pagamento");
   if (a.intent === "expense" && a.installments && !a.card_id) missing.push("cartão das parcelas");
-  if (["expense", "income", "event", "activity"].includes(a.intent) && !a.date) missing.push("data");
-  if (a.intent === "expense" && a.installments && a.shared) missing.push("parcelamento dividido ainda não suportado nesta prévia");
+  if (["expense", "income", "event", "activity"].includes(a.intent) && !a.date)
+    missing.push("data");
+  if (a.intent === "expense" && a.installments && a.shared)
+    missing.push("parcelamento dividido ainda não suportado nesta prévia");
   return missing;
 }
 
@@ -47,7 +49,13 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
   const authorized = await authorizePluginAction({
-    data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId, confirmed: true, action: a, ...(ctx.threadId ? { threadId: ctx.threadId } : {}) },
+    data: {
+      intent: a.intent,
+      expectedWorkspaceId: ctx.workspaceId,
+      confirmed: true,
+      action: a,
+      ...(ctx.threadId ? { threadId: ctx.threadId } : {}),
+    },
   });
   const { workspaceId, userId } = authorized;
   const { queryClient } = ctx;
@@ -188,7 +196,8 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     await invalidate("workspace");
     return { id: workspaceId, module: "Meu espaço", href: "/configuracoes/espaco" };
   }
-  if (!["event", "task", "goal", "note"].includes(a.intent)) throw new Error("Esta ação não está disponível.");
+  if (!["event", "task", "goal", "note"].includes(a.intent))
+    throw new Error("Esta ação não está disponível.");
   const kind = a.intent as "event" | "task" | "goal" | "note";
   const targets = {
     event: { key: "events", module: "Agenda", href: "/agenda" },
@@ -197,8 +206,12 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     note: { key: "notes", module: "Notas", href: "/notas" },
   };
   const saved = await saveSimpleRecord(kind, workspaceId, userId, {
-    title: a.description, contextId: a.context_id, date: a.date,
-    time: a.time, amount: a.amount, content: a.content ?? a.description,
+    title: a.description,
+    contextId: a.context_id,
+    date: a.date,
+    time: a.time,
+    amount: a.amount,
+    content: a.content ?? a.description,
   });
   await invalidate(targets[kind].key);
   return { id: saved.id, module: targets[kind].module, href: targets[kind].href };

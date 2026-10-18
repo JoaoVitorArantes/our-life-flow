@@ -24,24 +24,30 @@ type SimpleRecord = {
   target_amount?: number | string | null;
 };
 
-const CONFIG: Record<SimpleKind, { title: string; editTitle: string; label: string; queryKey: string }> =
-  {
-    event: {
-      title: "Novo evento",
-      editTitle: "Editar evento",
-      label: "Título do evento",
-      queryKey: "events",
-    },
-    task: {
-      title: "Nova tarefa",
-      editTitle: "Editar tarefa",
-      label: "O que precisa ser feito?",
-      queryKey: "tasks",
-    },
-    goal: { title: "Nova meta", editTitle: "Editar meta", label: "Nome da meta", queryKey: "goals" },
-    note: { title: "Nova nota", editTitle: "Editar nota", label: "Título da nota", queryKey: "notes" },
-  };
-
+const CONFIG: Record<
+  SimpleKind,
+  { title: string; editTitle: string; label: string; queryKey: string }
+> = {
+  event: {
+    title: "Novo evento",
+    editTitle: "Editar evento",
+    label: "Título do evento",
+    queryKey: "events",
+  },
+  task: {
+    title: "Nova tarefa",
+    editTitle: "Editar tarefa",
+    label: "O que precisa ser feito?",
+    queryKey: "tasks",
+  },
+  goal: { title: "Nova meta", editTitle: "Editar meta", label: "Nome da meta", queryKey: "goals" },
+  note: {
+    title: "Nova nota",
+    editTitle: "Editar nota",
+    label: "Título da nota",
+    queryKey: "notes",
+  },
+};
 
 export function SimpleRecordDialog({
   kind,
@@ -103,10 +109,20 @@ export function SimpleRecordDialog({
     }
     setSaving(true);
     try {
-      await saveSimpleRecord(kind, workspaceId, userId, {
-        title, contextId: contextId === NO_CONTEXT ? null : contextId,
-        date, time, amount: parseAmount(target) || null, content,
-      }, record?.id);
+      await saveSimpleRecord(
+        kind,
+        workspaceId,
+        userId,
+        {
+          title,
+          contextId: contextId === NO_CONTEXT ? null : contextId,
+          date,
+          time,
+          amount: parseAmount(target) || null,
+          content,
+        },
+        record?.id,
+      );
 
       await queryClient.invalidateQueries({ queryKey: [config.queryKey] });
       await queryClient.invalidateQueries({ queryKey: ["goal", record?.id] });
@@ -184,7 +200,6 @@ export function SimpleRecordDialog({
           )}
 
           <ContextSelect value={contextId} onChange={setContextId} />
-
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar"}

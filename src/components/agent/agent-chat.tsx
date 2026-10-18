@@ -205,7 +205,8 @@ export function AgentChat({
   }
 
   async function confirm(id: string, action: InboxAction) {
-    if (!workspaceId || !userId || confirming.current.has(id) || states[id]?.status === "confirmed") return;
+    if (!workspaceId || !userId || confirming.current.has(id) || states[id]?.status === "confirmed")
+      return;
     confirming.current.add(id);
     try {
       const ref = await executeAction(action, {
