@@ -6,6 +6,13 @@ import { intentSchema } from "./contracts";
 import { actionSchema } from "./action-schema";
 import { CAPABILITIES } from "./capabilities";
 
+export const getCapabilityHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { readCapabilityHistory } = await import("./history.server");
+    return readCapabilityHistory(context.supabase, context.userId);
+  });
+
 export const getPluginCatalog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

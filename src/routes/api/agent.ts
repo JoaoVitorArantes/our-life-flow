@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { stepCountIs, streamText, type UIMessage } from "ai";
 import { agentBodySchema, currentUserMessage, historyForModel } from "@/lib/agent/history";
 import type { Database } from "@/integrations/supabase/types";
+import { discoverCapabilities } from "@/features/plugins/capabilities";
 
 function spToday() {
   const now = new Date();
@@ -121,6 +122,7 @@ Contextos: ${list(base.contexts)}
 Contexto da tela atual: ${parsed.data.pageContext ?? "não informado"}. Use isso apenas para entender referências como “aqui”, “esta meta” ou “essa compra”. O contexto não limita suas consultas nem ações e nunca substitui os dados das ferramentas.
 
 COMO AGIR
+- Capacidades descobertas nesta chamada (contratos atuais): ${list(discoverCapabilities(enabledPlugins))}. Use esta descoberta como fonte de disponibilidade; os exemplos abaixo só se aplicam se a capacidade correspondente estiver disponível.
 - Plugins internos autorizados: ${[...enabledPlugins].join(", ")}. Apenas as ferramentas disponibilizadas nesta chamada podem ser usadas. Se um plugin estiver desativado, sem permissão ou sem conexão, explique isso e indique Plugins por IA nas Configurações. Não simule ferramentas, não use resultados antigos como consulta atual e não alegue acesso a serviços externos. Não tente contornar plugins desativados usando outra ferramenta.
 - Você tem acesso aos dados reais apenas pelas ferramentas habilitadas. Para perguntas sobre os dados, chame as ferramentas disponíveis antes de responder.
 - NUNCA invente números. Use apenas o que as ferramentas devolverem. Se uma ferramenta devolver erro, diga com naturalidade que não conseguiu consultar aquilo agora.
@@ -137,6 +139,7 @@ COMO AGIR
   - Campos: date YYYY-MM-DD; time HH:MM ou null; amount número; category_id só se houver categoria compatível; installments para "em 6x"; shared=true quando dividida com a outra pessoa (payer_user_id = quem pagou, my_share_percent padrão 50); activity_type em GYM, WALK, RUN, BIKE, SWIM, SOCCER, BASKET, TENNIS, TRAIL, YOGA, PARK, SPORT_OTHER, OTHER; duration_minutes ("1h20"→80); person_scope JOAO, RENIFER ou COUPLE; priority LOW/MEDIUM/HIGH; purchase_category HOME, ELECTRONICS, CLOTHES, LEISURE, TRAVEL, SPORTS, COLLEGE, WORK, GIFTS, TECH, OTHER; note: content = texto. Campos irrelevantes = null.
   - "Mude o nome do nosso espaço para X": propose_action com intent rename_workspace e description = X. É ação administrativa: só acontece após Confirmar.
   - Você ainda não pode editar ou excluir registros existentes: explique e indique onde fazer no app.
+  - Não associe a Contextos sem escolha explícita. Horário/prioridade de tarefa ainda não são gravados pela prévia; explique a limitação ou proponha um evento quando o horário for essencial. Não prometa divisão de despesas parceladas: esse fluxo não é suportado pela prévia atual.
 - Respostas curtas por padrão (1–3 frases). Pergunta complexa → mais detalhe, com listas curtas. Valores em R$ no formato brasileiro (R$ 1.234,56). Use markdown leve (negrito em números-chave).
 - Ao final de respostas de consulta, quando fizer sentido, ofereça UMA próxima ação curta. Não mostre nomes de ferramentas, ids ou códigos internos.`;
 

@@ -12,6 +12,7 @@ import { createActivity, type ActivityPerson } from "@/features/activities/queri
 import type { InboxAction } from "@/lib/inbox/inbox.functions";
 import { actionSchema } from "@/features/plugins/action-schema";
 import { authorizePluginAction } from "@/features/plugins/plugins.functions";
+import { saveSimpleRecord } from "@/features/records/mutations";
 
 /**
  * Executor da Inbox: transforma uma ação JÁ confirmada em chamadas às MESMAS mutações usadas
@@ -23,6 +24,7 @@ export type ExecContext = {
   userId: string;
   memberIds: string[];
   queryClient: QueryClient;
+  threadId?: string;
 };
 
 export type ExecResult = { id: string; module: string; href: string };
@@ -35,6 +37,8 @@ export function missingFields(a: InboxAction): string[] {
   if ((a.intent === "expense" || a.intent === "income") && !a.amount) missing.push("valor");
   if (a.intent === "expense" && !a.card_id && !a.account_id) missing.push("forma de pagamento");
   if (a.intent === "expense" && a.installments && !a.card_id) missing.push("cartão das parcelas");
+  if (["expense", "income", "event", "activity"].includes(a.intent) && !a.date) missing.push("data");
+  if (a.intent === "expense" && a.installments && a.shared) missing.push("parcelamento dividido ainda não suportado nesta prévia");
   return missing;
 }
 
@@ -43,7 +47,7 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
   const authorized = await authorizePluginAction({
-    data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId, confirmed: true },
+    data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId, confirmed: true, action: a, ...(ctx.threadId ? { threadId: ctx.threadId } : {}) },
   });
   const { workspaceId, userId } = authorized;
   const { queryClient } = ctx;
@@ -162,24 +166,6 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     return { id: act.id, module: "Esporte", href: "/esporte" };
   }
 
-  // tarefas, agenda, notas e metas: mesmos inserts do formulário rápido
-  const owner = {
-    workspace_id: workspaceId,
-    owner_id: userId,
-    visibility: "SHARED" as const,
-    context_id: a.context_id,
-    title: a.description,
-  };
-  if (a.intent === "event") {
-    const { data, error } = await supabase
-      .from("events")
-      .insert({ ...owner, starts_at: new Date(`${a.date}T${a.time ?? "09:00"}`).toISOString() })
-      .select("id")
-      .single();
-    if (error) throw error;
-    await invalidate("events");
-    return { id: data.id, module: "Agenda", href: "/agenda" };
-  }
   if (a.intent === "rename_workspace") {
     // Ação administrativa: só roda depois do Confirmar, pela mesma função protegida da tela Meu espaço.
     const { data: ws, error: wsError } = await supabase
@@ -202,33 +188,18 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     await invalidate("workspace");
     return { id: workspaceId, module: "Meu espaço", href: "/configuracoes/espaco" };
   }
-  if (a.intent === "task") {
-    const { data, error } = await supabase
-      .from("tasks")
-      .insert({ ...owner, due_date: a.date })
-      .select("id")
-      .single();
-    if (error) throw error;
-    await invalidate("tasks");
-    return { id: data.id, module: "Tarefas", href: "/tarefas" };
-  }
-  if (a.intent === "goal") {
-    const { data, error } = await supabase
-      .from("goals")
-      .insert({ ...owner, target_amount: a.amount, due_date: a.date })
-      .select("id")
-      .single();
-    if (error) throw error;
-    await invalidate("goals");
-    return { id: data.id, module: "Metas", href: "/metas" };
-  }
-  if (a.intent !== "note") throw new Error("Esta ação não está disponível.");
-  const { data, error } = await supabase
-    .from("notes")
-    .insert({ ...owner, content: a.content ?? a.description })
-    .select("id")
-    .single();
-  if (error) throw error;
-  await invalidate("notes");
-  return { id: data.id, module: "Notas", href: "/notas" };
+  if (!["event", "task", "goal", "note"].includes(a.intent)) throw new Error("Esta ação não está disponível.");
+  const kind = a.intent as "event" | "task" | "goal" | "note";
+  const targets = {
+    event: { key: "events", module: "Agenda", href: "/agenda" },
+    task: { key: "tasks", module: "Tarefas", href: "/tarefas" },
+    goal: { key: "goals", module: "Metas", href: "/metas" },
+    note: { key: "notes", module: "Notas", href: "/notas" },
+  };
+  const saved = await saveSimpleRecord(kind, workspaceId, userId, {
+    title: a.description, contextId: a.context_id, date: a.date,
+    time: a.time, amount: a.amount, content: a.content ?? a.description,
+  });
+  await invalidate(targets[kind].key);
+  return { id: saved.id, module: targets[kind].module, href: targets[kind].href };
 }
