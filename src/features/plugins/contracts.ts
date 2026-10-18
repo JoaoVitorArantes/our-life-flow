@@ -144,5 +144,13 @@ export function validateToolOutput(name: ToolName, output: unknown): unknown {
       : json === null || typeof json !== "object" || Array.isArray(json)
   )
     throw new Error("Resultado inválido da capacidade.");
+  if (name === "tasks")
+    return z.object({
+      quantidade: z.number().int().nonnegative(),
+      tarefas: z.array(z.object({
+        titulo: z.string(), prazo: isoDateSchema.nullable(), status: z.string(),
+        de: z.string().optional(),
+      }).strict()),
+    }).strict().parse(json);
   return json;
 }

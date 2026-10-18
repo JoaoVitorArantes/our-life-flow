@@ -9,7 +9,7 @@ import {
   type PurchasePriority,
 } from "@/features/purchases/queries";
 import { createActivity, type ActivityPerson } from "@/features/activities/queries";
-import type { InboxAction } from "@/lib/inbox/inbox.functions";
+import type { z } from "zod";
 import { actionSchema } from "@/features/plugins/action-schema";
 import { authorizePluginAction } from "@/features/plugins/plugins.functions";
 import { saveSimpleRecord } from "@/features/records/mutations";
@@ -31,7 +31,7 @@ export type ExecResult = { id: string; module: string; href: string };
 
 const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
 
-export function missingFields(a: InboxAction): string[] {
+export function missingFields(a: z.infer<typeof actionSchema>): string[] {
   const missing: string[] = [];
   if (!a.description.trim()) missing.push("descrição");
   if ((a.intent === "expense" || a.intent === "income") && !a.amount) missing.push("valor");
@@ -44,7 +44,7 @@ export function missingFields(a: InboxAction): string[] {
   return missing;
 }
 
-export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<ExecResult> {
+export async function executeAction(a: z.infer<typeof actionSchema>, ctx: ExecContext): Promise<ExecResult> {
   actionSchema.parse(a);
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);

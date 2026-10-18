@@ -198,7 +198,7 @@ export function intentAllowed(intent: string, enabled: ReadonlySet<string>): boo
 }
 export function toolAllowed(name: string, enabled: ReadonlySet<string>): boolean {
   if (name === "propose_action")
-    return PLUGINS.some((p) => enabled.has(p.id) && p.intents.length > 0);
+    return PLUGINS.some((p) => p.intents.some((intent) => intentAllowed(intent, enabled)));
   const plugin = PLUGINS.find((p) => p.tools.some((n) => n === name));
   return !!plugin && enabled.has(plugin.id) && plugin.dependencies.every((id) => enabled.has(id));
 }

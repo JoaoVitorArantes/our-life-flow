@@ -1,6 +1,7 @@
 import type { ToolSet } from "ai";
 import { toolNameSchema, validateToolOutput, type ToolName } from "./contracts";
 import { toolAllowed } from "./registry";
+import { actionSchema } from "./action-schema";
 
 export function assertToolImplementations(tools: ToolSet) {
   const names = Object.keys(tools);
@@ -41,6 +42,7 @@ export function guardTools(
                   throw new Error("Invalid contract");
                 const valid = schema.parse(input);
                 const result = validateToolOutput(toolName, await execute(valid, options));
+                if (toolName === "propose_action") actionSchema.parse(result);
                 await audit(toolName, "success");
                 return result;
               } catch {
