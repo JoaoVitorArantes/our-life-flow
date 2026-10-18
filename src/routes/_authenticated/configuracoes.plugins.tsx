@@ -183,19 +183,21 @@ function PluginsPage() {
                 {p.description}
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                {p.id !== "google_calendar" && <Badge
-                  variant="outline"
-                  className={
-                    failed
-                      ? "text-destructive"
-                      : p.enabled
-                        ? "text-success"
-                        : "text-muted-foreground"
-                  }
-                >
-                  {p.enabled && <Check className="mr-1 size-3" />}
-                  {LABELS[failed ? "error" : p.state]}
-                </Badge>}
+                {p.id !== "google_calendar" && (
+                  <Badge
+                    variant="outline"
+                    className={
+                      failed
+                        ? "text-destructive"
+                        : p.enabled
+                          ? "text-success"
+                          : "text-muted-foreground"
+                    }
+                  >
+                    {p.enabled && <Check className="mr-1 size-3" />}
+                    {LABELS[failed ? "error" : p.state]}
+                  </Badge>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {p.intents.length && !p.tools.length
                     ? "Proposta"
@@ -219,7 +221,9 @@ function PluginsPage() {
                     : ""}
                 </p>
               )}
-              {p.id === "google_calendar" && <CalendarConnectionControls workspaceId={data.workspaceId} />}
+              {p.id === "google_calendar" && (
+                <CalendarConnectionControls workspaceId={data.workspaceId} />
+              )}
               {p.category === "external" && p.id !== "google_calendar" && (
                 <span className="text-xs text-muted-foreground">
                   Configuração do provedor pendente · Não executável
@@ -238,7 +242,11 @@ function PluginsPage() {
                     <li key={intent}>{INTENT_LABELS[intent]} · confirmação obrigatória</li>
                   ))}
                   {p.category === "external" ? (
-                    <li>{p.id === "google_calendar" ? "Conta pessoal · somente leitura · ferramentas do Life AI ainda indisponíveis" : "Autorização não concedida · conexão indisponível"}</li>
+                    <li>
+                      {p.id === "google_calendar"
+                        ? "Conta pessoal · somente leitura · ferramentas do Life AI ainda indisponíveis"
+                        : "Autorização não concedida · conexão indisponível"}
+                    </li>
                   ) : (
                     <li>
                       {p.scopes.includes("workspace:manage")
