@@ -32,4 +32,4 @@
 - Context budgets use a dedicated strict parser; shared profile-avatar reads require the uploader's personal folder, while workspace images require membership in the path's workspace. Why: prevent silent numeric corruption and uploader-based cross-workspace image reads.
 - CSV exports neutralize formula-like text while preserving numeric values. Why: exported user content must not become spreadsheet commands.
 - Mermaid loads asynchronously. Why: diagram failures must not abort startup.
-- Calendar OAuth uses authenticated functions, a public popup return and encrypted server-only user/connector handles restricted to the authorized workspace. Why: partners never inherit credentials; completion is single-use and membership-checked.
+- Calendar uses authenticated functions, single-use public popup completion and encrypted user/connector/workspace handles; Agenda queries are user-keyed, read-only and never persist Google events. Why: partners never inherit credentials or events.

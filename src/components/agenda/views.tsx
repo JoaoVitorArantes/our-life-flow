@@ -220,16 +220,17 @@ function TimedGrid({
                   />
                 ))}
                 {timed.map((item) => {
-                  const top = ((item.minutes! - HOURS[0]! * 60) / 60) * HOUR_HEIGHT;
+                  if (item.minutes == null) return null;
+                  const top = ((item.minutes - (HOURS[0] ?? 6) * 60) / 60) * HOUR_HEIGHT;
                   const height = Math.max(
                     28,
-                    (((item.endMinutes ?? item.minutes! + 60) - item.minutes!) / 60) * HOUR_HEIGHT,
+                    (((item.endMinutes ?? item.minutes + 60) - item.minutes) / 60) * HOUR_HEIGHT,
                   );
                   return (
                     <button
                       key={item.key}
                       type="button"
-                      draggable
+                      draggable={!item.googleCalendar}
                       onDragStart={(event) => event.dataTransfer.setData("text/agenda", item.key)}
                       onClick={(event) => {
                         event.stopPropagation();
