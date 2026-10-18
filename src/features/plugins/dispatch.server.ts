@@ -53,5 +53,5 @@ export function guardTools(
           },
         ];
       }),
-  );
+  ) as ToolSet;
 }

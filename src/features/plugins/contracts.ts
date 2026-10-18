@@ -120,7 +120,11 @@ export function isToolFailure(value: unknown): boolean {
 }
 export function validateToolOutput(name: ToolName, output: unknown): unknown {
   if (isToolFailure(output)) throw new Error("Não foi possível consultar esta capacidade.");
-  const json = jsonValueSchema.parse(JSON.parse(JSON.stringify(output)));
+  const json = jsonValueSchema.parse(JSON.parse(JSON.stringify(output, (_key, value: unknown) => {
+    if (typeof value === "number" && !Number.isFinite(value)) throw new Error("Nonfinite output");
+    if (typeof value === "function" || typeof value === "bigint") throw new Error("Non-JSON output");
+    return value;
+  })));
   const arrayTools: ToolName[] = [
     "cards_status",
     "installments",

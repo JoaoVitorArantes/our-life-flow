@@ -39,7 +39,7 @@ export function missingFields(a: InboxAction): string[] {
 }
 
 export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<ExecResult> {
-  a = actionSchema.parse(a);
+  actionSchema.parse(a);
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
   const authorized = await authorizePluginAction({

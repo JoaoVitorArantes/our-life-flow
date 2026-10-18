@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { intentSchema } from "./contracts";
+import { intentSchema, isoDateSchema } from "./contracts";
 
 /** Uma ação interpretada. Campos irrelevantes ao intent vêm null. Schema estrito e plano. */
 export const actionSchema = z.object({
   intent: intentSchema,
-  description: z.string(),
-  amount: z.number().nullable(),
-  date: z.string().nullable(),
-  time: z.string().nullable(),
+  description: z.string().max(2000),
+  amount: z.number().finite().nonnegative().nullable(),
+  date: isoDateSchema.nullable(),
+  time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable(),
   card_id: z.string().nullable(),
   account_id: z.string().nullable(),
   category_id: z.string().nullable(),
@@ -23,4 +23,4 @@ export const actionSchema = z.object({
   person_scope: z.string().nullable(),
   priority: z.string().nullable(),
   purchase_category: z.string().nullable(),
-});
+}).strict();
