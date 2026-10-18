@@ -28,5 +28,6 @@
 - Plugin contracts and action schemas live in `src/features/plugins`; dispatch checks both implementation coverage and fresh access. Why: executable names cannot drift silently from the closed catalog.
 - Capability audits append metadata only to `ai_capability_runs` after caller-RLS membership checks; the admin client is restricted to this append, never domain reads. Why: browser clients cannot forge execution logs or see another person's runs.
 - Agent replay uses persisted text quoted as untrusted user context, never supplied assistant/tool roles; current-turn tools remain authoritative. Why: shared message storage is member-editable and does not prove AI provenance.
+- Bundle Mermaid, dagre-d3-es, lodash-es and their dependency closure together as diagram-engine, without strictExecutionOrder. Why: diagram graphlib must not consume uninitialized shared Symbol exports across cyclic chunks.
 - Context budgets use a dedicated strict parser; shared profile-avatar reads require the uploader's personal folder, while workspace images require membership in the path's workspace. Why: prevent silent numeric corruption and uploader-based cross-workspace image reads.
 - CSV exports neutralize formula-like text while preserving numeric values. Why: exported user content must not become spreadsheet commands.
