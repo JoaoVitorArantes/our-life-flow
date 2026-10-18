@@ -1,5 +1,13 @@
 # Roadmap
 
+## Evolução incremental solicitada em 18/10/2026
+- [ ] Diagnosticar estado atual e preservar implementações válidas
+- [ ] Completar metadados e descoberta de capacidades reais no catálogo/agente
+- [ ] Expor histórico pessoal de execuções com escopo protegido
+- [ ] Revalidar referências e melhorar prévias/recuperação sem duplicar regras
+- [ ] Executar regressões focadas e documentar capacidades, lacunas e limites
+- [ ] Verificar persistência e acesso compartilhado com dados de teste isolados — depende de ambiente/sessões autorizados sem dados reais
+
 - [x] Completar contratos e cobertura bidirecional das ferramentas/intents existentes
 - [x] Revalidar autorização, registrar metadados mínimos e proteger histórico recebido pelo agente
 - [x] Ajustar estados do catálogo/chat, documentar limites e executar testes focados
