@@ -107,9 +107,9 @@ const definitions: readonly Plugin[] = [
   internal(
     "contexts",
     "Contextos",
-    "Viagens e projetos com orçamento e despesas vinculadas.",
-    ["contexts"],
-    [],
+    "Consultar, criar, editar, arquivar e mover contextos para a lixeira, com confirmação.",
+    ["contexts", "context_details"],
+    ["create_context", "update_context", "archive_context", "delete_context"],
     ["finance"],
   ),
   internal(
@@ -129,7 +129,7 @@ const definitions: readonly Plugin[] = [
     ["activities"],
     ["activity"],
   ),
-  internal("notes", "Notas", "Novas anotações a partir de uma prévia confirmada.", [], ["note"]),
+  internal("notes", "Notas", "Consultar anotações e criar novas notas com confirmação.", ["notes"], ["note"]),
   internal(
     "workspace",
     "Meu espaço",

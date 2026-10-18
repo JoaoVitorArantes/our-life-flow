@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { intentSchema, isoDateSchema } from "./contracts";
+import { contextProposalSchema } from "@/features/contexts/ai-contract";
 
 /** Uma ação interpretada. Campos irrelevantes ao intent vêm null. Schema estrito e plano. */
 export const actionSchema = z
@@ -27,5 +28,6 @@ export const actionSchema = z
     person_scope: z.string().nullable(),
     priority: z.string().nullable(),
     purchase_category: z.string().nullable(),
+    context_data: contextProposalSchema.nullable().optional(),
   })
   .strict();
