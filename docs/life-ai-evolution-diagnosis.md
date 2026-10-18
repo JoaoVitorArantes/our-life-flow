@@ -70,9 +70,9 @@ Contexto → gasto: propor primeiro o contexto, aguardar confirmação e consult
 - Registro/autorização: `features/plugins/{contracts,action-schema,registry,capabilities,references.server,references.test}.ts`.
 - Agente/Inbox: `lib/agent/tools.server.ts`, `routes/api/agent.ts`, `lib/inbox/{ai.server,inbox.functions}.ts`, `components/agent/agent-chat.tsx`, `components/inbox/{context-fields,inbox-assistant}.tsx`.
 - Documentação/arquitetura: esta nota, `roadmap.md` e regra compacta em `AGENTS.md`. Nenhuma mudança em bundling, banco, políticas, correção de Contextos ou publicação.
-- Testes iniciais: 40 aprovados. Resultado final desta etapa registrado após a última execução abaixo; testes usam mocks/dados fictícios, incluindo defaults, datas, orçamento, campos omitidos, schema de modelo, plugins/dependências desativados, autorização anterior à persistência, escopo de workspace e falhas de read-back.
+- Testes iniciais: 40 aprovados. Resultado final: `bunx vitest run`, 23 arquivos / 98 testes aprovados; testes usam mocks/dados fictícios, incluindo defaults, datas, orçamento, campos omitidos, schema de modelo, plugins/dependências desativados, autorização anterior à persistência, escopo de workspace e falhas de read-back.
 - Lint direcionado: 0 erros / 8 avisos nos componentes de chat/Inbox (Fast Refresh e dependências de memoização). Lint global: 3122 erros / 47 avisos; não aplicado autofix global nem reparos fora do pedido.
-- Compilação e checagem de tipos são automáticas; não executadas manualmente.
+- Compilação e checagem de tipos automáticas: `build OK` em 18/10/2026 às 03:22:06 UTC; não executadas manualmente.
 
 ### Limitações explícitas
 
