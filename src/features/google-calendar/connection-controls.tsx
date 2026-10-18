@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Plug, RefreshCw, Unplug } from "lucide-react";
 import { toast } from "sonner";
+import { useApp } from "@/features/app/app-context";
 import { Button } from "@/components/ui/button";
 import {
   getCalendarConnection,
@@ -13,16 +14,22 @@ import {
 import { waitForCalendarOAuth } from "./popup";
 export function CalendarConnectionControls({ workspaceId }: { workspaceId: string }) {
   const client = useQueryClient();
+  const { userId } = useApp();
+  const getStatus = useServerFn(getCalendarConnection);
   const start = useServerFn(startCalendarConnect);
   const complete = useServerFn(completeCalendarConnect);
   const disconnect = useServerFn(disconnectCalendar);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const status = useQuery({
-    queryKey: ["google_calendar_connection", workspaceId],
-    queryFn: () => getCalendarConnection(),
+    queryKey: ["google_calendar_connection", userId, workspaceId],
+    queryFn: () => getStatus(),
     retry: false,
   });
-  const refresh = () => client.invalidateQueries({ queryKey: ["google_calendar_connection"] });
+  const refresh = () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: ["google_calendar_connection"] }),
+      client.invalidateQueries({ queryKey: ["google_calendar_events"] }),
+    ]);
   const connect = useMutation({
     mutationFn: async () => {
       const popup = window.open("", "lifeos-calendar-oauth", "width=600,height=720");

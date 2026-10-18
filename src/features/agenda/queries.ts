@@ -35,6 +35,13 @@ export type AgendaItem = {
   goal?: Tables<"goals">;
   note?: Tables<"notes">;
   transaction?: Transaction;
+  googleCalendar?: {
+    calendarName: string;
+    timeZone: string;
+    start: string;
+    end: string;
+    allDay: boolean;
+  };
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -216,7 +223,12 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
     // Previsões de recorrentes (ex.: salário): mesmas do Dinheiro livre, nunca gravadas.
     const projFrom = fromIso > todayIso ? fromIso : todayIso;
     if (projFrom <= toIso) {
-      for (const t of getProjectedRecurring(recurring.data ?? [], transactions.data ?? [], projFrom, toIso)) {
+      for (const t of getProjectedRecurring(
+        recurring.data ?? [],
+        transactions.data ?? [],
+        projFrom,
+        toIso,
+      )) {
         const due = dueDateOf(t);
         if (due < fromIso || due > toIso) continue;
         list.push({
@@ -288,7 +300,9 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
     {
       const rFrom = range ? from : addDays(new Date(), -30);
       const rTo = range ? to : addDays(new Date(), 60);
-      const done = new Map((routineLogs.data ?? []).map((l) => [`${l.routine_id}|${l.log_date}`, l.status]));
+      const done = new Map(
+        (routineLogs.data ?? []).map((l) => [`${l.routine_id}|${l.log_date}`, l.status]),
+      );
       for (const r of (routines.data ?? []).filter((x) => x.show_in_agenda)) {
         for (let d = new Date(rFrom); d <= rTo; d = addDays(d, 1)) {
           const iso = isoOf(d);
@@ -296,10 +310,21 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
           const [h, m] = (r.start_time ?? "").split(":").map(Number);
           const minutes = r.start_time ? h! * 60 + m! : null;
           list.push({
-            key: `routine-${r.id}-${iso}`, recordId: r.id, kind: "routine", title: `${r.icon ?? ""} ${r.title}`.trim(), date: iso,
-            minutes, endMinutes: minutes != null && r.duration_minutes ? minutes + r.duration_minutes : null, amount: null,
-            contextId: r.context_id, ownerId: r.created_by, done: !!done.get(`${r.id}|${iso}`), overdue: false,
-            hint: r.kind === "HABIT" ? "Hábito" : "Rotina", location: null, recurring: true,
+            key: `routine-${r.id}-${iso}`,
+            recordId: r.id,
+            kind: "routine",
+            title: `${r.icon ?? ""} ${r.title}`.trim(),
+            date: iso,
+            minutes,
+            endMinutes: minutes != null && r.duration_minutes ? minutes + r.duration_minutes : null,
+            amount: null,
+            contextId: r.context_id,
+            ownerId: r.created_by,
+            done: !!done.get(`${r.id}|${iso}`),
+            overdue: false,
+            hint: r.kind === "HABIT" ? "Hábito" : "Rotina",
+            location: null,
+            recurring: true,
           });
         }
       }
@@ -313,7 +338,18 @@ export function useAgendaItems(workspaceId?: string, range?: { from: Date; to: D
       return a.title.localeCompare(b.title);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events.data, tasks.data, transactions.data, recurring.data, goals.data, notes.data, routines.data, routineLogs.data, fromIso, toIso]);
+  }, [
+    events.data,
+    tasks.data,
+    transactions.data,
+    recurring.data,
+    goals.data,
+    notes.data,
+    routines.data,
+    routineLogs.data,
+    fromIso,
+    toIso,
+  ]);
 
   return {
     items,

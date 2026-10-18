@@ -1,6 +1,8 @@
 # Roadmap
 
 ## Integrações Google individuais
+- [x] Implementar leitura pessoal na Agenda sem copiar registros, orientar consentimento separado e verificar início autenticado; 53 testes aprovados.
+- [ ] Verificar eventos reais após consentimento separado de João e Renifer — bloqueado: cada pessoa precisa autorizar a própria conta Google na prévia.
 - [x] Diagnosticar arquitetura existente e vincular cliente OAuth do Calendar com acesso offline.
 - [x] Implementar autorização pessoal do Calendar, reconexão e desconexão; abertura real do Google verificada na prévia autenticada, sem consentir nem publicar.
 - [ ] Implementar conexão pessoal segura, leitura Calendar e ferramentas reais do Life AI após vinculação do cliente.

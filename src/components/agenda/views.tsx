@@ -220,16 +220,17 @@ function TimedGrid({
                   />
                 ))}
                 {timed.map((item) => {
-                  const top = ((item.minutes! - HOURS[0]! * 60) / 60) * HOUR_HEIGHT;
+                  if (item.minutes == null) return null;
+                  const top = ((item.minutes - (HOURS[0] ?? 6) * 60) / 60) * HOUR_HEIGHT;
                   const height = Math.max(
                     28,
-                    (((item.endMinutes ?? item.minutes! + 60) - item.minutes!) / 60) * HOUR_HEIGHT,
+                    (((item.endMinutes ?? item.minutes + 60) - item.minutes) / 60) * HOUR_HEIGHT,
                   );
                   return (
                     <button
                       key={item.key}
                       type="button"
-                      draggable
+                      draggable={!item.googleCalendar}
                       onDragStart={(event) => event.dataTransfer.setData("text/agenda", item.key)}
                       onClick={(event) => {
                         event.stopPropagation();
@@ -286,9 +287,7 @@ export function DayView({
   const dayItems = items.filter((item) => item.date === iso);
   const open = dayItems.filter((item) => !item.done);
   const done = dayItems.filter((item) => item.done);
-  const next = items
-    .filter((item) => item.date > iso && !item.done)
-    .slice(0, 8);
+  const next = items.filter((item) => item.date > iso && !item.done).slice(0, 8);
 
   return (
     <div className="space-y-6">
