@@ -235,6 +235,72 @@ export type Database = {
           },
         ]
       }
+      app_user_connections: {
+        Row: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          connection_key_ciphertext?: string
+          connector_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: []
+      }
+      app_user_oauth_attempts: {
+        Row: {
+          connector_id: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          nonce_hash: string
+          return_url: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          connector_id: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          nonce_hash: string
+          return_url: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          connector_id?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          nonce_hash?: string
+          return_url?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       card_invoice_payments: {
         Row: {
           amount: number
