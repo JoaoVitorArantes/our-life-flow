@@ -62,7 +62,7 @@ export const startCalendarConnect = createServerFn({ method: "POST" })
     const origin = forwarded ? new URL(`https://${forwarded}`).origin : url.origin;
     const returnUrl = new URL("/api/public/oauth/google-calendar/return", origin);
     returnUrl.searchParams.set("attempt", attemptId);
-    returnUrl.hash = nonce;
+    returnUrl.searchParams.set("nonce", nonce);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("app_user_oauth_attempts").insert({
       id: attemptId,

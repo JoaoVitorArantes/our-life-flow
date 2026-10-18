@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/public/oauth/google-calendar/return")
         new Response(
           `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>Autorização Calendar — Life OS</title></head><body><p id="status">Concluindo autorização…</p><script>
 const params = new URLSearchParams(location.search);
-const nonce = location.hash.slice(1);
+const nonce = params.get('nonce');
 const success = params.get('success') === 'true' && params.get('offline_access_allowed') !== 'false' && Boolean(params.get('code'));
 const message = { type: success ? 'appUserConnectorOAuthComplete' : 'appUserConnectorOAuthFailed', connectorId: params.get('connector_id'), attemptId: params.get('attempt'), nonce, code: success ? params.get('code') : null };
 history.replaceState(null, '', location.pathname);
