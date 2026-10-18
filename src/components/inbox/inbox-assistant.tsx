@@ -374,11 +374,22 @@ export function PreviewCard({
   const rows: [string, string][] = [];
   if (!isContext) rows.push(["Quando", `${friendlyDate(a.date)}${a.time ? ` · ${a.time}` : ""}`]);
   if (isContext) {
-    rows.push(["Tipo", contextTypeLabel(contextFields.type)]);
-    rows.push(["Situação", contextStatusLabel(a.intent === "archive_context" ? "ARCHIVED" : contextFields.status)]);
-    rows.push(["Visibilidade", contextFields.visibility === "PRIVATE" ? "Pessoal" : "Compartilhado"]);
+    rows.push(["Tipo", contextTypeLabel(contextFields.type ?? CONTEXT_DEFAULTS.type)]);
+    rows.push([
+      "Situação",
+      contextStatusLabel(
+        a.intent === "archive_context"
+          ? "ARCHIVED"
+          : (contextFields.status ?? CONTEXT_DEFAULTS.status),
+      ),
+    ]);
+    rows.push([
+      "Visibilidade",
+      contextFields.visibility === "PRIVATE" ? "Pessoal" : "Compartilhado",
+    ]);
     if (contextFields.description) rows.push(["Descrição", contextFields.description]);
-    if (contextFields.budget_amount != null) rows.push(["Orçamento", formatCurrency(Number(contextFields.budget_amount))]);
+    if (contextFields.budget_amount != null)
+      rows.push(["Orçamento", formatCurrency(Number(contextFields.budget_amount))]);
     if (contextFields.start_date) rows.push(["Início", friendlyDate(contextFields.start_date)]);
     if (contextFields.end_date) rows.push(["Fim", friendlyDate(contextFields.end_date)]);
     if (contextFields.location) rows.push(["Local", contextFields.location]);
@@ -435,7 +446,9 @@ export function PreviewCard({
             onChange={(e) => onChange({ description: e.target.value })}
             aria-label="Descrição"
           />
-          {isContext ? <ContextFields action={a} current={currentContext} onChange={onChange} /> : null}
+          {isContext ? (
+            <ContextFields action={a} current={currentContext} onChange={onChange} />
+          ) : null}
           {isMoney || a.intent === "purchase" || a.intent === "goal" ? (
             <Input
               inputMode="decimal"
@@ -447,12 +460,14 @@ export function PreviewCard({
               placeholder="Valor"
             />
           ) : null}
-          {!isContext ? <Input
-            type="date"
-            value={a.date ?? ""}
-            onChange={(e) => onChange({ date: e.target.value })}
-            aria-label="Data"
-          /> : null}
+          {!isContext ? (
+            <Input
+              type="date"
+              value={a.date ?? ""}
+              onChange={(e) => onChange({ date: e.target.value })}
+              aria-label="Data"
+            />
+          ) : null}
           {a.intent === "event" ? (
             <Input
               type="time"
@@ -505,12 +520,14 @@ export function PreviewCard({
               </SelectContent>
             </Select>
           ) : null}
-          {!isContext ? <div className="sm:col-span-2">
-            <ContextSelect
-              value={a.context_id ?? NO_CONTEXT}
-              onChange={(v) => onChange({ context_id: v === NO_CONTEXT ? null : v })}
-            />
-          </div> : null}
+          {!isContext ? (
+            <div className="sm:col-span-2">
+              <ContextSelect
+                value={a.context_id ?? NO_CONTEXT}
+                onChange={(v) => onChange({ context_id: v === NO_CONTEXT ? null : v })}
+              />
+            </div>
+          ) : null}
         </div>
       ) : (
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">

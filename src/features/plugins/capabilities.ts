@@ -35,7 +35,10 @@ const labels: Record<ToolName, [string, string]> = {
   purchases: ["Compras planejadas", "Itens, prioridades e orçamento."],
   routines_today: ["Rotinas do dia", "Ocorrências derivadas e check-ins existentes."],
   contexts: ["Contextos e orçamento", "Viagens e projetos com despesas vinculadas."],
-  context_details: ["Detalhes do contexto", "Dados atuais de um contexto acessível, inclusive arquivado."],
+  context_details: [
+    "Detalhes do contexto",
+    "Dados atuais de um contexto acessível, inclusive arquivado.",
+  ],
   notes: ["Consultar notas", "Anotações acessíveis no espaço, com busca opcional."],
   propose_action: [
     "Prévia de registro",

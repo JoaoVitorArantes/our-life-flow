@@ -2,7 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import type { z } from "zod";
 import type { actionSchema } from "./action-schema";
-import { contextCreateInput, contextProposalSchema, isContextIntent } from "@/features/contexts/ai-contract";
+import {
+  contextCreateInput,
+  contextProposalSchema,
+  isContextIntent,
+} from "@/features/contexts/ai-contract";
 import { contextSchema } from "@/features/contexts/validation";
 
 /** Re-check edited references at the point of confirmation, with the caller's RLS client. */
@@ -21,10 +25,19 @@ export async function validateActionReferences(
       return;
     }
     if (!context_id) throw new Error("Selecione o contexto antes de confirmar.");
-    const { data: current, error } = await sb.from("contexts").select("*").eq("workspace_id", workspaceId).eq("id", context_id).maybeSingle();
+    const { data: current, error } = await sb
+      .from("contexts")
+      .select("*")
+      .eq("workspace_id", workspaceId)
+      .eq("id", context_id)
+      .maybeSingle();
     if (error || !current) throw new Error("Este contexto não está disponível neste espaço.");
     if (action.intent === "update_context")
-      contextSchema.parse({ ...current, ...contextProposalSchema.parse(action.context_data ?? {}), name: action.description });
+      contextSchema.parse({
+        ...current,
+        ...contextProposalSchema.parse(action.context_data ?? {}),
+        name: action.description,
+      });
     return;
   }
   if (card_id && account_id) throw new Error("Escolha cartão ou conta, não ambos.");

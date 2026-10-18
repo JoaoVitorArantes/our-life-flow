@@ -129,7 +129,13 @@ const definitions: readonly Plugin[] = [
     ["activities"],
     ["activity"],
   ),
-  internal("notes", "Notas", "Consultar anotações e criar novas notas com confirmação.", ["notes"], ["note"]),
+  internal(
+    "notes",
+    "Notas",
+    "Consultar anotações e criar novas notas com confirmação.",
+    ["notes"],
+    ["note"],
+  ),
   internal(
     "workspace",
     "Meu espaço",
