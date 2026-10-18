@@ -17,17 +17,21 @@ export const contextProposalSchema = z
   .strict();
 
 /** Strict model wire contract: null means omitted; clear_fields is explicit. */
-export const contextWireSchema = z.object({
-  type: z.enum(["EVENT", "TRIP", "PROJECT", "COLLEGE", "PERSONAL", "COUPLE", "OTHER"]).nullable(),
-  status: z.enum(["PLANNED", "ACTIVE", "COMPLETED", "ARCHIVED"]).nullable(),
-  description: z.string().max(5000).nullable(),
-  start_date: isoDateSchema.nullable(),
-  end_date: isoDateSchema.nullable(),
-  location: z.string().max(500).nullable(),
-  budget_amount: z.number().finite().nonnegative().nullable(),
-  visibility: z.enum(["PRIVATE", "SHARED"]).nullable(),
-  clear_fields: z.array(z.enum(["description", "start_date", "end_date", "location", "budget_amount"])),
-}).strict();
+export const contextWireSchema = z
+  .object({
+    type: z.enum(["EVENT", "TRIP", "PROJECT", "COLLEGE", "PERSONAL", "COUPLE", "OTHER"]).nullable(),
+    status: z.enum(["PLANNED", "ACTIVE", "COMPLETED", "ARCHIVED"]).nullable(),
+    description: z.string().max(5000).nullable(),
+    start_date: isoDateSchema.nullable(),
+    end_date: isoDateSchema.nullable(),
+    location: z.string().max(500).nullable(),
+    budget_amount: z.number().finite().nonnegative().nullable(),
+    visibility: z.enum(["PRIVATE", "SHARED"]).nullable(),
+    clear_fields: z.array(
+      z.enum(["description", "start_date", "end_date", "location", "budget_amount"]),
+    ),
+  })
+  .strict();
 export function normalizeContextWire(data: z.infer<typeof contextWireSchema> | null) {
   if (!data) return null;
   const { clear_fields, ...fields } = data;

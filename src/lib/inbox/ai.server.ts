@@ -17,7 +17,11 @@ function createRunIdFetch() {
 }
 
 export { actionSchema } from "@/features/plugins/action-schema";
-import { actionSchema, proposalInputSchema, normalizeProposal } from "@/features/plugins/action-schema";
+import {
+  actionSchema,
+  proposalInputSchema,
+  normalizeProposal,
+} from "@/features/plugins/action-schema";
 
 export const interpretationSchema = z.object({
   question: z.string().nullable(),
@@ -65,7 +69,8 @@ export async function interpret(
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error) && error.text) {
       const parsed = interpretationSchema.safeParse(JSON.parse(error.text));
-      if (parsed.success) return { ...parsed.data, actions: parsed.data.actions.map(normalizeProposal) };
+      if (parsed.success)
+        return { ...parsed.data, actions: parsed.data.actions.map(normalizeProposal) };
     }
     throw error;
   }

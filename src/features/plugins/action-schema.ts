@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { intentSchema, isoDateSchema } from "./contracts";
-import { contextProposalSchema, contextWireSchema, normalizeContextWire } from "@/features/contexts/ai-contract";
+import {
+  contextProposalSchema,
+  contextWireSchema,
+  normalizeContextWire,
+} from "@/features/contexts/ai-contract";
 
 /** Uma ação interpretada. Campos irrelevantes ao intent vêm null. Schema estrito e plano. */
 export const actionSchema = z
@@ -33,7 +37,9 @@ export const actionSchema = z
   .strict();
 
 // Model inputs are strict-required/nullable; stored legacy previews remain compatible.
-export const proposalInputSchema = actionSchema.extend({ context_data: contextWireSchema.nullable() }).strict();
+export const proposalInputSchema = actionSchema
+  .extend({ context_data: contextWireSchema.nullable() })
+  .strict();
 export function normalizeProposal(input: z.infer<typeof proposalInputSchema>) {
   return actionSchema.parse({ ...input, context_data: normalizeContextWire(input.context_data) });
 }
