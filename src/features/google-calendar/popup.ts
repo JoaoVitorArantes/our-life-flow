@@ -3,10 +3,9 @@ export function waitForCalendarOAuth(
   expected: { attemptId: string; nonce: string },
 ) {
   return new Promise<string>((resolve, reject) => {
-    let poll: number | undefined;
     const cleanup = () => {
       window.removeEventListener("message", onMessage);
-      if (poll !== undefined) window.clearInterval(poll);
+      window.clearInterval(poll);
       window.clearTimeout(timeout);
     };
     const onMessage = (event: MessageEvent) => {
@@ -48,7 +47,7 @@ export function waitForCalendarOAuth(
       10 * 60 * 1000,
     );
     window.addEventListener("message", onMessage);
-    poll = window.setInterval(() => {
+    const poll = window.setInterval(() => {
       if (popup.closed) {
         cleanup();
         reject(new Error("Autorização cancelada."));
