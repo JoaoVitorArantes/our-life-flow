@@ -7,17 +7,6 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  vite: {
-    build: {
-      rolldownOptions: {
-        output: {
-          // Mermaid's graphlib shares lodash's Symbol export across diagram chunks.
-          // Keep ESM initialization ordered even when those chunks form a cycle.
-          strictExecutionOrder: true,
-        },
-      },
-    },
-  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
