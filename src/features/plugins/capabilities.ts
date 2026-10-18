@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { readInputSchemas, toolNameSchema, type ToolName } from "./contracts";
-import { actionSchema } from "./action-schema";
+import { actionSchema, proposalInputSchema } from "./action-schema";
 import { PLUGINS, intentAllowed, toolAllowed } from "./registry";
 
 const metadataSchema = z
@@ -35,6 +35,11 @@ const labels: Record<ToolName, [string, string]> = {
   purchases: ["Compras planejadas", "Itens, prioridades e orçamento."],
   routines_today: ["Rotinas do dia", "Ocorrências derivadas e check-ins existentes."],
   contexts: ["Contextos e orçamento", "Viagens e projetos com despesas vinculadas."],
+  context_details: [
+    "Detalhes do contexto",
+    "Dados atuais de um contexto acessível, inclusive arquivado.",
+  ],
+  notes: ["Consultar notas", "Anotações acessíveis no espaço, com busca opcional."],
   propose_action: [
     "Prévia de registro",
     "Prepara uma ação sem gravar; exige confirmação explícita.",
@@ -71,7 +76,7 @@ export function discoverCapabilities(enabled: ReadonlySet<string>) {
 }
 
 export function capabilityInput(id: ToolName) {
-  return id === "propose_action" ? actionSchema : readInputSchemas[id];
+  return id === "propose_action" ? proposalInputSchema : readInputSchemas[id];
 }
 
 export const INTENT_LABELS = {
@@ -84,4 +89,8 @@ export const INTENT_LABELS = {
   activity: "Nova atividade",
   goal: "Nova meta",
   rename_workspace: "Renomear espaço",
+  create_context: "Novo contexto",
+  update_context: "Editar contexto",
+  archive_context: "Arquivar contexto",
+  delete_context: "Mover contexto para lixeira",
 } satisfies Record<z.infer<typeof actionSchema>["intent"], string>;

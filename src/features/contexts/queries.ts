@@ -97,24 +97,26 @@ export async function createContext(
     .select("*")
     .single();
   if (error) throw error;
+  if (!data?.id) throw new Error("Não foi possível confirmar o contexto salvo.");
   return data as Context;
 }
 
-export async function updateContext(id: string, input: Partial<ContextInput>) {
-  const { data: current, error: readError } = await supabase
-    .from("contexts")
-    .select("*")
-    .eq("id", id)
-    .single();
+export async function updateContext(
+  id: string,
+  input: Partial<ContextInput>,
+  workspaceId?: string,
+) {
+  let read = supabase.from("contexts").select("*").eq("id", id);
+  if (workspaceId) read = read.eq("workspace_id", workspaceId);
+  const { data: current, error: readError } = await read.single();
   if (readError) throw readError;
   const validated = contextSchema.parse({ ...current, ...input });
-  const { error } = await supabase
-    .from("contexts")
-    .update(validated)
-    .eq("id", id)
-    .select("id")
-    .single();
+  let write = supabase.from("contexts").update(validated).eq("id", id);
+  if (workspaceId) write = write.eq("workspace_id", workspaceId);
+  const { data, error } = await write.select("*").single();
   if (error) throw error;
+  if (!data?.id) throw new Error("Não foi possível confirmar o contexto salvo.");
+  return data as Context;
 }
 
 export async function deleteContext(id: string) {

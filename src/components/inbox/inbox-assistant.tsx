@@ -22,7 +22,9 @@ import { interpretInbox, type InboxAction } from "@/lib/inbox/inbox.functions";
 import { executeAction, missingFields } from "@/features/inbox/execute";
 import { useInboxHistory } from "@/features/inbox/history";
 import { ContextSelect, NO_CONTEXT } from "@/components/quick/context-select";
-import { useContexts } from "@/features/contexts/queries";
+import { useContexts, contextTypeLabel, contextStatusLabel } from "@/features/contexts/queries";
+import { CONTEXT_DEFAULTS, isContextIntent } from "@/features/contexts/ai-contract";
+import { ContextFields } from "./context-fields";
 
 type Msg = { role: "user" | "assistant"; content: string };
 export type Preview = { key: string; text: string; action: InboxAction };
@@ -37,6 +39,10 @@ export const INTENT: Record<InboxAction["intent"], { label: string; emoji: strin
   activity: { label: "Atividade", emoji: "🏃" },
   goal: { label: "Meta", emoji: "🎯" },
   rename_workspace: { label: "Novo nome do espaço", emoji: "🏡" },
+  create_context: { label: "Novo contexto", emoji: "🌱" },
+  update_context: { label: "Editar contexto", emoji: "🌱" },
+  archive_context: { label: "Arquivar contexto", emoji: "📦" },
+  delete_context: { label: "Mover contexto para lixeira", emoji: "🗑️" },
 };
 
 const EXAMPLES = [
@@ -355,6 +361,9 @@ export function PreviewCard({
   const [saving, setSaving] = useState(false);
   const meta = INTENT[a.intent];
   const isMoney = a.intent === "expense" || a.intent === "income";
+  const isContext = isContextIntent(a.intent);
+  const currentContext = contexts.find((c) => c.id === a.context_id);
+  const contextFields = { ...CONTEXT_DEFAULTS, ...currentContext, ...a.context_data };
   const missing = missingFields(a);
   const payment = a.card_id ? `card:${a.card_id}` : a.account_id ? `account:${a.account_id}` : "";
   const shared = a.intent === "expense" && a.shared && hasPartner;
@@ -363,7 +372,29 @@ export function PreviewCard({
   const payerName = nameOf(a.payer_user_id) ?? "Você";
 
   const rows: [string, string][] = [];
-  rows.push(["Quando", `${friendlyDate(a.date)}${a.time ? ` · ${a.time}` : ""}`]);
+  if (!isContext) rows.push(["Quando", `${friendlyDate(a.date)}${a.time ? ` · ${a.time}` : ""}`]);
+  if (isContext) {
+    rows.push(["Tipo", contextTypeLabel(contextFields.type ?? CONTEXT_DEFAULTS.type)]);
+    rows.push([
+      "Situação",
+      contextStatusLabel(
+        a.intent === "archive_context"
+          ? "ARCHIVED"
+          : (contextFields.status ?? CONTEXT_DEFAULTS.status),
+      ),
+    ]);
+    rows.push([
+      "Visibilidade",
+      contextFields.visibility === "PRIVATE" ? "Pessoal" : "Compartilhado",
+    ]);
+    if (contextFields.description) rows.push(["Descrição", contextFields.description]);
+    if (contextFields.budget_amount != null)
+      rows.push(["Orçamento", formatCurrency(Number(contextFields.budget_amount))]);
+    if (contextFields.start_date) rows.push(["Início", friendlyDate(contextFields.start_date)]);
+    if (contextFields.end_date) rows.push(["Fim", friendlyDate(contextFields.end_date)]);
+    if (contextFields.location) rows.push(["Local", contextFields.location]);
+    if (a.intent === "delete_context") rows.push(["Destino", "Lixeira — pode ser restaurado"]);
+  }
   if (isMoney || a.intent === "purchase" || a.intent === "goal") {
     if (a.category_id) rows.push(["Categoria", nameOf(a.category_id) ?? "—"]);
   }
@@ -415,6 +446,9 @@ export function PreviewCard({
             onChange={(e) => onChange({ description: e.target.value })}
             aria-label="Descrição"
           />
+          {isContext ? (
+            <ContextFields action={a} current={currentContext} onChange={onChange} />
+          ) : null}
           {isMoney || a.intent === "purchase" || a.intent === "goal" ? (
             <Input
               inputMode="decimal"
@@ -426,12 +460,14 @@ export function PreviewCard({
               placeholder="Valor"
             />
           ) : null}
-          <Input
-            type="date"
-            value={a.date ?? ""}
-            onChange={(e) => onChange({ date: e.target.value })}
-            aria-label="Data"
-          />
+          {!isContext ? (
+            <Input
+              type="date"
+              value={a.date ?? ""}
+              onChange={(e) => onChange({ date: e.target.value })}
+              aria-label="Data"
+            />
+          ) : null}
           {a.intent === "event" ? (
             <Input
               type="time"
@@ -484,12 +520,14 @@ export function PreviewCard({
               </SelectContent>
             </Select>
           ) : null}
-          <div className="sm:col-span-2">
-            <ContextSelect
-              value={a.context_id ?? NO_CONTEXT}
-              onChange={(v) => onChange({ context_id: v === NO_CONTEXT ? null : v })}
-            />
-          </div>
+          {!isContext ? (
+            <div className="sm:col-span-2">
+              <ContextSelect
+                value={a.context_id ?? NO_CONTEXT}
+                onChange={(v) => onChange({ context_id: v === NO_CONTEXT ? null : v })}
+              />
+            </div>
+          ) : null}
         </div>
       ) : (
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">

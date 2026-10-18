@@ -13,6 +13,12 @@ import type { z } from "zod";
 import { actionSchema } from "@/features/plugins/action-schema";
 import { authorizePluginAction } from "@/features/plugins/plugins.functions";
 import { saveSimpleRecord } from "@/features/records/mutations";
+import {
+  contextCreateInput,
+  contextProposalSchema,
+  isContextIntent,
+} from "@/features/contexts/ai-contract";
+import { executeContextAction } from "@/features/contexts/execute-confirmed";
 
 /**
  * Executor da Inbox: transforma uma ação JÁ confirmada em chamadas às MESMAS mutações usadas
@@ -34,6 +40,8 @@ const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
 export function missingFields(a: z.infer<typeof actionSchema>): string[] {
   const missing: string[] = [];
   if (!a.description.trim()) missing.push("descrição");
+  if (isContextIntent(a.intent) && a.intent !== "create_context" && !a.context_id)
+    missing.push("contexto a alterar");
   if ((a.intent === "expense" || a.intent === "income") && !a.amount) missing.push("valor");
   if (a.intent === "expense" && !a.card_id && !a.account_id) missing.push("forma de pagamento");
   if (a.intent === "expense" && a.installments && !a.card_id) missing.push("cartão das parcelas");
@@ -51,6 +59,8 @@ export async function executeAction(
   actionSchema.parse(a);
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
+  if (a.intent === "create_context") contextCreateInput(a.description, a.context_data);
+  if (isContextIntent(a.intent)) contextProposalSchema.parse(a.context_data ?? {});
   const authorized = await authorizePluginAction({
     data: {
       intent: a.intent,
@@ -67,6 +77,11 @@ export async function executeAction(
 
   const amount = a.amount;
   const date = a.date;
+  if (isContextIntent(a.intent)) {
+    const result = await executeContextAction(a, workspaceId, userId);
+    await invalidate("contexts", "context", "trash", "workspace_activity");
+    return result;
+  }
   if (
     (a.intent === "expense" || a.intent === "income") &&
     (amount == null || !Number.isFinite(amount) || amount <= 0 || !date)

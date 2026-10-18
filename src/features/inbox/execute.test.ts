@@ -9,6 +9,8 @@ vi.mock("@/features/purchases/queries", () => ({ createPurchase: vi.fn() }));
 vi.mock("@/features/activities/queries", () => ({ createActivity: vi.fn() }));
 vi.mock("@/features/records/mutations", () => ({ saveSimpleRecord: vi.fn() }));
 vi.mock("@/features/plugins/plugins.functions", () => ({ authorizePluginAction: vi.fn() }));
+vi.mock("@/features/contexts/execute-confirmed", () => ({ executeContextAction: vi.fn() }));
+import { executeContextAction } from "@/features/contexts/execute-confirmed";
 import { authorizePluginAction } from "@/features/plugins/plugins.functions";
 import { saveSimpleRecord } from "@/features/records/mutations";
 import { createTransaction } from "@/features/finance/queries";
@@ -93,4 +95,67 @@ test("shared installments are blocked instead of promising unsupported division"
     ),
   ).rejects.toThrow("parcelamento dividido");
   expect(authorizePluginAction).not.toHaveBeenCalled();
+});
+test("context confirmation delegates with server identity only after authorization", async () => {
+  const contextAction = {
+    ...action,
+    intent: "create_context" as const,
+    description: "Habilitação",
+  };
+  vi.mocked(authorizePluginAction).mockRejectedValueOnce(new Error("denied"));
+  await expect(executeAction(contextAction, ctx)).rejects.toThrow("denied");
+  expect(executeContextAction).not.toHaveBeenCalled();
+  vi.mocked(authorizePluginAction).mockResolvedValue({
+    workspaceId: "authorized",
+    userId: "actor",
+  });
+  vi.mocked(executeContextAction).mockResolvedValue({
+    id: "returned-real-id",
+    module: "Contextos",
+    href: "/contextos/returned-real-id",
+  });
+  expect(await executeAction(contextAction, ctx)).toMatchObject({ id: "returned-real-id" });
+  expect(executeContextAction).toHaveBeenCalledWith(contextAction, "authorized", "actor");
+});
+test("invalid context proposal cannot reach authorization or persistence", async () => {
+  await expect(
+    executeAction(
+      {
+        ...action,
+        intent: "create_context",
+        context_data: { start_date: "2026-10-20", end_date: "2026-10-18" },
+      },
+      ctx,
+    ),
+  ).rejects.toThrow();
+  expect(authorizePluginAction).not.toHaveBeenCalled();
+  expect(executeContextAction).not.toHaveBeenCalled();
+});
+test("subsequent expense keeps verified context ID and the supplied R$120", async () => {
+  vi.mocked(authorizePluginAction).mockResolvedValue({
+    workspaceId: "authorized",
+    userId: "actor",
+  });
+  vi.mocked(createTransaction).mockResolvedValue({ id: "actual-transaction-id" } as Awaited<
+    ReturnType<typeof createTransaction>
+  >);
+  const expense = {
+    ...action,
+    intent: "expense" as const,
+    description: "Aulas práticas",
+    amount: 120,
+    date: "2026-10-18",
+    account_id: "actual-account-id",
+    context_id: "returned-real-context-id",
+  };
+  expect(await executeAction(expense, ctx)).toMatchObject({ id: "actual-transaction-id" });
+  expect(createTransaction).toHaveBeenCalledWith(
+    expect.objectContaining({
+      amount: 120,
+      contextId: "returned-real-context-id",
+      description: "Aulas práticas",
+      workspaceId: "authorized",
+      ownerId: "actor",
+    }),
+  );
 });
