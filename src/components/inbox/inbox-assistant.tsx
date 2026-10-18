@@ -7,7 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/features/app/app-context";
 import { useAccounts, useCards, useCategories } from "@/features/finance/queries";
@@ -15,6 +21,8 @@ import { formatCurrency } from "@/lib/format";
 import { interpretInbox, type InboxAction } from "@/lib/inbox/inbox.functions";
 import { executeAction, missingFields } from "@/features/inbox/execute";
 import { useInboxHistory } from "@/features/inbox/history";
+import { ContextSelect, NO_CONTEXT } from "@/components/quick/context-select";
+import { useContexts } from "@/features/contexts/queries";
 
 type Msg = { role: "user" | "assistant"; content: string };
 export type Preview = { key: string; text: string; action: InboxAction };
@@ -53,7 +61,11 @@ function friendlyDate(iso: string | null) {
   const y = new Date(`${today}T12:00:00`);
   y.setDate(y.getDate() - 1);
   if (iso === y.toISOString().slice(0, 10)) return "Ontem";
-  return new Date(`${iso}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
+  return new Date(`${iso}T12:00:00`).toLocaleDateString("pt-BR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
 }
 
 export function InboxAssistant({ compact = false }: { compact?: boolean }) {
@@ -99,14 +111,33 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
     try {
       const t = localToday();
       const res = await interpret({ data: { messages: next, today: t.iso, weekday: t.weekday } });
-      const firstUserText = next.filter((m) => m.role === "user").map((m) => m.content).join(" · ");
+      const firstUserText = next
+        .filter((m) => m.role === "user")
+        .map((m) => m.content)
+        .join(" · ");
       // a nova interpretação substitui as prévias ainda não confirmadas
       previews.forEach((p) => remove(p.key));
-      const fresh = res.actions.map((action) => ({ key: crypto.randomUUID(), text: firstUserText, action }));
-      fresh.forEach((p) => upsert({ id: p.key, text: p.text, status: "pending", action: p.action, createdAt: new Date().toISOString() }));
+      const fresh = res.actions.map((action) => ({
+        key: crypto.randomUUID(),
+        text: firstUserText,
+        action,
+      }));
+      fresh.forEach((p) =>
+        upsert({
+          id: p.key,
+          text: p.text,
+          status: "pending",
+          action: p.action,
+          createdAt: new Date().toISOString(),
+        }),
+      );
       setPreviews(fresh);
       setOptions(res.options);
-      const reply = res.question ?? (fresh.length ? "Entendi. Confere antes de salvar:" : "Não encontrei nada para registrar. Pode reformular?");
+      const reply =
+        res.question ??
+        (fresh.length
+          ? "Entendi. Confere antes de salvar:"
+          : "Não encontrei nada para registrar. Pode reformular?");
       setMessages((m) => [...m, { role: "assistant", content: reply }]);
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Não consegui interpretar agora.";
@@ -117,7 +148,9 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
   }
 
   function updatePreview(key: string, patch: Partial<InboxAction>) {
-    setPreviews((ps) => ps.map((p) => (p.key === key ? { ...p, action: { ...p.action, ...patch } } : p)));
+    setPreviews((ps) =>
+      ps.map((p) => (p.key === key ? { ...p, action: { ...p.action, ...patch } } : p)),
+    );
   }
 
   async function confirm(p: Preview) {
@@ -129,7 +162,14 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
         memberIds: memberProfiles.map((m) => m.id),
         queryClient,
       });
-      upsert({ id: p.key, text: p.text, status: "confirmed", action: p.action, createdAt: new Date().toISOString(), ref });
+      upsert({
+        id: p.key,
+        text: p.text,
+        status: "confirmed",
+        action: p.action,
+        createdAt: new Date().toISOString(),
+        ref,
+      });
       setPreviews((ps) => ps.filter((x) => x.key !== p.key));
       toast.success(`${INTENT[p.action.intent].label} registrada em ${ref.module}.`);
       if (previews.length <= 1) {
@@ -138,7 +178,14 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Erro ao salvar.";
-      upsert({ id: p.key, text: p.text, status: "error", action: p.action, createdAt: new Date().toISOString(), error: msg });
+      upsert({
+        id: p.key,
+        text: p.text,
+        status: "error",
+        action: p.action,
+        createdAt: new Date().toISOString(),
+        error: msg,
+      });
       toast.error(msg);
     }
   }
@@ -161,7 +208,9 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
           <div className="space-y-4 pt-2">
             <div>
               <p className="text-2xl font-semibold tracking-tight">O que aconteceu?</p>
-              <p className="text-sm text-muted-foreground">Escreva do seu jeito. Nada é salvo sem sua confirmação.</p>
+              <p className="text-sm text-muted-foreground">
+                Escreva do seu jeito. Nada é salvo sem sua confirmação.
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {EXAMPLES.map((e) => (
@@ -183,7 +232,9 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
             <div
               className={cn(
                 "max-w-[85%] text-sm",
-                m.role === "user" ? "rounded-2xl rounded-br-md bg-primary px-3 py-2 text-primary-foreground" : "text-foreground",
+                m.role === "user"
+                  ? "rounded-2xl rounded-br-md bg-primary px-3 py-2 text-primary-foreground"
+                  : "text-foreground",
               )}
             >
               {m.content}
@@ -200,7 +251,13 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
         {options.length ? (
           <div className="flex flex-wrap gap-2">
             {options.map((o) => (
-              <Button key={o} size="sm" variant="outline" className="min-h-11 rounded-full" onClick={() => send(o)}>
+              <Button
+                key={o}
+                size="sm"
+                variant="outline"
+                className="min-h-11 rounded-full"
+                onClick={() => send(o)}
+              >
                 {o}
               </Button>
             ))}
@@ -248,7 +305,13 @@ export function InboxAssistant({ compact = false }: { compact?: boolean }) {
           className="max-h-32 min-h-11 resize-none text-base md:text-sm"
           aria-label="Mensagem para o Life OS"
         />
-        <Button type="submit" size="icon" className="size-11 shrink-0 rounded-xl" disabled={busy || !text.trim()} aria-label="Enviar">
+        <Button
+          type="submit"
+          size="icon"
+          className="size-11 shrink-0 rounded-xl"
+          disabled={busy || !text.trim()}
+          aria-label="Enviar"
+        >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}
         </Button>
       </form>
@@ -270,6 +333,7 @@ export function PreviewCard({
   userId,
   hasPartner,
   partnerName,
+  error,
 }: {
   preview: Preview;
   nameOf: (id?: string | null) => string | undefined;
@@ -282,7 +346,10 @@ export function PreviewCard({
   userId?: string | undefined;
   hasPartner: boolean;
   partnerName?: string | undefined;
+  error?: string | undefined;
 }) {
+  const { workspaceId } = useApp();
+  const { data: contexts = [] } = useContexts(workspaceId);
   const a = preview.action;
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -300,24 +367,41 @@ export function PreviewCard({
   if (isMoney || a.intent === "purchase" || a.intent === "goal") {
     if (a.category_id) rows.push(["Categoria", nameOf(a.category_id) ?? "—"]);
   }
-  if (a.intent === "expense") rows.push(["Pagamento", nameOf(a.card_id) ?? nameOf(a.account_id) ?? "—"]);
+  if (a.intent === "expense")
+    rows.push(["Pagamento", nameOf(a.card_id) ?? nameOf(a.account_id) ?? "—"]);
   if (a.intent === "income" && a.account_id) rows.push(["Conta", nameOf(a.account_id) ?? "—"]);
-  if (a.installments && a.amount) rows.push(["Parcelas", `${a.installments}x de ${formatCurrency(a.amount / a.installments)}`]);
-  if (a.intent === "activity" && a.duration_minutes) rows.push(["Duração", `${Math.floor(a.duration_minutes / 60) ? `${Math.floor(a.duration_minutes / 60)}h` : ""}${a.duration_minutes % 60 ? `${a.duration_minutes % 60}min` : ""}`]);
+  if (a.installments && a.amount)
+    rows.push(["Parcelas", `${a.installments}x de ${formatCurrency(a.amount / a.installments)}`]);
+  if (a.intent === "activity" && a.duration_minutes)
+    rows.push([
+      "Duração",
+      `${Math.floor(a.duration_minutes / 60) ? `${Math.floor(a.duration_minutes / 60)}h` : ""}${a.duration_minutes % 60 ? `${a.duration_minutes % 60}min` : ""}`,
+    ]);
   if (a.intent === "activity" && a.distance_km) rows.push(["Distância", `${a.distance_km} km`]);
-  if (a.intent === "note" && a.content && a.content !== a.description) rows.push(["Conteúdo", a.content]);
+  if (a.intent === "note" && a.content && a.content !== a.description)
+    rows.push(["Conteúdo", a.content]);
+  if (a.context_id)
+    rows.push([
+      "Contexto",
+      contexts.find((c) => c.id === a.context_id)?.name ?? "Indisponível — edite a prévia",
+    ]);
 
   return (
-    <div className="rounded-2xl border border-primary/30 bg-surface p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
+    <div className="min-w-0 rounded-2xl border border-primary/30 bg-surface p-4 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-primary">
             {meta.emoji} {meta.label}
           </p>
-          <p className="truncate text-lg font-semibold">{a.description || "Sem descrição"}</p>
+          <p className="break-words text-lg font-semibold">{a.description || "Sem descrição"}</p>
         </div>
         {a.amount ? (
-          <p className={cn("shrink-0 text-lg font-semibold tabular-nums", a.intent === "income" && "text-success")}>
+          <p
+            className={cn(
+              "shrink-0 text-lg font-semibold tabular-nums",
+              a.intent === "income" && "text-success",
+            )}
+          >
             {a.intent === "purchase" ? "até " : ""}
             {formatCurrency(a.amount)}
           </p>
@@ -326,30 +410,86 @@ export function PreviewCard({
 
       {editing ? (
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <Input value={a.description} onChange={(e) => onChange({ description: e.target.value })} aria-label="Descrição" />
+          <Input
+            value={a.description}
+            onChange={(e) => onChange({ description: e.target.value })}
+            aria-label="Descrição"
+          />
           {isMoney || a.intent === "purchase" || a.intent === "goal" ? (
             <Input
               inputMode="decimal"
               value={a.amount ?? ""}
-              onChange={(e) => onChange({ amount: Number(e.target.value.replace(",", ".")) || null })}
+              onChange={(e) =>
+                onChange({ amount: Number(e.target.value.replace(",", ".")) || null })
+              }
               aria-label="Valor"
               placeholder="Valor"
             />
           ) : null}
-          <Input type="date" value={a.date ?? ""} onChange={(e) => onChange({ date: e.target.value })} aria-label="Data" />
+          <Input
+            type="date"
+            value={a.date ?? ""}
+            onChange={(e) => onChange({ date: e.target.value })}
+            aria-label="Data"
+          />
           {a.intent === "event" ? (
-            <Input type="time" value={a.time ?? ""} onChange={(e) => onChange({ time: e.target.value })} aria-label="Hora" />
+            <Input
+              type="time"
+              value={a.time ?? ""}
+              onChange={(e) => onChange({ time: e.target.value })}
+              aria-label="Hora"
+            />
           ) : null}
           {isMoney ? (
             <Select value={a.category_id ?? ""} onValueChange={(v) => onChange({ category_id: v })}>
-              <SelectTrigger aria-label="Categoria"><SelectValue placeholder="Categoria" /></SelectTrigger>
+              <SelectTrigger aria-label="Categoria">
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
               <SelectContent>
                 {categories
                   .filter((c) => c.type === (a.intent === "expense" ? "EXPENSE" : "INCOME"))
-                  .map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  .map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           ) : null}
+          {a.intent === "note" ? (
+            <Textarea
+              aria-label="Conteúdo da nota"
+              value={a.content ?? a.description}
+              onChange={(e) => onChange({ content: e.target.value })}
+              className="text-base md:text-sm sm:col-span-2"
+            />
+          ) : null}
+          {a.intent === "income" ? (
+            <Select
+              value={a.account_id ?? "none"}
+              onValueChange={(v) =>
+                onChange({ account_id: v === "none" ? null : v, card_id: null })
+              }
+            >
+              <SelectTrigger aria-label="Conta da receita">
+                <SelectValue placeholder="Conta" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem conta</SelectItem>
+                {accounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
+                    {account.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+          <div className="sm:col-span-2">
+            <ContextSelect
+              value={a.context_id ?? NO_CONTEXT}
+              onChange={(v) => onChange({ context_id: v === NO_CONTEXT ? null : v })}
+            />
+          </div>
         </div>
       ) : (
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
@@ -368,19 +508,32 @@ export function PreviewCard({
             value={payment}
             onValueChange={(v) => {
               const [kind, id] = v.split(":");
-              onChange(kind === "card" ? { card_id: id ?? null, account_id: null } : { account_id: id ?? null, card_id: null });
+              onChange(
+                kind === "card"
+                  ? { card_id: id ?? null, account_id: null }
+                  : { account_id: id ?? null, card_id: null },
+              );
             }}
           >
-            <SelectTrigger aria-label="Como você pagou?" className={cn(!payment && "border-warning")}>
+            <SelectTrigger
+              aria-label="Como você pagou?"
+              className={cn(!payment && "border-warning")}
+            >
               <SelectValue placeholder="Como você pagou?" />
             </SelectTrigger>
             <SelectContent>
               {cards.map((c) => (
-                <SelectItem key={c.id} value={`card:${c.id}`}>💳 {c.name}</SelectItem>
+                <SelectItem key={c.id} value={`card:${c.id}`}>
+                  💳 {c.name}
+                </SelectItem>
               ))}
-              {a.installments ? null : accounts.map((c) => (
-                <SelectItem key={c.id} value={`account:${c.id}`}>🏦 {c.name}</SelectItem>
-              ))}
+              {a.installments
+                ? null
+                : accounts.map((c) => (
+                    <SelectItem key={c.id} value={`account:${c.id}`}>
+                      🏦 {c.name}
+                    </SelectItem>
+                  ))}
             </SelectContent>
           </Select>
         </div>
@@ -388,12 +541,17 @@ export function PreviewCard({
 
       {shared && a.amount ? (
         <div className="mt-3 rounded-xl bg-muted/50 p-3 text-sm">
-          <p className="flex items-center gap-1.5 font-medium"><Users className="size-4" /> Dividida · pago por {payerName}</p>
+          <p className="flex items-center gap-1.5 font-medium">
+            <Users className="size-4" /> Dividida · pago por {payerName}
+          </p>
           <p className="mt-1 text-muted-foreground">
-            {nameOf(userId)}: {formatCurrency(mine)} · {partnerName ?? "outra parte"}: {formatCurrency(theirs)}
+            {nameOf(userId)}: {formatCurrency(mine)} · {partnerName ?? "outra parte"}:{" "}
+            {formatCurrency(theirs)}
           </p>
           {theirs > 0 ? (
-            <p className="mt-1 text-xs text-muted-foreground">O acerto será calculado pelo módulo Nós ao confirmar.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              O acerto será calculado pelo módulo Nós ao confirmar.
+            </p>
           ) : null}
         </div>
       ) : null}
@@ -404,24 +562,49 @@ export function PreviewCard({
         </p>
       ) : null}
 
-      {missing.length ? <p className="mt-2 text-xs text-warning">Falta: {missing.join(", ")}</p> : null}
+      {missing.length ? (
+        <p className="mt-2 text-xs text-warning">Falta: {missing.join(", ")}</p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="mt-2 break-words text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
 
       <div className="mt-4 flex gap-2">
         <Button
           className="min-h-11 flex-1"
           disabled={!!missing.length || saving}
           onClick={async () => {
+            if (saving) return;
             setSaving(true);
-            await onConfirm();
-            setSaving(false);
+            try {
+              await onConfirm();
+            } finally {
+              setSaving(false);
+            }
           }}
         >
-          {saving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Confirmar
+          {saving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}{" "}
+          Confirmar
         </Button>
-        <Button variant="outline" className="min-h-11" onClick={() => setEditing((v) => !v)} aria-label="Editar">
-          <Pencil className="size-4" /> <span className="hidden sm:inline">{editing ? "Pronto" : "Editar"}</span>
+        <Button
+          variant="outline"
+          className="min-h-11"
+          disabled={saving}
+          onClick={() => setEditing((v) => !v)}
+          aria-label="Editar"
+        >
+          <Pencil className="size-4" />{" "}
+          <span className="hidden sm:inline">{editing ? "Pronto" : "Editar"}</span>
         </Button>
-        <Button variant="ghost" className="min-h-11" onClick={onCancel} aria-label="Cancelar">
+        <Button
+          variant="ghost"
+          className="min-h-11"
+          disabled={saving}
+          onClick={onCancel}
+          aria-label="Cancelar"
+        >
           <X className="size-4" /> <span className="hidden sm:inline">Cancelar</span>
         </Button>
       </div>
@@ -447,7 +630,10 @@ export function InboxHistoryList() {
             key={t.v}
             type="button"
             onClick={() => setTab(t.v)}
-            className={cn("min-h-10 flex-1 rounded-lg text-xs font-medium", tab === t.v ? "bg-surface shadow-sm" : "text-muted-foreground")}
+            className={cn(
+              "min-h-10 flex-1 rounded-lg text-xs font-medium",
+              tab === t.v ? "bg-surface shadow-sm" : "text-muted-foreground",
+            )}
           >
             {t.l} ({entries.filter((e) => e.status === t.v).length})
           </button>
@@ -458,7 +644,10 @@ export function InboxHistoryList() {
       ) : (
         <ul className="space-y-2">
           {list.map((e) => (
-            <li key={e.id} className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3">
+            <li
+              key={e.id}
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3"
+            >
               <span className="text-lg">{INTENT[e.action.intent].emoji}</span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
@@ -466,7 +655,13 @@ export function InboxHistoryList() {
                   {e.action.amount ? ` · ${formatCurrency(e.action.amount)}` : ""}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  “{e.text}” · {new Date(e.createdAt).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  “{e.text}” ·{" "}
+                  {new Date(e.createdAt).toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </p>
                 {e.error ? <p className="truncate text-xs text-destructive">{e.error}</p> : null}
               </div>
@@ -475,7 +670,12 @@ export function InboxHistoryList() {
                   <Link to={e.ref.href}>{e.ref.module}</Link>
                 </Button>
               ) : (
-                <Button size="icon" variant="ghost" aria-label="Remover" onClick={() => remove(e.id)}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Remover"
+                  onClick={() => remove(e.id)}
+                >
                   <X className="size-4" />
                 </Button>
               )}

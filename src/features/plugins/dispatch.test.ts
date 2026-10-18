@@ -6,7 +6,7 @@ import { enabledIds } from "./registry";
 import { guardTools } from "./dispatch.server";
 
 function implementations() {
-  const execute = vi.fn(async () => ({ ok: true }));
+  const execute = vi.fn(async () => ({ quantidade: 0, tarefas: [] }));
   const tools: ToolSet = Object.fromEntries(
     toolNameSchema.options.map((name) => [
       name,
@@ -72,6 +72,15 @@ test("a successful validated execution writes a success without content", async 
   const { tools } = implementations();
   const audit = vi.fn(async () => {});
   const guarded = guardTools(tools, enabledIds([]), async () => enabledIds([]), audit);
-  await expect(run(guarded, "tasks", {})).resolves.toEqual({ ok: true });
+  await expect(run(guarded, "tasks", {})).resolves.toEqual({ quantidade: 0, tarefas: [] });
   expect(audit).toHaveBeenCalledWith("tasks", "success");
+});
+test("wrong domain output cannot be audited as success", async () => {
+  const { tools, execute } = implementations();
+  execute.mockResolvedValue({ quantidade: -1, tarefas: [] });
+  const audit = vi.fn(async () => {});
+  const guarded = guardTools(tools, enabledIds([]), async () => enabledIds([]), audit);
+  await expect(run(guarded, "tasks", {})).rejects.toThrow();
+  expect(audit).toHaveBeenCalledWith("tasks", "failure");
+  expect(audit).not.toHaveBeenCalledWith("tasks", "success");
 });

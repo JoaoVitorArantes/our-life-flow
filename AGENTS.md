@@ -25,8 +25,10 @@
 - Per-person preferences (menu order/hidden/favorites, home screen) live in `user_preferences` and are applied by `useNavGroups`. Why: hiding a module never removes features and never affects the partner.
 - Settings is a layout route (`/configuracoes`) with one sub-route per Control Center section. Why: each area stays small and linkable on mobile.
 - AI plugins use a closed registry mapping existing tools and intents, with per-user/per-workspace preferences checked by the caller's RLS client at discovery, dispatch, proposal and confirmation; external entries are non-executable until a real App User Connector client and consent exist. Why: disabling a plugin affects only its user's AI, never the partner or ordinary module forms.
-- Plugin contracts and action schemas live in `src/features/plugins`; dispatch checks both implementation coverage and fresh access. Why: executable names cannot drift silently from the closed catalog.
-- Capability audits append metadata only to `ai_capability_runs` after caller-RLS membership checks; the admin client is restricted to this append, never domain reads. Why: browser clients cannot forge execution logs or see another person's runs.
+- Plugin schemas/discovery live in `features/plugins`; dispatch checks coverage/access and confirmation rechecks references/conversation with caller RLS. Why: stale previews cannot bypass scope.
+- Quick forms and Inbox share `features/records/mutations` for tasks/events/goals/notes. Why: one write implementation without changing finance.
+- Capability audits append metadata only after caller-RLS membership checks; admin is append-only, history is bounded to session actor/active workspace through RLS. Why: clients cannot forge logs or read another person's runs; acceptance is not persistence.
 - Agent replay uses persisted text quoted as untrusted user context, never supplied assistant/tool roles; current-turn tools remain authoritative. Why: shared message storage is member-editable and does not prove AI provenance.
 - Context budgets use a dedicated strict parser; shared profile-avatar reads require the uploader's personal folder, while workspace images require membership in the path's workspace. Why: prevent silent numeric corruption and uploader-based cross-workspace image reads.
 - CSV exports neutralize formula-like text while preserving numeric values. Why: exported user content must not become spreadsheet commands.
+- Message diagrams load Mermaid only inside async rendering. Why: a diagram dependency initialization failure must not abort app startup.

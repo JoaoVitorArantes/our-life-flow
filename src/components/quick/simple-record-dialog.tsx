@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { saveSimpleRecord, type SimpleKind } from "@/features/records/mutations";
 import { useApp } from "@/features/app/app-context";
 import { parseAmount, toDateInput } from "@/lib/format";
 import { ContextSelect, NO_CONTEXT } from "./context-select";
 
-export type SimpleKind = "event" | "task" | "goal" | "note";
+export type { SimpleKind } from "@/features/records/mutations";
 
 type SimpleRecord = {
   id: string;
@@ -24,29 +24,29 @@ type SimpleRecord = {
   target_amount?: number | string | null;
 };
 
-const CONFIG: Record<SimpleKind, { title: string; editTitle: string; label: string; queryKey: string }> =
-  {
-    event: {
-      title: "Novo evento",
-      editTitle: "Editar evento",
-      label: "Título do evento",
-      queryKey: "events",
-    },
-    task: {
-      title: "Nova tarefa",
-      editTitle: "Editar tarefa",
-      label: "O que precisa ser feito?",
-      queryKey: "tasks",
-    },
-    goal: { title: "Nova meta", editTitle: "Editar meta", label: "Nome da meta", queryKey: "goals" },
-    note: { title: "Nova nota", editTitle: "Editar nota", label: "Título da nota", queryKey: "notes" },
-  };
-
-const TABLE: Record<SimpleKind, "events" | "tasks" | "goals" | "notes"> = {
-  event: "events",
-  task: "tasks",
-  goal: "goals",
-  note: "notes",
+const CONFIG: Record<
+  SimpleKind,
+  { title: string; editTitle: string; label: string; queryKey: string }
+> = {
+  event: {
+    title: "Novo evento",
+    editTitle: "Editar evento",
+    label: "Título do evento",
+    queryKey: "events",
+  },
+  task: {
+    title: "Nova tarefa",
+    editTitle: "Editar tarefa",
+    label: "O que precisa ser feito?",
+    queryKey: "tasks",
+  },
+  goal: { title: "Nova meta", editTitle: "Editar meta", label: "Nome da meta", queryKey: "goals" },
+  note: {
+    title: "Nova nota",
+    editTitle: "Editar nota",
+    label: "Título da nota",
+    queryKey: "notes",
+  },
 };
 
 export function SimpleRecordDialog({
@@ -108,38 +108,21 @@ export function SimpleRecordDialog({
       return;
     }
     setSaving(true);
-    const shape = {
-      title: title.trim(),
-      visibility: "SHARED" as const,
-      context_id: contextId === NO_CONTEXT ? null : contextId,
-    };
-    const owner = { workspace_id: workspaceId, owner_id: userId };
-    const recordId = record?.id ?? "";
-
     try {
-      let error = null;
-      if (kind === "event") {
-        const values = { ...shape, starts_at: new Date(`${date}T${time}`).toISOString() };
-        ({ error } = isEditing
-          ? await supabase.from("events").update(values).eq("id", recordId)
-          : await supabase.from("events").insert({ ...values, ...owner }));
-      } else if (kind === "task") {
-        const values = { ...shape, due_date: date };
-        ({ error } = isEditing
-          ? await supabase.from("tasks").update(values).eq("id", recordId)
-          : await supabase.from("tasks").insert({ ...values, ...owner }));
-      } else if (kind === "goal") {
-        const values = { ...shape, target_amount: parseAmount(target) || null, due_date: date };
-        ({ error } = isEditing
-          ? await supabase.from("goals").update(values).eq("id", recordId)
-          : await supabase.from("goals").insert({ ...values, ...owner }));
-      } else {
-        const values = { ...shape, content };
-        ({ error } = isEditing
-          ? await supabase.from("notes").update(values).eq("id", recordId)
-          : await supabase.from("notes").insert({ ...values, ...owner }));
-      }
-      if (error) throw error;
+      await saveSimpleRecord(
+        kind,
+        workspaceId,
+        userId,
+        {
+          title,
+          contextId: contextId === NO_CONTEXT ? null : contextId,
+          date,
+          time,
+          amount: parseAmount(target) || null,
+          content,
+        },
+        record?.id,
+      );
 
       await queryClient.invalidateQueries({ queryKey: [config.queryKey] });
       await queryClient.invalidateQueries({ queryKey: ["goal", record?.id] });
@@ -217,7 +200,6 @@ export function SimpleRecordDialog({
           )}
 
           <ContextSelect value={contextId} onChange={setContextId} />
-
 
           <Button className="w-full" disabled={saving} onClick={handleSubmit}>
             {saving ? "Salvando..." : "Salvar"}

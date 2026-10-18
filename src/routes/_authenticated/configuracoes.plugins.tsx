@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Activity,
@@ -29,7 +29,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getPluginCatalog, setPluginEnabled } from "@/features/plugins/plugins.functions";
+import {
+  getPluginCatalog,
+  setPluginEnabled,
+  getCapabilityHistory,
+} from "@/features/plugins/plugins.functions";
+import { INTENT_LABELS, CAPABILITIES } from "@/features/plugins/capabilities";
 import { useApp } from "@/features/app/app-context";
 
 const catalogOptions = () => ({ queryKey: ["ai_plugins"], queryFn: () => getPluginCatalog() });
@@ -86,6 +91,12 @@ const LABELS: Record<string, string> = {
 function PluginsPage() {
   const { workspaceName } = useApp();
   const { data } = useSuspenseQuery(catalogOptions());
+  const [showHistory, setShowHistory] = useState(false);
+  const history = useQuery({
+    queryKey: ["ai_capability_history", data.workspaceId],
+    queryFn: () => getCapabilityHistory(),
+    enabled: showHistory,
+  });
   const queryClient = useQueryClient();
   const update = useServerFn(setPluginEnabled);
   const [category, setCategory] = useState("internal");
@@ -133,7 +144,7 @@ function PluginsPage() {
             placeholder="Buscar plugins"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 text-base md:text-sm"
           />
         </div>
       </div>
@@ -156,7 +167,7 @@ function PluginsPage() {
                 {p.category === "internal" ? (
                   <Switch
                     aria-label={`Ativar ${p.name}`}
-                    checked={p.enabled}
+                    checked={p.requestedEnabled}
                     disabled={
                       mutation.isPending ||
                       (p.state === "permission_required" && p.dependencies.length === 0)
@@ -212,6 +223,29 @@ function PluginsPage() {
                   Configuração do provedor pendente · Não executável
                 </span>
               )}
+              <details className="border-t border-border pt-3 text-sm">
+                <summary className="cursor-pointer text-primary">Capacidades e permissões</summary>
+                <ul className="mt-3 space-y-2 text-muted-foreground">
+                  {p.capabilities.map((c) => (
+                    <li key={c.id}>
+                      <span className="font-medium text-foreground">{c.name}</span> ·{" "}
+                      {c.description}
+                    </li>
+                  ))}
+                  {p.intents.map((intent) => (
+                    <li key={intent}>{INTENT_LABELS[intent]} · confirmação obrigatória</li>
+                  ))}
+                  {p.category === "external" ? (
+                    <li>Autorização não concedida · conexão indisponível</li>
+                  ) : (
+                    <li>
+                      {p.scopes.includes("workspace:manage")
+                        ? "Administração do espaço"
+                        : "Dados acessíveis no espaço"}
+                    </li>
+                  )}
+                </ul>
+              </details>
             </article>
           );
         })}
@@ -219,6 +253,74 @@ function PluginsPage() {
       {plugins.length === 0 && (
         <p className="py-8 text-center text-sm text-muted-foreground">Nenhum plugin encontrado.</p>
       )}
+      <section className="border-t border-border pt-5">
+        <Button
+          variant="outline"
+          onClick={() => setShowHistory((v) => !v)}
+          aria-expanded={showHistory}
+        >
+          Suas execuções recentes
+        </Button>
+        {showHistory && (
+          <div className="mt-4" aria-live="polite">
+            {history.isPending ? (
+              <p className="text-sm text-muted-foreground">Carregando…</p>
+            ) : history.isError ? (
+              <div className="flex items-center gap-3">
+                <p role="alert" className="text-sm text-destructive">
+                  Não foi possível carregar as execuções.
+                </p>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Recarregar execuções"
+                  onClick={() => void history.refetch()}
+                >
+                  <RefreshCw className="size-4" />
+                </Button>
+              </div>
+            ) : !history.data?.runs.length ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhuma execução registrada neste espaço.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {history.data.runs.map((run) => (
+                  <li
+                    key={run.id}
+                    className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"
+                  >
+                    <div className="min-w-0">
+                      <p>
+                        {CAPABILITIES.find((c) => c.id === run.tool)?.name ??
+                          INTENT_LABELS[run.tool as keyof typeof INTENT_LABELS] ??
+                          "Capacidade interna"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(run.created_at).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={
+                        run.outcome === "failure" ? "text-destructive" : "text-muted-foreground"
+                      }
+                    >
+                      {run.outcome === "failure"
+                        ? "Falhou"
+                        : run.confirmation === "accepted"
+                          ? "Confirmação autorizada"
+                          : run.confirmation === "proposed"
+                            ? "Prévia preparada"
+                            : "Consulta concluída"}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

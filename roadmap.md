@@ -1,9 +1,19 @@
 # Roadmap
 
+- [x] Verify reported startup errors and isolate diagram initialization without changing bundling, data or deployment — local authenticated opening/reload and real diagram passed; reported hosted chunk not accessible (401).
+
+## Evolução incremental solicitada em 18/10/2026
+- [x] Diagnosticar estado atual e preservar implementações válidas
+- [x] Completar metadados e descoberta de capacidades reais no catálogo/agente
+- [x] Expor histórico pessoal de execuções com escopo protegido
+- [x] Revalidar referências e melhorar prévias/recuperação sem duplicar regras
+- [x] Executar regressões focadas e documentar capacidades, lacunas e limites
+- [ ] Verificar persistência e acesso compartilhado com dados de teste isolados — depende de ambiente/sessões autorizados sem dados reais
+
 - [x] Completar contratos e cobertura bidirecional das ferramentas/intents existentes
 - [x] Revalidar autorização, registrar metadados mínimos e proteger histórico recebido pelo agente
 - [x] Ajustar estados do catálogo/chat, documentar limites e executar testes focados
-- [ ] Validar Contextos e todos os módulos com sessão autenticada — bloqueado: não há sessão autorizada disponível
+- [ ] Validar gravação em Contextos e todos os módulos — bloqueado: requer dados de teste isolados e autorização; a sessão disponível foi usada somente para leitura do catálogo
 - [x] Auditoria estruturada: evidências e riscos documentados em docs/security-functionality-audit.md
 - [x] Varredura possível sem sessão: 29 testes, lint direcionado, verificação automática e telas públicas
 - [x] Relatório com evidências e limites; nenhuma implementação nova de plugins
