@@ -6,12 +6,16 @@ import { activeIdentity } from "./connection.server";
 function client(member: boolean, workspace: string | null = "casal") {
   const filters: unknown[][] = [];
   const from = vi.fn((table: string) => {
-    const result = table === "profiles"
-      ? { data: { active_workspace_id: workspace }, error: null }
-      : { data: member ? { user_id: "joao" } : null, error: null };
+    const result =
+      table === "profiles"
+        ? { data: { active_workspace_id: workspace }, error: null }
+        : { data: member ? { user_id: "joao" } : null, error: null };
     const chain = {
       select: () => chain,
-      eq: (...args: unknown[]) => { filters.push(args); return chain; },
+      eq: (...args: unknown[]) => {
+        filters.push(args);
+        return chain;
+      },
       single: async () => result,
       maybeSingle: async () => result,
     };
