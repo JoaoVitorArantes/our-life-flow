@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Completar contratos e cobertura bidirecional das ferramentas/intents existentes
+- [ ] Revalidar autorização, registrar metadados mínimos e proteger histórico recebido pelo agente
+- [ ] Ajustar estados do catálogo/chat, documentar limites e executar testes focados
 - [ ] Validar Contextos e todos os módulos com sessão autenticada — bloqueado: não há sessão autorizada disponível
 - [x] Auditoria estruturada: evidências e riscos documentados em docs/security-functionality-audit.md
 - [x] Varredura possível sem sessão: 29 testes, lint direcionado, verificação automática e telas públicas
