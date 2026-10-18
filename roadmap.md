@@ -2,11 +2,11 @@
 
 ## Integrações Google individuais
 - [x] Diagnosticar arquitetura existente e vincular cliente OAuth do Calendar com acesso offline.
-- [ ] Implementar autorização pessoal do Calendar, reconexão e desconexão para João e Renifer, sem publicar.
+- [x] Implementar autorização pessoal do Calendar, reconexão e desconexão; abertura real do Google verificada na prévia autenticada, sem consentir nem publicar.
 - [ ] Implementar conexão pessoal segura, leitura Calendar e ferramentas reais do Life AI após vinculação do cliente.
 - [ ] Validar consentimento e eventos reais com isolamento entre usuários, sem publicar.
 - [ ] Aplicar o padrão ao Gmail e Sheets somente após validação do Calendar.
-- [ ] Documentar configuração, testes e limitações.
+- [x] Documentar configuração, testes e limitações em docs/google-calendar-oauth.md.
 
 - [x] Verify reported startup errors and isolate diagram initialization without changing bundling, data or deployment — local authenticated opening/reload and real diagram passed; reported hosted chunk not accessible (401).
 
