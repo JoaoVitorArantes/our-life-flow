@@ -1,12 +1,15 @@
 # Roadmap
 
 ## Life AI — operações unificadas (pedido de 18/10/2026)
-- [ ] A: catalogar operações reais de todos os módulos e lacunas do agente.
-- [ ] B: integrar criação, consulta e edição de Contextos aos mesmos serviços das telas, com confirmação e resultado verificado.
-- [ ] C: ampliar gradualmente capacidades dos demais módulos sem duplicar regras de negócio.
-- [ ] D: preservar informações fornecidas e encadear operações apenas com identificadores verificados.
-- [ ] E: testar validação, confirmação, isolamento e regressões; verificar persistência em ambiente de teste isolado.
-- [ ] Documentar causa, cobertura por módulo, alterações e limitações; não publicar.
+- [x] A: catalogar operações reais de todos os módulos e lacunas do agente em docs/life-ai-evolution-diagnosis.md.
+- [x] B: integrar criação, consulta, edição, arquivo e lixeira de Contextos aos serviços existentes, com confirmação e read-back.
+- [x] C inicial: expor leitura de notas e detalhes de contextos sem duplicar regras.
+- [ ] C restante: ampliar demais módulos após validação central de Contextos — bloqueado nesta etapa pela verificação isolada pendente.
+- [x] D inicial: normalizar campos opcionais, orientar sequência confirmada e testar encaminhamento do ID real/valor fornecido.
+- [ ] D real: verificar diálogo sequencial com modelo e persistência — depende de ambiente de teste autorizado.
+- [x] E isolada: testar contratos, confirmação, escopo simulado, falhas e regressões.
+- [ ] E real: criação/consulta/edição/recarga e isolamento João/Renifer — depende de espaço de teste isolado e sessões autorizadas, sem dados reais.
+- [x] Documentar causa, cobertura por módulo, alterações e limitações; não publicar.
 
 ## Integrações Google individuais
 - [x] Implementar leitura pessoal na Agenda sem copiar registros, orientar consentimento separado e verificar início autenticado; 53 testes aprovados.
