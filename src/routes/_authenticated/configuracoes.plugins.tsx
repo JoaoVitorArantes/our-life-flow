@@ -157,7 +157,10 @@ function PluginsPage() {
                   <Switch
                     aria-label={`Ativar ${p.name}`}
                     checked={p.enabled}
-                    disabled={mutation.isPending || p.state === "permission_required"}
+                    disabled={
+                      mutation.isPending ||
+                      (p.state === "permission_required" && p.dependencies.length === 0)
+                    }
                     onCheckedChange={(enabled) => mutation.mutate({ pluginId: p.id, enabled })}
                   />
                 ) : (
@@ -182,11 +185,13 @@ function PluginsPage() {
                   {LABELS[failed ? "error" : p.state]}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {p.access === "read_write"
-                    ? "Consulta e proposta"
-                    : p.intents.length
-                      ? "Proposta"
-                      : "Consulta"}
+                  {p.intents.length && !p.tools.length
+                    ? "Proposta"
+                    : p.access === "read_write"
+                      ? "Consulta e proposta"
+                      : p.intents.length
+                        ? "Proposta"
+                        : "Consulta"}
                 </span>
               </div>
               {p.dependencies.length > 0 && (

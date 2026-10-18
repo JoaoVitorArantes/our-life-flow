@@ -355,7 +355,9 @@ export function buildTools(ctx: AgentCtx, base: Base) {
               pagas: items.filter((t) => t.status === "PAID").length,
               restantes: open.length,
               falta_pagar: r2(sumBy(open, (t) => Number(t.amount))),
-              ultima_parcela: items.at(-1) ? dueDateOf(items.at(-1) as Tables<"transactions">) : null,
+              ultima_parcela: items.at(-1)
+                ? dueDateOf(items.at(-1) as Tables<"transactions">)
+                : null,
               cartao: payName.get(p.card_id ?? p.account_id ?? "") ?? null,
             };
           });
@@ -485,7 +487,8 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             .lte("starts_at", `${to}T23:59:59-03:00`),
           sb.from("routines").select("*").eq("workspace_id", w).eq("status", "ACTIVE"),
         ]);
-        if (ev.error || rec.error || routines.error) return fail("sua agenda", ev.error ?? rec.error ?? routines.error);
+        if (ev.error || rec.error || routines.error)
+          return fail("sua agenda", ev.error ?? rec.error ?? routines.error);
         const days: string[] = [];
         for (
           let d = new Date(`${from}T12:00:00`);
@@ -661,9 +664,18 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     }),
   };
   const registered: ToolSet = tools;
-  return guardTools(registered, ctx.enabledPlugins,
+  return guardTools(
+    registered,
+    ctx.enabledPlugins,
     () => loadPluginAccess(sb, userId, w),
-    (name, outcome) => writeCapabilityAudit(sb, ctx, ctx.executionRunId, name, outcome,
-      name === "propose_action" ? "proposed" : "not_required"),
+    (name, outcome) =>
+      writeCapabilityAudit(
+        sb,
+        ctx,
+        ctx.executionRunId,
+        name,
+        outcome,
+        name === "propose_action" ? "proposed" : "not_required",
+      ),
   );
 }

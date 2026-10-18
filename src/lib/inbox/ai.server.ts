@@ -8,7 +8,8 @@ function createRunIdFetch() {
   let runId: string | undefined;
   return async (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
-    if (runId && !headers.has(LOVABLE_AIG_RUN_ID_HEADER)) headers.set(LOVABLE_AIG_RUN_ID_HEADER, runId);
+    if (runId && !headers.has(LOVABLE_AIG_RUN_ID_HEADER))
+      headers.set(LOVABLE_AIG_RUN_ID_HEADER, runId);
     const response = await fetch(input, { ...init, headers });
     runId ??= response.headers.get(LOVABLE_AIG_RUN_ID_HEADER)?.trim() || undefined;
     return response;
@@ -25,7 +26,11 @@ export const interpretationSchema = z.object({
 });
 export type Interpretation = z.infer<typeof interpretationSchema>;
 
-export async function interpret(system: string, messages: ModelMessage[], signal?: AbortSignal): Promise<Interpretation> {
+export async function interpret(
+  system: string,
+  messages: ModelMessage[],
+  signal?: AbortSignal,
+): Promise<Interpretation> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new Error("A IA não está configurada.");
   const provider = createOpenAI({

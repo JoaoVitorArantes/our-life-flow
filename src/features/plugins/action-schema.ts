@@ -24,4 +24,3 @@ export const actionSchema = z.object({
   priority: z.string().nullable(),
   purchase_category: z.string().nullable(),
 });
-

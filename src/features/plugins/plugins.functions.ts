@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { PLUGINS } from "./registry";
+import { PLUGINS, catalogState } from "./registry";
+import { intentSchema } from "./contracts";
 
 export const getPluginCatalog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -30,16 +31,7 @@ export const getPluginCatalog = createServerFn({ method: "POST" })
       plugins: PLUGINS.map((p) => ({
         ...p,
         enabled: enabled.has(p.id),
-        state:
-          p.category === "external"
-            ? p.connection
-            : p.id === "workspace" &&
-                !enabled.has("workspace") &&
-                (prefs?.find((r) => r.plugin_id === p.id)?.enabled ?? true)
-              ? "permission_required"
-              : enabled.has(p.id)
-                ? "enabled"
-                : "disabled",
+        state: catalogState(p, enabled, prefs ?? []),
       })),
     };
   });
@@ -82,7 +74,14 @@ export const setPluginEnabled = createServerFn({ method: "POST" })
 export const authorizePluginAction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ intent: z.string().max(80), expectedWorkspaceId: z.string().uuid() }).parse(input),
+    z
+      .object({
+        intent: intentSchema,
+        expectedWorkspaceId: z.string().uuid(),
+        confirmed: z.literal(true),
+      })
+      .strict()
+      .parse(input),
   )
   .handler(async ({ context, data }) => {
     const { data: profile, error } = await context.supabase
@@ -104,6 +103,16 @@ export const authorizePluginAction = createServerFn({ method: "POST" })
       context.userId,
       profile.active_workspace_id,
       data.intent,
+    );
+    const { writeCapabilityAudit } = await import("./audit.server");
+    const runId = crypto.randomUUID();
+    await writeCapabilityAudit(
+      context.supabase,
+      { workspaceId: profile.active_workspace_id, userId: context.userId },
+      runId,
+      data.intent,
+      "success",
+      "accepted",
     );
     return { workspaceId: profile.active_workspace_id, userId: context.userId };
   });

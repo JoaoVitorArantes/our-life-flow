@@ -54,8 +54,11 @@ export const Route = createFileRoute("/api/agent")({
         const parsed = agentBodySchema.safeParse(await request.json().catch(() => null));
         if (!parsed.success) return json(400, "Mensagem inválida.");
         let lastUser: UIMessage;
-        try { lastUser = currentUserMessage(parsed.data.messages); }
-        catch { return json(400, "Mensagem inválida. Envie apenas texto."); }
+        try {
+          lastUser = currentUserMessage(parsed.data.messages);
+        } catch {
+          return json(400, "Mensagem inválida. Envie apenas texto.");
+        }
         const messages = parsed.data.messages as UIMessage[];
 
         // Workspace SEMPRE derivado da conversa + sessão (RLS garante que é do usuário).
@@ -75,13 +78,26 @@ export const Route = createFileRoute("/api/agent")({
         } catch {
           return json(403, "Não foi possível verificar os plugins e permissões deste espaço.");
         }
-        const { data: history, error: historyError } = await supabase.from("ai_messages")
-          .select("message").eq("conversation_id", thread.id).eq("workspace_id", workspaceId)
-          .order("created_at", { ascending: false }).limit(40);
+        const { data: history, error: historyError } = await supabase
+          .from("ai_messages")
+          .select("message")
+          .eq("conversation_id", thread.id)
+          .eq("workspace_id", workspaceId)
+          .order("created_at", { ascending: false })
+          .limit(40);
         if (historyError) return json(500, "Não foi possível carregar a conversa.");
-        const modelMessages = historyForModel((history ?? []).reverse().map((r) => r.message), lastUser);
-        const ctx = { supabase, workspaceId, userId, today: today.iso, enabledPlugins,
-          executionRunId: crypto.randomUUID() };
+        const modelMessages = historyForModel(
+          (history ?? []).reverse().map((r) => r.message),
+          lastUser,
+        );
+        const ctx = {
+          supabase,
+          workspaceId,
+          userId,
+          today: today.iso,
+          enabledPlugins,
+          executionRunId: crypto.randomUUID(),
+        };
         const { loadBase, buildTools } = await import("@/lib/agent/tools.server");
         const base = await loadBase(ctx);
         const tools = buildTools(ctx, base);
