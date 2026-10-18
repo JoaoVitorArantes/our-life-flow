@@ -43,6 +43,8 @@ import { saveActionState, type ActionState } from "@/features/agent/conversation
 import type { InboxAction } from "@/lib/inbox/inbox.functions";
 import aiMark from "@/assets/lifeos-ai.png";
 import { cn } from "@/lib/utils";
+import { isToolFailure } from "@/features/plugins/contracts";
+import { actionSchema } from "@/features/plugins/action-schema";
 
 /** Rótulos amigáveis: o usuário vê o que está sendo consultado, nunca nomes técnicos. */
 const TOOL_UI: Record<string, { label: string; done: string; icon: typeof Wallet }> = {
@@ -270,8 +272,24 @@ export function AgentChat({
                     );
                   }
                   if (part.type === "tool-propose_action") {
+                    if (part.state === "output-error" || part.state === "output-denied")
+                      return (
+                        <Tool key={i} defaultOpen={false} className="w-fit">
+                          <ToolHeader
+                            type="tool-propose_action"
+                            state="output-error"
+                            title="Não foi possível preparar a prévia"
+                          />
+                        </Tool>
+                      );
                     if (part.state !== "output-available")
                       return <Shimmer key={i}>Preparando a prévia…</Shimmer>;
+                    if (!actionSchema.safeParse(part.output).success)
+                      return (
+                        <p key={i} className="text-sm text-destructive">
+                          Prévia indisponível.
+                        </p>
+                      );
                     const id = part.toolCallId;
                     const action = edits[id] ?? (part.output as InboxAction);
                     const st = states[id];
@@ -325,6 +343,9 @@ export function AgentChat({
                   }
                   if (part.type.startsWith("tool-") && "state" in part) {
                     const ui = TOOL_UI[part.type.slice(5)];
+                    const failed =
+                      part.state === "output-error" ||
+                      ("output" in part && isToolFailure(part.output));
                     const running =
                       part.state === "input-streaming" || part.state === "input-available";
                     if (running) {
@@ -343,12 +364,8 @@ export function AgentChat({
                       >
                         <ToolHeader
                           type={part.type as `tool-${string}`}
-                          state={part.state as "output-available"}
-                          title={
-                            part.state === "output-error"
-                              ? "Não consegui consultar"
-                              : (ui?.done ?? "Consulta feita")
-                          }
+                          state={failed ? "output-error" : (part.state as "output-available")}
+                          title={failed ? "Não consegui consultar" : (ui?.done ?? "Consulta feita")}
                         />
                       </Tool>
                     );

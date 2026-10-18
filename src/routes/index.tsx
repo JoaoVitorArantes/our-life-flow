@@ -15,6 +15,8 @@ export const Route = createFileRoute("/")({
           "Finanças pessoais e do casal, agenda, tarefas, metas e notas em um sistema calmo e minimalista.",
       },
       { property: "og:title", content: "Life OS — sua vida em um só lugar" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         property: "og:description",
         content: "Um sistema pessoal para organizar dinheiro, tempo e objetivos.",

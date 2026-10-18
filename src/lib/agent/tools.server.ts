@@ -1,13 +1,15 @@
 import { tool, type ToolSet } from "ai";
-import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Tables } from "@/integrations/supabase/types";
 import { calculateSafeToSpend, paidByInvoice, invoiceKey } from "@/features/finance/safe-to-spend";
 import { dueDateOf, isOpen, registerCardCycles, sumBy } from "@/features/finance/calc";
 import { netBalance } from "@/features/nos/settlements";
 import { occursOn } from "@/features/routines/queries";
-import { actionSchema } from "@/lib/inbox/ai.server";
-import { intentAllowed, toolAllowed } from "@/features/plugins/registry";
+import { actionSchema } from "@/features/plugins/action-schema";
+import { readInputSchemas } from "@/features/plugins/contracts";
+import { guardTools } from "@/features/plugins/dispatch.server";
+import { writeCapabilityAudit } from "@/features/plugins/audit.server";
+import { intentAllowed } from "@/features/plugins/registry";
 import { loadPluginAccess } from "@/features/plugins/access.server";
 
 /**
@@ -22,13 +24,13 @@ export type AgentCtx = {
   userId: string;
   today: string;
   enabledPlugins: ReadonlySet<string>;
+  executionRunId: string;
 };
 
 const r2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
-const iso = z.string().describe("Data YYYY-MM-DD");
 
 function fail(area: string, error: unknown) {
-  console.error(`[agent] ${area}`, error);
+  void error; // Never log private query payloads or raw database errors.
   return { error: `Não consegui consultar ${area} agora. Não invente números.` };
 }
 
@@ -57,10 +59,17 @@ export async function loadBase(ctx: AgentCtx) {
       : { data: [] },
     sb.from("workspaces").select("name, description").eq("id", w).maybeSingle(),
   ]);
+  for (const result of [accounts, cards, categories, contexts, members, goals, workspace]) {
+    if ("error" in result && result.error)
+      throw new Error("Não foi possível consultar os dados do espaço.");
+  }
   const ids = (members.data ?? []).map((m) => m.user_id);
-  const { data: profiles } = ids.length
+  const profilesResult = ids.length
     ? await sb.from("profiles").select("id, name").in("id", ids)
     : { data: [] };
+  if ("error" in profilesResult && profilesResult.error)
+    throw new Error("Não foi possível verificar as pessoas do espaço.");
+  const profiles = profilesResult.data;
   return {
     workspace: {
       name: workspace.data?.name ?? "Life OS",
@@ -104,7 +113,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
         sb.from("recurring_transactions").select("*").eq("workspace_id", w),
         sb.from("card_invoice_payments").select("*").eq("workspace_id", w),
       ]);
-      if (tx.error) throw tx.error;
+      if (tx.error || rec.error || pay.error) throw new Error("Financial query failed");
       return { tx: tx.data ?? [], rec: rec.data ?? [], pay: pay.data ?? [] };
     })());
 
@@ -124,7 +133,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     financial_overview: tool({
       description:
         "Dinheiro Livre (quanto podem gastar com segurança) e projeção: saldo disponível, receitas previstas, compromissos e menor saldo projetado. Use para 'quanto posso gastar', 'como está meu dinheiro', 'posso comprar X'. É EXATAMENTE o mesmo cálculo do cockpit do Financeiro.",
-      inputSchema: z.object({ horizon_days: z.number().describe("Horizonte em dias; padrão 30") }),
+      inputSchema: readInputSchemas.financial_overview,
       execute: async ({ horizon_days }) => {
         try {
           const { tx, rec, pay } = await loadFinance();
@@ -162,15 +171,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     transactions_summary: tool({
       description:
         "Totais e lançamentos reais (receitas/despesas) num período pela data do lançamento. Filtros opcionais: categoria, pessoa que registrou, busca na descrição, status. Retorna total, pago, pendente, por categoria, por pessoa e principais itens.",
-      inputSchema: z.object({
-        type: z.enum(["EXPENSE", "INCOME", "ALL"]),
-        from: iso,
-        to: iso,
-        category: z.string().nullable().describe("Nome da categoria ou null"),
-        person_id: z.string().nullable().describe("id da pessoa que registrou ou null"),
-        search: z.string().nullable(),
-        status: z.enum(["PAID", "OPEN", "ANY"]),
-      }),
+      inputSchema: readInputSchemas.transactions_summary,
       execute: async (q) => {
         try {
           const { tx } = await loadFinance();
@@ -228,11 +229,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     monthly_trend: tool({
       description:
         "Totais mês a mês (últimos N meses, incluindo o atual) de despesas ou receitas, opcionalmente de uma categoria. Use para comparar com a média histórica.",
-      inputSchema: z.object({
-        type: z.enum(["EXPENSE", "INCOME"]),
-        months: z.number(),
-        category: z.string().nullable(),
-      }),
+      inputSchema: readInputSchemas.monthly_trend,
       execute: async ({ type, months, category }) => {
         try {
           const { tx } = await loadFinance();
@@ -241,7 +238,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
           const cat = category?.toLowerCase().trim();
           const out = [];
           for (let i = n - 1; i >= 0; i--) {
-            const d = new Date(y!, m! - 1 - i, 1);
+            const d = new Date(y ?? 2026, (m ?? 1) - 1 - i, 1);
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
             const total = sumBy(
               tx.filter(
@@ -264,7 +261,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     cards_status: tool({
       description:
         "Cartões: limite, quanto está usado, disponível, fatura atual (vencimento, total, já pago parcialmente, restante), fechamento e vencimento.",
-      inputSchema: z.object({}),
+      inputSchema: readInputSchemas.cards_status,
       execute: async () => {
         try {
           const { tx, pay } = await loadFinance();
@@ -311,7 +308,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     upcoming_bills: tool({
       description:
         "Próximas contas/compromissos a pagar (inclui faturas de cartão pelo vencimento da fatura, parcelas e recorrentes previstas) e contas atrasadas.",
-      inputSchema: z.object({ days: z.number() }),
+      inputSchema: readInputSchemas.upcoming_bills,
       execute: async ({ days }) => {
         try {
           const { tx, rec, pay } = await loadFinance();
@@ -345,13 +342,14 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     installments: tool({
       description:
         "Compras parceladas: total, parcelas pagas, restantes, valor que falta e última parcela.",
-      inputSchema: z.object({}),
+      inputSchema: readInputSchemas.installments,
       execute: async () => {
         try {
           const [{ tx }, plans] = await Promise.all([
             loadFinance(),
             sb.from("installment_plans").select("*").eq("workspace_id", w),
           ]);
+          if (plans.error) throw plans.error;
           return (plans.data ?? []).map((p) => {
             const items = tx
               .filter((t) => t.installment_plan_id === p.id)
@@ -364,7 +362,9 @@ export function buildTools(ctx: AgentCtx, base: Base) {
               pagas: items.filter((t) => t.status === "PAID").length,
               restantes: open.length,
               falta_pagar: r2(sumBy(open, (t) => Number(t.amount))),
-              ultima_parcela: items.length ? dueDateOf(items[items.length - 1]!) : null,
+              ultima_parcela: items.at(-1)
+                ? dueDateOf(items.at(-1) as Tables<"transactions">)
+                : null,
               cartao: payName.get(p.card_id ?? p.account_id ?? "") ?? null,
             };
           });
@@ -377,7 +377,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     nos_balance: tool({
       description:
         "Nós (casal): quem deve quanto para quem (acertos pendentes) e despesas compartilhadas num período. Acertos NÃO são receitas nem despesas.",
-      inputSchema: z.object({ from: iso, to: iso }),
+      inputSchema: readInputSchemas.nos_balance,
       execute: async ({ from, to }) => {
         try {
           const [{ tx }, st, splits] = await Promise.all([
@@ -385,6 +385,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             sb.from("settlements").select("*").eq("workspace_id", w),
             sb.from("transaction_splits").select("transaction_id").eq("workspace_id", w),
           ]);
+          if (st.error || splits.error) throw new Error("Shared query failed");
           const nb = netBalance(st.data ?? [], userId);
           const splitIds = new Set((splits.data ?? []).map((s) => s.transaction_id));
           const shared = tx.filter(
@@ -418,7 +419,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
 
     goals: tool({
       description: "Metas: alvo, valor atual, quanto falta, prazo e status.",
-      inputSchema: z.object({}),
+      inputSchema: readInputSchemas.goals,
       execute: async () => {
         const { data, error } = await sb
           .from("goals")
@@ -438,7 +439,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     tasks: tool({
       description:
         "Tarefas não concluídas (ou todas). scope: overdue (atrasadas), today, upcoming (próximos 7 dias), open (todas abertas).",
-      inputSchema: z.object({ scope: z.enum(["overdue", "today", "upcoming", "open"]) }),
+      inputSchema: readInputSchemas.tasks,
       execute: async ({ scope }) => {
         const { data, error } = await sb
           .from("tasks")
@@ -474,7 +475,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     agenda: tool({
       description:
         "Compromissos da Agenda num intervalo de datas, mais eventos recorrentes e rotinas que ocorrem nesses dias.",
-      inputSchema: z.object({ from: iso, to: iso }),
+      inputSchema: readInputSchemas.agenda,
       execute: async ({ from, to }) => {
         const [ev, rec, routines] = await Promise.all([
           sb
@@ -493,7 +494,8 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             .lte("starts_at", `${to}T23:59:59-03:00`),
           sb.from("routines").select("*").eq("workspace_id", w).eq("status", "ACTIVE"),
         ]);
-        if (ev.error) return fail("sua agenda", ev.error);
+        if (ev.error || rec.error || routines.error)
+          return fail("sua agenda", ev.error ?? rec.error ?? routines.error);
         const days: string[] = [];
         for (
           let d = new Date(`${from}T12:00:00`);
@@ -534,7 +536,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     activities: tool({
       description:
         "Atividades físicas registradas (Esporte) num período: total de minutos, quantidade, última atividade.",
-      inputSchema: z.object({ from: iso, to: iso }),
+      inputSchema: readInputSchemas.activities,
       execute: async ({ from, to }) => {
         const { data, error } = await sb
           .from("physical_activities")
@@ -553,6 +555,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
           .order("activity_date", { ascending: false })
           .limit(1)
           .maybeSingle();
+        if (last.error) return fail("suas atividades", last.error);
         return {
           quantidade: data.length,
           minutos_total: sumBy(data, (a) => a.duration_minutes ?? 0),
@@ -565,7 +568,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     purchases: tool({
       description:
         "Lista de Compras/desejos: itens, orçamento planejado, prioridade e status (WANT_TO_BUY, RESEARCHING, DECIDED, PURCHASED, DISCARDED).",
-      inputSchema: z.object({ include_done: z.boolean() }),
+      inputSchema: readInputSchemas.purchases,
       execute: async ({ include_done }) => {
         let q = sb
           .from("purchases")
@@ -584,7 +587,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
 
     routines_today: tool({
       description: "Rotinas e hábitos do dia e se já foram feitos.",
-      inputSchema: z.object({ date: iso }),
+      inputSchema: readInputSchemas.routines_today,
       execute: async ({ date }) => {
         const [rs, logs] = await Promise.all([
           sb.from("routines").select("*").eq("workspace_id", w).eq("status", "ACTIVE"),
@@ -594,7 +597,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             .eq("workspace_id", w)
             .eq("log_date", date),
         ]);
-        if (rs.error) return fail("suas rotinas", rs.error);
+        if (rs.error || logs.error) return fail("suas rotinas", rs.error ?? logs.error);
         const st = new Map((logs.data ?? []).map((l) => [l.routine_id, l.status]));
         return rs.data
           .filter((r) => occursOn(r, date))
@@ -610,15 +613,16 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     contexts: tool({
       description:
         "Contextos (viagens, projetos, eventos) com orçamento e quanto já foi gasto em cada um.",
-      inputSchema: z.object({}),
+      inputSchema: readInputSchemas.contexts,
       execute: async () => {
         try {
           const { tx } = await loadFinance();
-          const { data } = await sb
+          const { data, error } = await sb
             .from("contexts")
             .select("id, name, type, status, start_date, end_date, budget_amount")
             .eq("workspace_id", w)
             .neq("status", "ARCHIVED");
+          if (error) throw error;
           return (data ?? []).map((c) => ({
             ...c,
             id: undefined,
@@ -667,25 +671,18 @@ export function buildTools(ctx: AgentCtx, base: Base) {
     }),
   };
   const registered: ToolSet = tools;
-  return Object.fromEntries(
-    Object.entries(registered)
-      .filter(([name]) => toolAllowed(name, ctx.enabledPlugins))
-      .map(([name, definition]) => {
-        const execute = definition.execute;
-        return [
-          name,
-          {
-            ...definition,
-            execute: execute
-              ? async (input, options) => {
-                  const enabled = await loadPluginAccess(sb, userId, w);
-                  if (!toolAllowed(name, enabled))
-                    throw new Error("Plugin desativado ou permissão necessária.");
-                  return execute(input, options);
-                }
-              : undefined,
-          },
-        ];
-      }),
-  ) as ToolSet;
+  return guardTools(
+    registered,
+    ctx.enabledPlugins,
+    () => loadPluginAccess(sb, userId, w),
+    (name, outcome) =>
+      writeCapabilityAudit(
+        sb,
+        ctx,
+        ctx.executionRunId,
+        name,
+        outcome,
+        name === "propose_action" ? "proposed" : "not_required",
+      ),
+  );
 }

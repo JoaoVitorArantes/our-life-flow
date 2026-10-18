@@ -1,3 +1,11 @@
+import {
+  pluginSchema,
+  toolNameSchema,
+  intentSchema,
+  type ToolName,
+  type IntentName,
+} from "./contracts";
+
 export type PluginState =
   | "enabled"
   | "disabled"
@@ -11,8 +19,8 @@ export type Plugin = {
   name: string;
   description: string;
   category: "internal" | "external";
-  tools: readonly string[];
-  intents: readonly string[];
+  tools: readonly ToolName[];
+  intents: readonly IntentName[];
   dependencies: readonly string[];
   scopes: readonly string[];
   access: "read" | "read_write";
@@ -25,8 +33,8 @@ const internal = (
   id: string,
   name: string,
   description: string,
-  tools: string[],
-  intents: string[] = [],
+  tools: ToolName[],
+  intents: IntentName[] = [],
   dependencies: string[] = [],
 ): Plugin => ({
   id,
@@ -58,7 +66,7 @@ const external = (id: string, name: string, description: string, scopes: string[
   connection: "not_connected",
   configuration: {},
 });
-export const PLUGINS: readonly Plugin[] = [
+const definitions: readonly Plugin[] = [
   internal(
     "finance",
     "Financeiro",
@@ -148,6 +156,30 @@ export const PLUGINS: readonly Plugin[] = [
     ["spreadsheets.readonly"],
   ),
 ];
+export function validateRegistry(plugins: readonly Plugin[]) {
+  const ids = new Set(plugins.map((p) => p.id));
+  if (ids.size !== plugins.length) throw new Error("Duplicate plugin id");
+  for (const p of plugins) {
+    pluginSchema.parse(p);
+    if (p.dependencies.some((id) => !ids.has(id) || id === p.id))
+      throw new Error("Invalid dependency");
+  }
+  const tools = plugins.flatMap((p) => p.tools);
+  const intents = plugins.flatMap((p) => p.intents);
+  if (new Set(tools).size !== tools.length || new Set(intents).size !== intents.length)
+    throw new Error("Duplicate capability mapping");
+  const expected = toolNameSchema.options.filter((n) => n !== "propose_action");
+  if (
+    expected.some((n) => !tools.includes(n)) ||
+    intentSchema.options.some((n) => !intents.includes(n))
+  )
+    throw new Error("Missing capability mapping");
+}
+validateRegistry(definitions);
+export const PLUGINS = definitions;
+export function pluginForTool(name: string) {
+  return PLUGINS.find((p) => p.tools.some((n) => n === name));
+}
 export type Preference = { plugin_id: string; enabled: boolean };
 export function enabledIds(rows: readonly Preference[]): Set<string> {
   const states = new Map(rows.map((r) => [r.plugin_id, r.enabled]));
@@ -158,15 +190,29 @@ export function enabledIds(rows: readonly Preference[]): Set<string> {
   );
 }
 export function pluginForIntent(intent: string) {
-  return PLUGINS.find((p) => p.intents.includes(intent));
+  return PLUGINS.find((p) => p.intents.some((n) => n === intent));
 }
 export function intentAllowed(intent: string, enabled: ReadonlySet<string>): boolean {
   const plugin = pluginForIntent(intent);
-  return !!plugin && enabled.has(plugin.id);
+  return !!plugin && enabled.has(plugin.id) && plugin.dependencies.every((id) => enabled.has(id));
 }
 export function toolAllowed(name: string, enabled: ReadonlySet<string>): boolean {
   if (name === "propose_action")
     return PLUGINS.some((p) => enabled.has(p.id) && p.intents.length > 0);
-  const plugin = PLUGINS.find((p) => p.tools.includes(name));
+  const plugin = PLUGINS.find((p) => p.tools.some((n) => n === name));
   return !!plugin && enabled.has(plugin.id) && plugin.dependencies.every((id) => enabled.has(id));
+}
+
+export function catalogState(
+  p: Plugin,
+  enabled: ReadonlySet<string>,
+  preferences: readonly Preference[],
+): PluginState {
+  if (p.category === "external")
+    return p.connection === "coming_soon" ? "coming_soon" : "not_connected";
+  const requested = preferences.find((r) => r.plugin_id === p.id)?.enabled ?? p.defaultEnabled;
+  if (!requested) return "disabled";
+  if (!enabled.has(p.id) || p.dependencies.some((id) => !enabled.has(id)))
+    return "permission_required";
+  return "enabled";
 }

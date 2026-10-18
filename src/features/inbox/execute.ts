@@ -10,6 +10,7 @@ import {
 } from "@/features/purchases/queries";
 import { createActivity, type ActivityPerson } from "@/features/activities/queries";
 import type { InboxAction } from "@/lib/inbox/inbox.functions";
+import { actionSchema } from "@/features/plugins/action-schema";
 import { authorizePluginAction } from "@/features/plugins/plugins.functions";
 
 /**
@@ -38,22 +39,34 @@ export function missingFields(a: InboxAction): string[] {
 }
 
 export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<ExecResult> {
+  actionSchema.parse(a);
+  const missing = missingFields(a);
+  if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
   const authorized = await authorizePluginAction({
-    data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId },
+    data: { intent: a.intent, expectedWorkspaceId: ctx.workspaceId, confirmed: true },
   });
   const { workspaceId, userId } = authorized;
   const { queryClient } = ctx;
   const invalidate = (...keys: string[]) =>
     Promise.all(keys.map((k) => queryClient.invalidateQueries({ queryKey: [k] })));
 
-  if (a.intent === "expense" && a.installments && a.card_id) {
+  const amount = a.amount;
+  const date = a.date;
+  if (
+    (a.intent === "expense" || a.intent === "income") &&
+    (amount == null || !Number.isFinite(amount) || amount <= 0 || !date)
+  )
+    throw new Error("Confira o valor e a data antes de confirmar.");
+  if ((a.intent === "activity" || a.intent === "event") && !date)
+    throw new Error("Informe a data antes de confirmar.");
+  if (a.intent === "expense" && a.installments && a.card_id && amount != null && date) {
     const planId = await createInstallmentPlan({
       workspaceId,
       ownerId: userId,
       description: a.description,
-      totalAmount: a.amount!,
+      totalAmount: amount ?? 0,
       totalInstallments: a.installments,
-      startDate: a.date!,
+      startDate: date ?? "",
       categoryId: a.category_id,
       cardId: a.card_id,
       contextId: a.context_id,
@@ -75,10 +88,10 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
       workspaceId,
       ownerId: userId,
       type: isExpense ? "EXPENSE" : "INCOME",
-      amount: a.amount!,
+      amount: amount ?? 0,
       description: a.description,
-      transactionDate: a.date!,
-      dueDate: a.date!,
+      transactionDate: date ?? "",
+      dueDate: date ?? "",
       // compra no cartão fica pendente até a fatura; demais seguem o padrão do formulário (pago)
       status: isExpense && a.card_id ? "PENDING" : "PAID",
       categoryId: a.category_id,
@@ -89,17 +102,18 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
       isShared: shared,
     });
     if (shared) {
-      const other = ctx.memberIds.find((id) => id !== userId)!;
-      const mine = round2((a.amount! * (a.my_share_percent ?? 50)) / 100);
+      const other = ctx.memberIds.find((id) => id !== userId);
+      if (!other) throw new Error("Confira as pessoas do espaço antes de dividir.");
+      const mine = round2(((amount ?? 0) * (a.my_share_percent ?? 50)) / 100);
       await saveDivision({
         workspaceId,
         transactionId: created.id,
         memberIds: ctx.memberIds,
         shares: [
           { userId, amount: mine },
-          { userId: other, amount: round2(a.amount! - mine) },
+          { userId: other, amount: round2((amount ?? 0) - mine) },
         ],
-        payers: [{ userId: a.payer_user_id ?? userId, amount: a.amount! }],
+        payers: [{ userId: a.payer_user_id ?? userId, amount: amount ?? 0 }],
         note: a.description,
       });
     }
@@ -135,7 +149,7 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     const act = await createActivity(workspaceId, userId, {
       activity_type: a.activity_type || "OTHER",
       title: a.description,
-      activity_date: a.date!,
+      activity_date: date ?? "",
       start_time: a.time,
       duration_minutes: a.duration_minutes ? Math.round(a.duration_minutes) : null,
       distance_km: a.distance_km,
@@ -208,6 +222,7 @@ export async function executeAction(a: InboxAction, ctx: ExecContext): Promise<E
     await invalidate("goals");
     return { id: data.id, module: "Metas", href: "/metas" };
   }
+  if (a.intent !== "note") throw new Error("Esta ação não está disponível.");
   const { data, error } = await supabase
     .from("notes")
     .insert({ ...owner, content: a.content ?? a.description })

@@ -70,6 +70,50 @@ export type Database = {
           },
         ]
       }
+      ai_capability_runs: {
+        Row: {
+          actor_id: string
+          capability: string
+          confirmation: string
+          created_at: string
+          id: string
+          outcome: string
+          run_id: string
+          tool: string
+          workspace_id: string
+        }
+        Insert: {
+          actor_id: string
+          capability: string
+          confirmation: string
+          created_at?: string
+          id?: string
+          outcome: string
+          run_id: string
+          tool: string
+          workspace_id: string
+        }
+        Update: {
+          actor_id?: string
+          capability?: string
+          confirmation?: string
+          created_at?: string
+          id?: string
+          outcome?: string
+          run_id?: string
+          tool?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_capability_runs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_conversations: {
         Row: {
           action_states: Json
