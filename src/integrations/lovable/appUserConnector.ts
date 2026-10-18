@@ -31,7 +31,12 @@ export async function authorizeAppUserOAuth(params: AppUserOAuthAuthorizeParams)
       credentials_configuration: params.credentialsConfiguration,
     }),
   });
-  if (!res.ok) throw new Error(`Não foi possível iniciar a autorização (${res.status}).`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null) as { type?: unknown; message?: unknown } | null;
+    const type = typeof body?.type === "string" && /^[a-z_]+$/.test(body.type) ? body.type : "unknown";
+    console.error(`Calendar OAuth start failed: status=${res.status}, type=${type}`);
+    throw new Error(`Não foi possível iniciar a autorização (${res.status}, ${type}).`);
+  }
   const body = (await res.json()) as { authorization_url?: string; session_id?: string };
   if (!body.authorization_url) throw new Error("Autorização incompleta.");
   return { authorizationUrl: body.authorization_url, sessionId: body.session_id ?? "" };
