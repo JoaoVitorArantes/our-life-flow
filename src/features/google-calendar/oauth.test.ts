@@ -31,7 +31,7 @@ describe('Autorização individual Calendar', () => {
     const first = encryptConnectionKey('fake-test-handle'); const second = encryptConnectionKey('fake-test-handle');
     expect(first).not.toBe(second); expect(first).not.toContain('fake-test-handle');
     expect(decryptConnectionKey(first)).toBe('fake-test-handle');
-    const changed = Buffer.from(first, 'base64'); changed[12] ^= 1;
+    const changed = Buffer.from(first, 'base64'); changed[12] = (changed[12] ?? 0) ^ 1;
     expect(() => decryptConnectionKey(changed.toString('base64'))).toThrow();
   });
   test('sem chave segura não cifra', () => { vi.stubEnv('APP_USER_CONNECTION_KEY_SECRET', ''); expect(() => encryptConnectionKey('test')).toThrow(); });

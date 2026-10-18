@@ -35,10 +35,10 @@ export const startCalendarConnect = createServerFn({ method: 'POST' }).middlewar
   returnUrl.searchParams.set('attempt', attemptId);
   returnUrl.hash = nonce;
   const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-  const { error } = await supabaseAdmin.from('app_user_oauth_attempts').insert({ id: attemptId, user_id: identity.userId, workspace_id: identity.workspaceId, connector_id: CONNECTOR_ID, nonce_hash: hashNonce(nonce), return_url: returnUrl.toString(), expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() });
+  const { error } = await supabaseAdmin.from('app_user_oauth_attempts').insert({ id: attemptId, user_id: identity.userId, workspace_id: identity.workspaceId, connector_id: CONNECTOR_ID, nonce_hash: hashNonce(nonce), return_url: `${returnUrl.origin}${returnUrl.pathname}`, expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() });
   if (error) throw new Error('Não foi possível preparar a autorização.');
   const { authorizeAppUserOAuth } = await import('@/integrations/lovable/appUserConnector');
-  const result = await authorizeAppUserOAuth({ gatewayBaseUrl: GATEWAY_BASE_URL, connectorId: CONNECTOR_ID, appUserId: identity.userId, clientAPIKey, returnUrl: returnUrl.toString(), connectionAPIKey: connection ? decryptConnectionKey(connection.connection_key_ciphertext) : undefined, credentialsConfiguration: { scopes: GOOGLE_CALENDAR_SCOPES } });
+  const result = await authorizeAppUserOAuth({ gatewayBaseUrl: GATEWAY_BASE_URL, connectorId: CONNECTOR_ID, appUserId: identity.userId, clientAPIKey, returnUrl: returnUrl.toString(), ...(connection ? { connectionAPIKey: decryptConnectionKey(connection.connection_key_ciphertext) } : {}), credentialsConfiguration: { scopes: GOOGLE_CALENDAR_SCOPES } });
   return { authorizationUrl: result.authorizationUrl, attemptId, nonce };
 });
 
