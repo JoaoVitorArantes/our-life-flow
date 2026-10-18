@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Verify reported startup errors and isolate diagram initialization without changing bundling, data or deployment.
+- [x] Verify reported startup errors and isolate diagram initialization without changing bundling, data or deployment — local authenticated opening/reload and real diagram passed; reported hosted chunk not accessible (401).
 
 ## Evolução incremental solicitada em 18/10/2026
 - [x] Diagnosticar estado atual e preservar implementações válidas
