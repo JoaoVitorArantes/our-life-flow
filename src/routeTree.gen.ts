@@ -43,6 +43,7 @@ import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox.index'
 import { Route as AuthenticatedInboxThreadIdRouteImport } from './routes/_authenticated/inbox.$threadId'
 import { Route as AuthenticatedMetasIdRouteImport } from './routes/_authenticated/metas.$id'
+import { Route as ApiPublicOauthGoogleCalendarReturnRouteImport } from './routes/api/public/oauth/google-calendar.return'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -228,6 +229,12 @@ const AuthenticatedMetasIdRoute = AuthenticatedMetasIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMetasRoute,
 } as any)
+const ApiPublicOauthGoogleCalendarReturnRoute =
+  ApiPublicOauthGoogleCalendarReturnRouteImport.update({
+    id: '/api/public/oauth/google-calendar/return',
+    path: '/api/public/oauth/google-calendar/return',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos/': typeof AuthenticatedContextosIndexRoute
   '/inbox/': typeof AuthenticatedInboxIndexRoute
+  '/api/public/oauth/google-calendar/return': typeof ApiPublicOauthGoogleCalendarReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -297,6 +305,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos': typeof AuthenticatedContextosIndexRoute
   '/inbox': typeof AuthenticatedInboxIndexRoute
+  '/api/public/oauth/google-calendar/return': typeof ApiPublicOauthGoogleCalendarReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -334,6 +343,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/_authenticated/contextos/': typeof AuthenticatedContextosIndexRoute
   '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
+  '/api/public/oauth/google-calendar/return': typeof ApiPublicOauthGoogleCalendarReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/configuracoes/'
     | '/contextos/'
     | '/inbox/'
+    | '/api/public/oauth/google-calendar/return'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/contextos'
     | '/inbox'
+    | '/api/public/oauth/google-calendar/return'
   id:
     | '__root__'
     | '/'
@@ -441,6 +453,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes/'
     | '/_authenticated/contextos/'
     | '/_authenticated/inbox/'
+    | '/api/public/oauth/google-calendar/return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -449,6 +462,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiAgentRoute: typeof ApiAgentRoute
+  ApiPublicOauthGoogleCalendarReturnRoute: typeof ApiPublicOauthGoogleCalendarReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -691,6 +705,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMetasIdRouteImport
       parentRoute: typeof AuthenticatedMetasRoute
     }
+    '/api/public/oauth/google-calendar/return': {
+      id: '/api/public/oauth/google-calendar/return'
+      path: '/api/public/oauth/google-calendar/return'
+      fullPath: '/api/public/oauth/google-calendar/return'
+      preLoaderRoute: typeof ApiPublicOauthGoogleCalendarReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -797,6 +818,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiAgentRoute: ApiAgentRoute,
+  ApiPublicOauthGoogleCalendarReturnRoute:
+    ApiPublicOauthGoogleCalendarReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

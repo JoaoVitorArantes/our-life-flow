@@ -36,6 +36,7 @@ import {
 } from "@/features/plugins/plugins.functions";
 import { INTENT_LABELS, CAPABILITIES } from "@/features/plugins/capabilities";
 import { useApp } from "@/features/app/app-context";
+import { CalendarConnectionControls } from "@/features/google-calendar/connection-controls";
 
 const catalogOptions = () => ({ queryKey: ["ai_plugins"], queryFn: () => getPluginCatalog() });
 export const Route = createFileRoute("/_authenticated/configuracoes/plugins")({
@@ -182,19 +183,21 @@ function PluginsPage() {
                 {p.description}
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={
-                    failed
-                      ? "text-destructive"
-                      : p.enabled
-                        ? "text-success"
-                        : "text-muted-foreground"
-                  }
-                >
-                  {p.enabled && <Check className="mr-1 size-3" />}
-                  {LABELS[failed ? "error" : p.state]}
-                </Badge>
+                {p.id !== "google_calendar" && (
+                  <Badge
+                    variant="outline"
+                    className={
+                      failed
+                        ? "text-destructive"
+                        : p.enabled
+                          ? "text-success"
+                          : "text-muted-foreground"
+                    }
+                  >
+                    {p.enabled && <Check className="mr-1 size-3" />}
+                    {LABELS[failed ? "error" : p.state]}
+                  </Badge>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {p.intents.length && !p.tools.length
                     ? "Proposta"
@@ -218,7 +221,10 @@ function PluginsPage() {
                     : ""}
                 </p>
               )}
-              {p.category === "external" && (
+              {p.id === "google_calendar" && (
+                <CalendarConnectionControls workspaceId={data.workspaceId} />
+              )}
+              {p.category === "external" && p.id !== "google_calendar" && (
                 <span className="text-xs text-muted-foreground">
                   Configuração do provedor pendente · Não executável
                 </span>
@@ -236,7 +242,11 @@ function PluginsPage() {
                     <li key={intent}>{INTENT_LABELS[intent]} · confirmação obrigatória</li>
                   ))}
                   {p.category === "external" ? (
-                    <li>Autorização não concedida · conexão indisponível</li>
+                    <li>
+                      {p.id === "google_calendar"
+                        ? "Conta pessoal · somente leitura · ferramentas do Life AI ainda indisponíveis"
+                        : "Autorização não concedida · conexão indisponível"}
+                    </li>
                   ) : (
                     <li>
                       {p.scopes.includes("workspace:manage")
