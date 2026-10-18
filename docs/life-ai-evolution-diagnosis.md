@@ -21,3 +21,11 @@
 Completar detalhes e histórico pessoal no catálogo; metadados descobertos a partir do registro; revalidar referências no servidor na confirmação; extrair somente as quatro mutações simples compartilhadas; melhorar prévias existentes e regressões. Sem refatoração global, novos provedores, conexões externas, alterações de RLS, dados reais ou publicação.
 
 Edição/exclusão por chat, criação de Contextos, check-ins de hábitos, horário/prioridade de tarefas e correlação comprovada de auditoria/persistência não serão apresentados como capacidades existentes. Dependem de contratos de domínio e testes próprios; as telas atuais permanecem disponíveis.
+
+## Resultado e evidências desta etapa
+
+- Detalhes de capacidades, estados e histórico pessoal no catálogo; descoberta usa os metadados do registro fechado. Referências editadas são reconsultadas com RLS na confirmação, incluindo conversa/espaço e categoria compatível.
+- Quatro mutações simples compartilhadas entre formulário e Inbox. Prévia permite contexto, conta de receita e conteúdo de nota; confirmação simultânea é bloqueada e falha de sincronização do estado tem aviso explícito. Parcelamento dividido sem suporte é bloqueado, não anunciado como concluído.
+- `bunx vitest run`: 17 arquivos, 59 testes aprovados. Compilação/typecheck automáticos com `build OK`; lint direcionado é registrado separadamente, sem executar compilação manual.
+- Navegação autenticada somente de leitura em `/configuracoes/plugins`: detalhes, histórico, externos sem controle de ativação e recarga conferidos; sem erros de execução capturados. Sem rolagem lateral em 320, 373, 768, 1280 e 1920 px. Não confirma acesso de ambas as contas João/Renifer nem gravação posterior à confirmação.
+- Nenhuma chamada real de IA, conexão externa, alteração de dados reais, migration nova ou publicação. Persistência financeira pode continuar parcial entre lançamento/parcelamento/divisão; idempotência e reconciliação não foram implementadas nesta etapa. Auditoria de confirmação comprova autorização, não a gravação subsequente.
