@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
-import { contextCreateInput, contextProposalSchema } from "./ai-contract";
-import { actionSchema } from "@/features/plugins/action-schema";
+import { contextCreateInput, contextProposalSchema, contextWireSchema, normalizeContextWire } from "./ai-contract";
+import { actionSchema, proposalInputSchema, normalizeProposal } from "@/features/plugins/action-schema";
+import { z } from "zod";
 import { contextTestAction as draft } from "./test-action";
 import { enabledIds, intentAllowed } from "@/features/plugins/registry";
 
@@ -59,4 +60,24 @@ test("legacy proposal schema stays valid while context fields remain strict", ()
       context_data: { sql: "anything" },
     }).success,
   ).toBe(false);
+});
+test("strict model schema requires every property and rejects extra properties at every object", () => {
+  function check(value: unknown): void {
+    if (!value || typeof value !== "object") return;
+    const node = value as Record<string, unknown>;
+    if (node.type === "object") {
+      expect(node.additionalProperties).toBe(false);
+      expect(new Set(node.required as string[])).toEqual(new Set(Object.keys(node.properties as object)));
+    }
+    for (const child of Object.values(node)) {
+      if (Array.isArray(child)) child.forEach(check);
+      else check(child);
+    }
+  }
+  check(z.toJSONSchema(proposalInputSchema));
+});
+test("model nulls preserve omitted edits and only explicit clear_fields clear values", () => {
+  const wire = contextWireSchema.parse({ type: null, status: null, description: null, start_date: null, end_date: null, location: null, budget_amount: 0, visibility: null, clear_fields: ["end_date"] });
+  expect(normalizeContextWire(wire)).toEqual({ budget_amount: 0, end_date: null });
+  expect(normalizeProposal({ ...draft, context_data: null })).toMatchObject({ intent: "create_context", context_data: null });
 });

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { readInputSchemas, toolNameSchema, type ToolName } from "./contracts";
-import { actionSchema } from "./action-schema";
+import { actionSchema, proposalInputSchema } from "./action-schema";
 import { PLUGINS, intentAllowed, toolAllowed } from "./registry";
 
 const metadataSchema = z
@@ -76,7 +76,7 @@ export function discoverCapabilities(enabled: ReadonlySet<string>) {
 }
 
 export function capabilityInput(id: ToolName) {
-  return id === "propose_action" ? actionSchema : readInputSchemas[id];
+  return id === "propose_action" ? proposalInputSchema : readInputSchemas[id];
 }
 
 export const INTENT_LABELS = {

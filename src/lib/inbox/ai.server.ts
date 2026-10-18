@@ -17,14 +17,16 @@ function createRunIdFetch() {
 }
 
 export { actionSchema } from "@/features/plugins/action-schema";
-import { proposalInputSchema, normalizeProposal } from "@/features/plugins/action-schema";
+import { actionSchema, proposalInputSchema, normalizeProposal } from "@/features/plugins/action-schema";
 
 export const interpretationSchema = z.object({
   question: z.string().nullable(),
   options: z.array(z.string()),
   actions: z.array(proposalInputSchema),
 });
-export type Interpretation = z.infer<typeof interpretationSchema>;
+export type Interpretation = Omit<z.infer<typeof interpretationSchema>, "actions"> & {
+  actions: z.infer<typeof actionSchema>[];
+};
 
 export async function interpret(
   system: string,
@@ -58,7 +60,7 @@ export async function interpret(
   try {
     // consome o stream no servidor e devolve só o objeto final
     for await (const _ of result.textStream) void _;
-    const output = (await result.output) as Interpretation;
+    const output = interpretationSchema.parse(await result.output);
     return { ...output, actions: output.actions.map(normalizeProposal) };
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error) && error.text) {
