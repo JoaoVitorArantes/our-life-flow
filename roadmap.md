@@ -1,7 +1,8 @@
 # Roadmap
 
 ## Integrações Google individuais
-- [ ] Diagnosticar arquitetura existente e configurar cliente OAuth do Calendar — aguardando configuração pelo administrador.
+- [x] Diagnosticar arquitetura existente e vincular cliente OAuth do Calendar com acesso offline.
+- [ ] Implementar autorização pessoal do Calendar, reconexão e desconexão para João e Renifer, sem publicar.
 - [ ] Implementar conexão pessoal segura, leitura Calendar e ferramentas reais do Life AI após vinculação do cliente.
 - [ ] Validar consentimento e eventos reais com isolamento entre usuários, sem publicar.
 - [ ] Aplicar o padrão ao Gmail e Sheets somente após validação do Calendar.
@@ -30,7 +31,7 @@
 - [x] Corrigir auditoria que bloqueava contextos; validar campos e erros sem expor detalhes internos
 - [x] Plugins por IA: catálogo, registro, preferências individuais e autorização nas ferramentas/confirmacões
 - [x] Testes automatizados de validação e plugins; limitações de conexões em docs/ai-plugins.md
-- Integrações externas pessoais pausadas por solicitação do dono; não conectar nem implementar nesta etapa
+- Integrações externas pessoais retomadas com autorização do dono para Google Calendar; Gmail e Sheets aguardam validação do Calendar.
 
 - [x] Auditar tabelas, consultas, criação de conta e regras de acesso
 - [x] Modelar relacionamento e workspace ativo sem alterar dados existentes
