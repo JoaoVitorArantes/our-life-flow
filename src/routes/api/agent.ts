@@ -99,7 +99,12 @@ export const Route = createFileRoute("/api/agent")({
           executionRunId: crypto.randomUUID(),
         };
         const { loadBase, buildTools } = await import("@/lib/agent/tools.server");
-        const base = await loadBase(ctx);
+        let base: Awaited<ReturnType<typeof loadBase>>;
+        try {
+          base = await loadBase(ctx);
+        } catch {
+          return json(500, "Não foi possível consultar os dados do espaço.");
+        }
         const tools = buildTools(ctx, base);
         const me = base.people.find((p) => p.me);
         const list = (v: unknown) => JSON.stringify(v);
@@ -174,7 +179,7 @@ COMO AGIR
           originalMessages: messages,
           sendReasoning: false,
           onError: (error) => {
-            console.error("[agent] stream", error);
+            // Do not log messages, credentials, raw provider errors or tool outputs.
             const status = (error as { statusCode?: number })?.statusCode;
             if (status === 402)
               return "Os créditos de IA do espaço acabaram. Adicione créditos para continuar.";
@@ -195,7 +200,7 @@ COMO AGIR
             const { error } = await supabase
               .from("ai_messages")
               .upsert(rows, { onConflict: "conversation_id,message_id" });
-            if (error) console.error("[agent] persist", error);
+            if (error) console.error("[agent] persist failed");
             const firstText = lastUser?.parts.find((p) => p.type === "text");
             const patch: { updated_at: string; title?: string } = {
               updated_at: new Date().toISOString(),
@@ -203,7 +208,7 @@ COMO AGIR
             if (thread.title === "Nova conversa" && firstText && "text" in firstText)
               patch.title = firstText.text.slice(0, 60);
             const up = await supabase.from("ai_conversations").update(patch).eq("id", thread.id);
-            if (up.error) console.error("[agent] title", up.error);
+            if (up.error) console.error("[agent] title failed");
           },
         });
       },

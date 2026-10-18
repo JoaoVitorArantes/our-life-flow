@@ -30,7 +30,7 @@ export type AgentCtx = {
 const r2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
 
 function fail(area: string, error: unknown) {
-  console.error(`[agent] ${area}`, error);
+  void error; // Never log private query payloads or raw database errors.
   return { error: `Não consegui consultar ${area} agora. Não invente números.` };
 }
 
@@ -59,10 +59,17 @@ export async function loadBase(ctx: AgentCtx) {
       : { data: [] },
     sb.from("workspaces").select("name, description").eq("id", w).maybeSingle(),
   ]);
+  for (const result of [accounts, cards, categories, contexts, members, goals, workspace]) {
+    if ("error" in result && result.error)
+      throw new Error("Não foi possível consultar os dados do espaço.");
+  }
   const ids = (members.data ?? []).map((m) => m.user_id);
-  const { data: profiles } = ids.length
+  const profilesResult = ids.length
     ? await sb.from("profiles").select("id, name").in("id", ids)
     : { data: [] };
+  if ("error" in profilesResult && profilesResult.error)
+    throw new Error("Não foi possível verificar as pessoas do espaço.");
+  const profiles = profilesResult.data;
   return {
     workspace: {
       name: workspace.data?.name ?? "Life OS",

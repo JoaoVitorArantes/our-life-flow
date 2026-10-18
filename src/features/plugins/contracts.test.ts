@@ -19,7 +19,7 @@ describe("closed capability contract", () => {
       today: "2026-10-18",
       enabledPlugins: enabledIds([]),
       executionRunId: "r",
-    } as AgentCtx;
+    } as unknown as AgentCtx;
     const base: Base = {
       workspace: { name: "test", description: null, members: 0 },
       accounts: [],
