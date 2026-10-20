@@ -35,7 +35,7 @@ export async function createTerm(
     () =>
       supabase
         .from("academic_terms")
-        .insert({ ...valid, workspace_id: workspaceId, created_by: userId })
+        .insert({ ...valid, workspace_id: workspaceId, owner_id: userId, created_by: userId })
         .select("id")
         .single(),
     (id) => supabase.from("academic_terms").select("*").eq("id", id).single(),
@@ -54,7 +54,7 @@ export async function createCourse(
     () =>
       supabase
         .from("academic_courses")
-        .insert({ ...valid, workspace_id: workspaceId, created_by: userId, source })
+        .insert({ ...valid, workspace_id: workspaceId, owner_id: userId, created_by: userId, source })
         .select("id")
         .single(),
     (id) => supabase.from("academic_courses").select("*").eq("id", id).single(),
@@ -96,7 +96,7 @@ export async function createEvaluation(
     () =>
       supabase
         .from("academic_evaluations")
-        .insert({ ...valid, workspace_id: workspaceId, created_by: userId, source })
+        .insert({ ...valid, workspace_id: workspaceId, owner_id: userId, created_by: userId, source })
         .select("id")
         .single(),
     (id) => supabase.from("academic_evaluations").select("*").eq("id", id).single(),
@@ -143,6 +143,7 @@ export async function createSession(
           topic: valid.topic,
           attended: valid.attended,
           workspace_id: workspaceId,
+          owner_id: userId,
           created_by: userId,
           source,
         })
