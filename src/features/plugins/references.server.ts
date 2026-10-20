@@ -45,8 +45,7 @@ export async function validateActionReferences(
   if (isAcademicIntent(action.intent)) {
     if (card_id || account_id || category_id || context_id || payer_user_id || action.shared)
       throw new Error("Confira os campos; pagamentos não fazem parte desta ação.");
-    if (!action.academic_course_id)
-      throw new Error("Selecione a disciplina antes de confirmar.");
+    if (!action.academic_course_id) throw new Error("Selecione a disciplina antes de confirmar.");
     const { data: course, error: courseError } = await sb
       .from("academic_courses")
       .select("id")

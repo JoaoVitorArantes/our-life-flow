@@ -82,8 +82,7 @@ const num = (s: string | undefined): number | null => {
 /** CSV: cabeçalho obrigatório com coluna `name`; aceitas: code, semester, credits, status, grade, attendance_percent, prerequisites (separados por |), notes. */
 export function parseCsv(text: string): ImportPreview {
   const lines = text.split(/\r?\n/).filter((l) => l.trim());
-  if (lines.length < 2)
-    return { items: [], valid: 0, invalid: 0 };
+  if (lines.length < 2) return { items: [], valid: 0, invalid: 0 };
   const header = parseCsvLine(lines[0]!).map((h) => h.toLowerCase());
   const nameIdx = header.indexOf("name");
   if (nameIdx < 0)
@@ -123,7 +122,8 @@ export function parseCsv(text: string): ImportPreview {
       items.push({
         line: i + 1,
         input: null,
-        error: e instanceof z.ZodError ? (e.issues[0]?.message ?? "Linha inválida.") : "Linha inválida.",
+        error:
+          e instanceof z.ZodError ? (e.issues[0]?.message ?? "Linha inválida.") : "Linha inválida.",
       });
     }
   }
@@ -155,7 +155,8 @@ export function parseJson(text: string): ImportPreview {
       return {
         line: i + 1,
         input: null,
-        error: e instanceof z.ZodError ? (e.issues[0]?.message ?? "Item inválido.") : "Item inválido.",
+        error:
+          e instanceof z.ZodError ? (e.issues[0]?.message ?? "Item inválido.") : "Item inválido.",
       };
     }
   });

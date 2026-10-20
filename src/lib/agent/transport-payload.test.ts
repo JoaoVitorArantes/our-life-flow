@@ -17,9 +17,7 @@ async function captureRealPayload() {
       return new Response("erro proposital após captura", { status: 500 });
     },
   });
-  const messages: UIMessage[] = [
-    { id: "m1", role: "user", parts: [{ type: "text", text: "oi" }] },
-  ];
+  const messages: UIMessage[] = [{ id: "m1", role: "user", parts: [{ type: "text", text: "oi" }] }];
   await expect(
     transport.sendMessages({
       chatId: "chat-1",

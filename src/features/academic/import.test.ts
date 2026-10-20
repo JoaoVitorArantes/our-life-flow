@@ -1,11 +1,16 @@
 import { expect, test } from "vitest";
 import { parseCsv, parseImport, parseJson } from "./import";
-import { courseInputSchema, evaluationInputSchema, sessionInputSchema, termInputSchema } from "./contracts";
+import {
+  courseInputSchema,
+  evaluationInputSchema,
+  sessionInputSchema,
+  termInputSchema,
+} from "./contracts";
 
 test("CSV válido gera prévia com itens validados", () => {
   const csv = [
     "name,code,semester,credits,status,grade,prerequisites,notes",
-    "Cálculo I,MAT001,1,4,COMPLETED,72,,\"Revisar limites\"",
+    'Cálculo I,MAT001,1,4,COMPLETED,72,,"Revisar limites"',
     "Algoritmos e Programação,CSI101,1,6,PENDING,,,",
   ].join("\n");
   const preview = parseCsv(csv);
@@ -38,14 +43,17 @@ test("JSON exige lista e valida cada item", () => {
 });
 
 test("status desconhecido na importação vira PENDING, nunca inventa situação", () => {
-  const preview = parseImport('name,status\nCálculo I,APROVADO', "csv");
+  const preview = parseImport("name,status\nCálculo I,APROVADO", "csv");
   expect(preview.items[0]?.input?.status).toBe("PENDING");
 });
 
 test("contratos rejeitam dados fora dos limites", () => {
-  expect(courseInputSchema.safeParse({ name: "", status: "PENDING", prerequisites: [] }).success).toBe(false);
   expect(
-    courseInputSchema.safeParse({ name: "X", status: "PENDING", prerequisites: [], grade: 101 }).success,
+    courseInputSchema.safeParse({ name: "", status: "PENDING", prerequisites: [] }).success,
+  ).toBe(false);
+  expect(
+    courseInputSchema.safeParse({ name: "X", status: "PENDING", prerequisites: [], grade: 101 })
+      .success,
   ).toBe(false);
   expect(
     termInputSchema.safeParse({

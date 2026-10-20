@@ -706,7 +706,10 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             .limit(200),
         ]);
         if (terms.error || courses.error || evaluations.error || sessions.error)
-          return fail("sua vida acadêmica", terms.error ?? courses.error ?? evaluations.error ?? sessions.error);
+          return fail(
+            "sua vida acadêmica",
+            terms.error ?? courses.error ?? evaluations.error ?? sessions.error,
+          );
         return {
           periodos: terms.data ?? [],
           disciplinas: courses.data ?? [],

@@ -67,7 +67,10 @@ export const Route = createFileRoute("/_authenticated/faculdade")({
   head: () => ({
     meta: [
       { title: "Faculdade — Life OS" },
-      { name: "description", content: "Disciplinas, avaliações, frequência e progresso acadêmico." },
+      {
+        name: "description",
+        content: "Disciplinas, avaliações, frequência e progresso acadêmico.",
+      },
       { property: "og:title", content: "Faculdade — Life OS" },
       { property: "og:description", content: "Sua rotina acadêmica no Life OS." },
     ],
@@ -93,8 +96,8 @@ function Faculdade() {
 
   const invalidate = () =>
     Promise.all(
-      ["academic_terms", "academic_courses", "academic_evaluations", "academic_sessions"].map(
-        (k) => queryClient.invalidateQueries({ queryKey: [k] }),
+      ["academic_terms", "academic_courses", "academic_evaluations", "academic_sessions"].map((k) =>
+        queryClient.invalidateQueries({ queryKey: [k] }),
       ),
     );
 
@@ -150,7 +153,9 @@ function Faculdade() {
 
   const upcoming = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
-    return evaluations.filter((e) => e.status === "PENDING" && (!e.due_date || e.due_date >= today));
+    return evaluations.filter(
+      (e) => e.status === "PENDING" && (!e.due_date || e.due_date >= today),
+    );
   }, [evaluations]);
 
   return (
@@ -276,8 +281,7 @@ function Faculdade() {
                     const missing: string[] = [];
                     if (course.semester == null) missing.push("semestre");
                     if (course.credits == null) missing.push("créditos");
-                    if (course.status === "COMPLETED" && course.grade == null)
-                      missing.push("nota");
+                    if (course.status === "COMPLETED" && course.grade == null) missing.push("nota");
                     return (
                       <li key={course.id} className="py-3">
                         <button
