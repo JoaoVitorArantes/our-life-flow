@@ -1,12 +1,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { z } from "zod";
 import {
+  academicProfileInputSchema,
   courseInputSchema,
   evaluationInputSchema,
   sessionInputSchema,
   termInputSchema,
 } from "./contracts";
-import type { AcademicCourse, AcademicEvaluation, AcademicSession, AcademicTerm } from "./queries";
+import type {
+  AcademicCourse,
+  AcademicEvaluation,
+  AcademicProfile,
+  AcademicSession,
+  AcademicTerm,
+} from "./queries";
 
 /**
  * Mutações acadêmicas: validam a entrada, gravam com o cliente do usuário (RLS)

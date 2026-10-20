@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
+export type AcademicProfile = Tables<"academic_profiles">;
 export type AcademicTerm = Tables<"academic_terms">;
 export type AcademicCourse = Tables<"academic_courses">;
 export type AcademicEvaluation = Tables<"academic_evaluations">;
@@ -12,6 +13,25 @@ export type AcademicSession = Tables<"academic_sessions">;
  * A Faculdade é compartilhada entre membros do workspace; o filtro explícito mantém
  * os perfis separados e a cache do React Query isolada por aluno. O RLS é a última barreira.
  */
+
+/** Perfil acadêmico do aluno (instituição/curso/currículo/ingresso); null quando ainda não configurado. */
+export function useAcademicProfile(workspaceId?: string, ownerId?: string) {
+  return useQuery({
+    queryKey: ["academic_profiles", workspaceId, ownerId],
+    enabled: !!workspaceId && !!ownerId,
+    queryFn: async () => {
+      if (!workspaceId || !ownerId) return null;
+      const { data, error } = await supabase
+        .from("academic_profiles")
+        .select("*")
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as AcademicProfile | null;
+    },
+  });
+}
 
 export function useAcademicTerms(workspaceId?: string, ownerId?: string) {
   return useQuery({
