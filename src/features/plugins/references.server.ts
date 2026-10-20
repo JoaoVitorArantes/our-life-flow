@@ -8,6 +8,12 @@ import {
   isContextIntent,
 } from "@/features/contexts/ai-contract";
 import { contextSchema } from "@/features/contexts/validation";
+import { evaluationInputSchema, sessionInputSchema } from "@/features/academic/contracts";
+
+const ACADEMIC_INTENTS = ["create_evaluation", "log_class"] as const;
+export function isAcademicIntent(intent: string) {
+  return (ACADEMIC_INTENTS as readonly string[]).includes(intent);
+}
 
 /** Re-check edited references at the point of confirmation, with the caller's RLS client. */
 export async function validateActionReferences(
@@ -37,6 +43,40 @@ export async function validateActionReferences(
         ...current,
         ...contextProposalSchema.parse(action.context_data ?? {}),
         name: action.description,
+      });
+    return;
+  }
+  if (isAcademicIntent(action.intent)) {
+    if (card_id || account_id || category_id || context_id || payer_user_id || action.shared)
+      throw new Error("Confira os campos; pagamentos não fazem parte desta ação.");
+    if (!action.academic_course_id)
+      throw new Error("Selecione a disciplina antes de confirmar.");
+    const { data: course, error: courseError } = await sb
+      .from("academic_courses")
+      .select("id")
+      .eq("workspace_id", workspaceId)
+      .eq("id", action.academic_course_id)
+      .maybeSingle();
+    if (courseError || !course)
+      throw new Error("Esta disciplina não está disponível neste espaço.");
+    if (action.intent === "create_evaluation")
+      evaluationInputSchema.parse({
+        course_id: action.academic_course_id,
+        title: action.description,
+        kind: action.evaluation_kind ?? "EXAM",
+        due_date: action.date,
+        weight: action.weight,
+        grade: action.grade,
+        status: action.grade != null ? "GRADED" : "PENDING",
+      });
+    else
+      sessionInputSchema.parse({
+        course_id: action.academic_course_id,
+        date: action.date,
+        time: action.time,
+        duration_minutes: action.duration_minutes,
+        topic: action.content,
+        attended: action.attended,
       });
     return;
   }
