@@ -118,3 +118,17 @@ IA: ferramenta `academics` aceita `owner_id` opcional validado contra membros re
 Verificações: 27 arquivos / 137 testes aprovados; `tsgo --noEmit` limpo; lint direcionado 0 erros/0 avisos. Novos/ajustados: contrato SQL 0017+0018 (owner-scope.test.ts), submenu e guarda por membro (navigation.test.ts), revalidação compartilhada com disciplina de outro membro aceita e fora do workspace rejeitada (references.test.ts), execução gravando no perfil do dono da disciplina com sessão de outro membro (execute.test.ts).
 
 Limitações: verificação autenticada na prévia NÃO realizada (sessão não injetada; `--self` sem conta correspondente; `--user` exigiria aprovação indisponível no contexto). Comportamento compartilhado verificado por contrato/testes, não por sessões ao vivo. Nenhuma publicação; nenhum dado real lido ou alterado.
+
+## Etapa 20/10/2026 (4) — Faculdade: limpeza do perfil Renifer e cadastro desde o início
+
+**Limpeza:** identidade comprovada por evidência (join workspace_members × profiles, nome exato "Renifer Pereira Santos", user_id ee2cbb3f, workspace 2c3cecfb). Contagem por tabela antes da remoção: academic_terms 0, academic_courses 0, academic_evaluations 0, academic_sessions 0 para o owner_id da Renifer — **nenhum registro existia, nada foi apagado** (0 registros removidos em cada tabela). João preservado: 4 disciplinas dele intactas (contagem confirmada). Nenhum conteúdo lido ou exposto.
+
+**Cadastro desde o início:** migration aditiva `0019_academic_profiles.sql` aplicada no preview — `academic_profiles` (workspace_id, owner_id, institution, course_name, curriculum, admission_year, todos opcionais), PK (workspace_id, owner_id), FK composta para membro real do espaço, RLS por membro (INSERT exige created_by da sessão), grants, trigger de updated_at. Sem seed: nenhuma migration insere instituição/curso/currículo. O perfil do João foi registrado por INSERT direto com os dados que ele mesmo declarou (UFU, Sistemas de Informação (BSI), Currículo 2022-2, ingresso 2025), preservando a tela dele.
+
+Cliente: `academicProfileInputSchema` (tudo opcional, ano 1950–2100), `useAcademicProfile`, `upsertAcademicProfile` com read-back sob RLS. A rota `/faculdade/$ownerId` sem perfil mostra tela de configuração ("Configure o perfil acadêmico") e só libera disciplinas/períodos/avaliações/aulas/importação após o cadastro; o subtítulo passa a vir do perfil (ou "Perfil sem informações declaradas"); disclaimer genérico sem BSI. O atalho "Registrar pendências conhecidas" (declaradas pelo João) só aparece quando o perfil declara Sistemas de Informação na UFU — nunca no perfil da Renifer. `PROGRAM_INFO` removido; nenhum fallback BSI/UFU restante no código (verificado por rg).
+
+IA: inalterada — continua explícita/verificada por aluno (owner_id validado contra membros; execução grava no perfil do dono da disciplina).
+
+Verificações: 28 arquivos / 143 testes aprovados; `tsgo --noEmit` limpo; build OK 01:29 UTC; lint direcionado 0 erros. Novos testes: contrato SQL da 0019 (sem seed de instituição), schema do perfil (tudo opcional, ano inválido rejeitado, campo extra rejeitado).
+
+Limitações: verificação autenticada na prévia NÃO realizada (sessão indisponível neste contexto). Nenhuma publicação.

@@ -1,12 +1,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { z } from "zod";
 import {
+  academicProfileInputSchema,
   courseInputSchema,
   evaluationInputSchema,
   sessionInputSchema,
   termInputSchema,
 } from "./contracts";
-import type { AcademicCourse, AcademicEvaluation, AcademicSession, AcademicTerm } from "./queries";
+import type {
+  AcademicCourse,
+  AcademicEvaluation,
+  AcademicProfile,
+  AcademicSession,
+  AcademicTerm,
+} from "./queries";
 
 /**
  * Mutações acadêmicas: validam a entrada, gravam com o cliente do usuário (RLS)
@@ -28,6 +35,38 @@ async function insertAndVerify<T extends { id: string }>(
   const { data: saved, error: readError } = await readBack(data.id);
   if (readError || !saved) throw new Error(`Não foi possível confirmar o registro de ${label}.`);
   return saved;
+}
+
+/**
+ * Cria ou atualiza o perfil acadêmico do aluno (instituição/curso/currículo/ingresso).
+ * Campos deixados em branco ficam null — nada é presumido. Read-back sob RLS.
+ */
+export async function upsertAcademicProfile(
+  workspaceId: string,
+  ownerId: string,
+  userId: string,
+  input: z.infer<typeof academicProfileInputSchema>,
+): Promise<AcademicProfile> {
+  const valid = academicProfileInputSchema.parse(input);
+  const { error } = await supabase.from("academic_profiles").upsert(
+    {
+      ...valid,
+      workspace_id: workspaceId,
+      owner_id: ownerId,
+      created_by: userId,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "workspace_id,owner_id" },
+  );
+  if (error) throw new Error("Não foi possível salvar o perfil acadêmico.");
+  const { data, error: readError } = await supabase
+    .from("academic_profiles")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+  if (readError || !data) throw new Error("Não foi possível confirmar o perfil acadêmico.");
+  return data as AcademicProfile;
 }
 
 export async function createTerm(

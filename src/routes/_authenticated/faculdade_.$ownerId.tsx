@@ -7,6 +7,7 @@ import {
   ClipboardList,
   GraduationCap,
   Lock,
+  Settings2,
   Upload,
   UserCheck,
 } from "lucide-react";
@@ -36,10 +37,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/features/app/app-context";
 import { firstName, isAcademicMember } from "@/features/app/navigation";
 import {
+  ACADEMIC_DISCLAIMER,
   COURSE_STATUSES,
   EVALUATION_KINDS,
   KNOWN_PENDING_COURSES,
-  PROGRAM_INFO,
   courseStatusLabel,
   evaluationKindLabel,
   type CourseStatus,
@@ -53,14 +54,17 @@ import {
   markAttendance,
   seedKnownPendingCourses,
   updateCourse,
+  upsertAcademicProfile,
 } from "@/features/academic/mutations";
 import {
   attendanceFromSessions,
   useAcademicCourses,
   useAcademicEvaluations,
+  useAcademicProfile,
   useAcademicSessions,
   useAcademicTerms,
   type AcademicCourse,
+  type AcademicProfile,
 } from "@/features/academic/queries";
 import { parseImport, type ImportPreview } from "@/features/academic/import";
 import { formatDateShort } from "@/lib/format";
@@ -91,6 +95,10 @@ function Faculdade() {
   const scopedOwnerId = allowed ? ownerId : undefined;
   const ownerName = firstName(memberProfiles.find((p) => p.id === ownerId)?.name, "Membro");
   const queryClient = useQueryClient();
+  const { data: profile, isLoading: profileLoading } = useAcademicProfile(
+    workspaceId,
+    scopedOwnerId,
+  );
   const { data: terms = [] } = useAcademicTerms(workspaceId, scopedOwnerId);
   const { data: courses = [] } = useAcademicCourses(workspaceId, scopedOwnerId);
   const { data: evaluations = [] } = useAcademicEvaluations(workspaceId, scopedOwnerId);
@@ -101,12 +109,17 @@ function Faculdade() {
   const [evaluationDialog, setEvaluationDialog] = useState(false);
   const [sessionDialog, setSessionDialog] = useState(false);
   const [importDialog, setImportDialog] = useState(false);
+  const [profileDialog, setProfileDialog] = useState(false);
 
   const invalidate = () =>
     Promise.all(
-      ["academic_terms", "academic_courses", "academic_evaluations", "academic_sessions"].map((k) =>
-        queryClient.invalidateQueries({ queryKey: [k] }),
-      ),
+      [
+        "academic_profiles",
+        "academic_terms",
+        "academic_courses",
+        "academic_evaluations",
+        "academic_sessions",
+      ].map((k) => queryClient.invalidateQueries({ queryKey: [k] })),
     );
 
   const attend = (sessionId: string, attended: boolean) => {
@@ -175,7 +188,7 @@ function Faculdade() {
   if (!allowed) {
     return (
       <div className="space-y-8">
-        <PageHeader title="Faculdade" subtitle={PROGRAM_INFO.disclaimer} />
+        <PageHeader title="Faculdade" subtitle={ACADEMIC_DISCLAIMER} />
         <EmptyState
           icon={Lock}
           title="Perfil acadêmico não encontrado"
@@ -190,13 +203,65 @@ function Faculdade() {
     );
   }
 
+  // Cadastro desde o início: sem perfil configurado, nada é presumido —
+  // a pessoa informa instituição, curso, currículo e ingresso antes de lançar disciplinas.
+  if (!profileLoading && !profile) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title={`Faculdade — ${ownerName}`} subtitle={ACADEMIC_DISCLAIMER} />
+        <EmptyState
+          icon={GraduationCap}
+          title="Configure o perfil acadêmico"
+          description={`Informe a instituição, o curso, o currículo e o ano de ingresso de ${ownerName}. Nada é preenchido automaticamente — o que você não souber ficará como não informado e poderá ser editado depois.`}
+          action={
+            <Button onClick={() => setProfileDialog(true)}>
+              <GraduationCap className="size-4" /> Configurar perfil acadêmico
+            </Button>
+          }
+        />
+        {profileDialog ? (
+          <ProfileDialog
+            workspaceId={workspaceId}
+            ownerId={scopedOwnerId}
+            userId={userId}
+            profile={null}
+            onClose={() => setProfileDialog(false)}
+            onSaved={async () => {
+              await invalidate();
+              setProfileDialog(false);
+            }}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
+  const profileSummary = profile
+    ? [
+        profile.course_name,
+        profile.institution,
+        profile.curriculum,
+        profile.admission_year ? `Ingresso ${profile.admission_year}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ") || "Perfil sem informações declaradas"
+    : "";
+
+  // Atalho das pendências declaradas pelo João: só no perfil BSI/UFU dele.
+  const isBsiUfuProfile =
+    profile?.institution === "UFU" &&
+    (profile.course_name ?? "").includes("Sistemas de Informação");
+
   return (
     <div className="space-y-8">
       <PageHeader
         title={`Faculdade — ${ownerName}`}
-        subtitle={`${PROGRAM_INFO.course} · ${PROGRAM_INFO.institution} · ${PROGRAM_INFO.curriculum} · ${PROGRAM_INFO.admission}`}
+        subtitle={profileSummary}
         action={
           <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setProfileDialog(true)}>
+              <Settings2 className="size-4" /> Perfil
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setImportDialog(true)}>
               <Upload className="size-4" /> Importar
             </Button>
@@ -207,7 +272,7 @@ function Faculdade() {
         }
       />
 
-      <p className="text-xs text-muted-foreground">{PROGRAM_INFO.disclaimer}</p>
+      <p className="text-xs text-muted-foreground">{ACADEMIC_DISCLAIMER}</p>
 
       {/* Progresso estimado */}
       <Panel>
@@ -282,14 +347,16 @@ function Faculdade() {
       <Panel>
         <PanelTitle
           action={
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => seedPendings.mutate()}
-              disabled={seedPendings.isPending}
-            >
-              Registrar pendências conhecidas
-            </Button>
+            isBsiUfuProfile ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => seedPendings.mutate()}
+                disabled={seedPendings.isPending}
+              >
+                Registrar pendências conhecidas
+              </Button>
+            ) : undefined
           }
         >
           Disciplinas
@@ -298,7 +365,11 @@ function Faculdade() {
           <EmptyState
             icon={BookOpen}
             title="Nenhuma disciplina registrada"
-            description="Cadastre manualmente, importe CSV/JSON ou registre as quatro pendências conhecidas informadas por você."
+            description={
+              isBsiUfuProfile
+                ? "Cadastre manualmente, importe CSV/JSON ou registre as quatro pendências conhecidas informadas por você."
+                : "Cadastre manualmente ou importe CSV/JSON com a grade real do curso."
+            }
           />
         ) : (
           <div className="space-y-6">
@@ -483,6 +554,19 @@ function Faculdade() {
         )}
       </Panel>
 
+      {profileDialog ? (
+        <ProfileDialog
+          workspaceId={workspaceId}
+          ownerId={scopedOwnerId}
+          userId={userId}
+          profile={profile ?? null}
+          onClose={() => setProfileDialog(false)}
+          onSaved={async () => {
+            await invalidate();
+            setProfileDialog(false);
+          }}
+        />
+      ) : null}
       {courseDialog ? (
         <CourseDialog
           workspaceId={workspaceId}
@@ -557,6 +641,103 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label>{label}</Label>
       {children}
     </div>
+  );
+}
+
+function ProfileDialog({
+  workspaceId,
+  ownerId,
+  userId,
+  profile,
+  onClose,
+  onSaved,
+}: {
+  workspaceId: string | undefined;
+  ownerId: string | undefined;
+  userId: string | undefined;
+  profile: AcademicProfile | null;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const [institution, setInstitution] = useState(profile?.institution ?? "");
+  const [courseName, setCourseName] = useState(profile?.course_name ?? "");
+  const [curriculum, setCurriculum] = useState(profile?.curriculum ?? "");
+  const [admissionYear, setAdmissionYear] = useState(profile?.admission_year?.toString() ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!workspaceId || !ownerId || !userId) return;
+    setSaving(true);
+    try {
+      await upsertAcademicProfile(workspaceId, ownerId, userId, {
+        institution: institution.trim() || null,
+        course_name: courseName.trim() || null,
+        curriculum: curriculum.trim() || null,
+        admission_year: admissionYear ? Number(admissionYear) : null,
+      });
+      toast.success("Perfil acadêmico salvo.");
+      await onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível salvar.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Perfil acadêmico</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Tudo é opcional: o que você não souber ficará como não informado e poderá ser editado
+            depois. Nada é preenchido automaticamente.
+          </p>
+          <Field label="Instituição">
+            <Input
+              value={institution}
+              onChange={(e) => setInstitution(e.target.value)}
+              placeholder="Ex.: UFU"
+            />
+          </Field>
+          <Field label="Curso">
+            <Input
+              value={courseName}
+              onChange={(e) => setCourseName(e.target.value)}
+              placeholder="Ex.: Sistemas de Informação (BSI)"
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Currículo">
+              <Input
+                value={curriculum}
+                onChange={(e) => setCurriculum(e.target.value)}
+                placeholder="Ex.: 2022-2"
+              />
+            </Field>
+            <Field label="Ano de ingresso">
+              <Input
+                type="number"
+                min={1950}
+                max={2100}
+                value={admissionYear}
+                onChange={(e) => setAdmissionYear(e.target.value)}
+              />
+            </Field>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            Salvar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
