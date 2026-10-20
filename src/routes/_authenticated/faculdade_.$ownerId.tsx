@@ -109,6 +109,11 @@ function Faculdade() {
       ),
     );
 
+  const attend = (sessionId: string, attended: boolean) => {
+    if (!workspaceId || !scopedOwnerId) return Promise.resolve();
+    return markAttendance(workspaceId, scopedOwnerId, sessionId, attended).then(invalidate);
+  };
+
   const seedPendings = useMutation({
     mutationFn: async () => {
       if (!workspaceId || !userId || !scopedOwnerId) throw new Error("Selecione um espaço.");
@@ -452,9 +457,9 @@ function Faculdade() {
                       size="sm"
                       variant={session.attended === true ? "default" : "outline"}
                       onClick={() =>
-                        markAttendance(session.id, true)
-                          .then(invalidate)
-                          .catch(() => toast.error("Não foi possível registrar a presença."))
+                        attend(session.id, true).catch(() =>
+                          toast.error("Não foi possível registrar a presença."),
+                        )
                       }
                     >
                       Presente
@@ -463,9 +468,9 @@ function Faculdade() {
                       size="sm"
                       variant={session.attended === false ? "destructive" : "outline"}
                       onClick={() =>
-                        markAttendance(session.id, false)
-                          .then(invalidate)
-                          .catch(() => toast.error("Não foi possível registrar a falta."))
+                        attend(session.id, false).catch(() =>
+                          toast.error("Não foi possível registrar a falta."),
+                        )
                       }
                     >
                       Falta
@@ -481,6 +486,7 @@ function Faculdade() {
       {courseDialog ? (
         <CourseDialog
           workspaceId={workspaceId}
+          ownerId={scopedOwnerId}
           userId={userId}
           terms={terms}
           course={courseDialog === "new" ? null : courseDialog}
@@ -494,6 +500,7 @@ function Faculdade() {
       {termDialog ? (
         <TermDialog
           workspaceId={workspaceId}
+          ownerId={scopedOwnerId}
           userId={userId}
           onClose={() => setTermDialog(false)}
           onSaved={async () => {
@@ -505,6 +512,7 @@ function Faculdade() {
       {evaluationDialog ? (
         <EvaluationDialog
           workspaceId={workspaceId}
+          ownerId={scopedOwnerId}
           userId={userId}
           courses={courses}
           onClose={() => setEvaluationDialog(false)}
@@ -517,6 +525,7 @@ function Faculdade() {
       {sessionDialog ? (
         <SessionDialog
           workspaceId={workspaceId}
+          ownerId={scopedOwnerId}
           userId={userId}
           courses={courses}
           onClose={() => setSessionDialog(false)}
@@ -529,6 +538,7 @@ function Faculdade() {
       {importDialog ? (
         <ImportDialog
           workspaceId={workspaceId}
+          ownerId={scopedOwnerId}
           userId={userId}
           onClose={() => setImportDialog(false)}
           onSaved={async () => {
@@ -552,6 +562,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function CourseDialog({
   workspaceId,
+  ownerId,
   userId,
   terms,
   course,
@@ -559,6 +570,7 @@ function CourseDialog({
   onSaved,
 }: {
   workspaceId: string | undefined;
+  ownerId: string | undefined;
   userId: string | undefined;
   terms: { id: string; name: string }[];
   course: AcademicCourse | null;
@@ -579,7 +591,7 @@ function CourseDialog({
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    if (!workspaceId || !userId) return;
+    if (!workspaceId || !ownerId || !userId) return;
     setSaving(true);
     try {
       const input = {
@@ -597,8 +609,8 @@ function CourseDialog({
           .filter(Boolean),
         notes: notes || null,
       };
-      if (course) await updateCourse(course.id, input);
-      else await createCourse(workspaceId, userId, input);
+      if (course) await updateCourse(workspaceId, ownerId, course.id, input);
+      else await createCourse(workspaceId, ownerId, userId, input);
       toast.success(course ? "Disciplina atualizada." : "Disciplina registrada.");
       await onSaved();
     } catch (e) {
@@ -695,11 +707,13 @@ function CourseDialog({
 
 function TermDialog({
   workspaceId,
+  ownerId,
   userId,
   onClose,
   onSaved,
 }: {
   workspaceId: string | undefined;
+  ownerId: string | undefined;
   userId: string | undefined;
   onClose: () => void;
   onSaved: () => Promise<void>;
@@ -711,10 +725,10 @@ function TermDialog({
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    if (!workspaceId || !userId) return;
+    if (!workspaceId || !ownerId || !userId) return;
     setSaving(true);
     try {
-      await createTerm(workspaceId, userId, {
+      await createTerm(workspaceId, ownerId, userId, {
         name,
         starts_on: startsOn || null,
         ends_on: endsOn || null,
@@ -771,12 +785,14 @@ function TermDialog({
 
 function EvaluationDialog({
   workspaceId,
+  ownerId,
   userId,
   courses,
   onClose,
   onSaved,
 }: {
   workspaceId: string | undefined;
+  ownerId: string | undefined;
   userId: string | undefined;
   courses: AcademicCourse[];
   onClose: () => void;
@@ -790,10 +806,10 @@ function EvaluationDialog({
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    if (!workspaceId || !userId) return;
+    if (!workspaceId || !ownerId || !userId) return;
     setSaving(true);
     try {
-      await createEvaluation(workspaceId, userId, {
+      await createEvaluation(workspaceId, ownerId, userId, {
         course_id: courseId,
         title,
         kind,
@@ -873,12 +889,14 @@ function EvaluationDialog({
 
 function SessionDialog({
   workspaceId,
+  ownerId,
   userId,
   courses,
   onClose,
   onSaved,
 }: {
   workspaceId: string | undefined;
+  ownerId: string | undefined;
   userId: string | undefined;
   courses: AcademicCourse[];
   onClose: () => void;
@@ -892,10 +910,10 @@ function SessionDialog({
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    if (!workspaceId || !userId) return;
+    if (!workspaceId || !ownerId || !userId) return;
     setSaving(true);
     try {
-      await createSession(workspaceId, userId, {
+      await createSession(workspaceId, ownerId, userId, {
         course_id: courseId,
         date,
         time: time || null,
@@ -973,6 +991,7 @@ function ImportDialog({
   onSaved,
 }: {
   workspaceId: string | undefined;
+  ownerId: string | undefined;
   userId: string | undefined;
   onClose: () => void;
   onSaved: () => Promise<void>;
@@ -990,7 +1009,7 @@ function ImportDialog({
     if (!valid.length) return;
     setSaving(true);
     try {
-      for (const input of valid) await createCourse(workspaceId, userId, input, "IMPORT");
+      for (const input of valid) await createCourse(workspaceId, ownerId, userId, input, "IMPORT");
       toast.success(`${valid.length} disciplina(s) importada(s).`);
       await onSaved();
     } catch (e) {
