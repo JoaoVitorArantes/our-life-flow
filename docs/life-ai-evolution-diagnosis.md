@@ -94,3 +94,13 @@ Verificações: 25 arquivos / 107 testes aprovados (`bunx vitest run`); `tsgo --
 ### Lacunas que dependem de dados do usuário
 
 Grade oficial, pré-requisitos reais, notas, frequência mínima e calendário acadêmico dependem de matrícula/dados da instituição — o módulo registra e sinaliza ausências, não inventa. Gravação acadêmica real via chat e isolamento João/Renifer seguem NÃO VERIFICADOS (requerem espaço de teste isolado e sessões autorizadas). Nenhuma publicação; nenhum dado real alterado.
+
+## Etapa 20/10/2026 (2) — Faculdade privada por pessoa
+
+Migration aditiva `0017_academic_owner_privacy.sql` **criada e aplicada** no banco de preview: `owner_id` (NOT NULL, backfill apenas de `created_by`, sem ler conteúdo) nas quatro tabelas acadêmicas; políticas refeitas para exigir `owner_id = auth.uid()` + membro do workspace (SELECT/UPDATE/DELETE) e `owner_id = created_by = auth.uid()` no INSERT; WITH CHECK do UPDATE impede transferência de dono. Integridade: UNIQUE `(id, workspace_id, owner_id)` em períodos e disciplinas, FKs compostas de avaliações/aulas para disciplina do mesmo dono+workspace (CASCADE) e trigger `validate_academic_term_owner` para disciplina→período. Migration 0016 preservada.
+
+Cliente: consultas, mutações, importação e read-back escopados por `owner_id = userId` (chaves do React Query incluem o usuário). Servidor: ferramenta `academics` filtra por dono; `validateActionReferences` recebe o usuário autenticado e exige disciplina do próprio dono na proposta e na confirmação. Navegação: `academicNavItems` gera um atalho por membro real ("Faculdade — <primeiro nome>"), usuário autenticado primeiro; `/faculdade` redireciona para a visão própria e `/faculdade/$ownerId` mostra estado "Sem acesso" (sem consultas nem gravação) quando o dono não é o usuário da sessão — o RLS é a última barreira.
+
+Verificações: 27 arquivos / 129 testes aprovados; `tsgo --noEmit` limpo; build OK 01:12 UTC; lint direcionado 0 erros/0 avisos. Novos testes: contrato do SQL da 0017 (owner-scope.test.ts), atalhos e guarda de rota (navigation.test.ts), revalidação por dono com curso de outra pessoa rejeitado (references.test.ts).
+
+Limitações: verificação autenticada na prévia NÃO realizada nesta etapa (aprovação de sessão indisponível no contexto); isolamento real João/Renifer verificado por contrato/testes, não por sessões ao vivo. Preferências de navegação (ocultar/ordenar) passam a usar as chaves por pessoa `/faculdade/<id>`; a chave antiga `/faculdade` não oculta os novos atalhos. Nenhuma publicação; nenhum dado real lido ou alterado.
