@@ -62,14 +62,14 @@ export async function executeAction(
   ctx: ExecContext,
 ): Promise<ExecResult> {
   // Prévias salvas antes dos campos acadêmicos continuam confirmáveis: preenche nulls ausentes.
-  a = actionSchema.parse({
+  const legacyDefaults = {
     academic_course_id: null,
     evaluation_kind: null,
     grade: null,
     weight: null,
     attended: null,
-    ...a,
-  });
+  };
+  a = actionSchema.parse({ ...legacyDefaults, ...(a as object) });
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
   if (a.intent === "create_context") contextCreateInput(a.description, a.context_data);

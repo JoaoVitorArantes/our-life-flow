@@ -531,8 +531,8 @@ function CourseDialog({
   onClose,
   onSaved,
 }: {
-  workspaceId?: string;
-  userId?: string;
+  workspaceId: string | undefined;
+  userId: string | undefined;
   terms: { id: string; name: string }[];
   course: AcademicCourse | null;
   onClose: () => void;
@@ -672,8 +672,8 @@ function TermDialog({
   onClose,
   onSaved,
 }: {
-  workspaceId?: string;
-  userId?: string;
+  workspaceId: string | undefined;
+  userId: string | undefined;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -749,8 +749,8 @@ function EvaluationDialog({
   onClose,
   onSaved,
 }: {
-  workspaceId?: string;
-  userId?: string;
+  workspaceId: string | undefined;
+  userId: string | undefined;
   courses: AcademicCourse[];
   onClose: () => void;
   onSaved: () => Promise<void>;
@@ -851,8 +851,8 @@ function SessionDialog({
   onClose,
   onSaved,
 }: {
-  workspaceId?: string;
-  userId?: string;
+  workspaceId: string | undefined;
+  userId: string | undefined;
   courses: AcademicCourse[];
   onClose: () => void;
   onSaved: () => Promise<void>;
@@ -945,8 +945,8 @@ function ImportDialog({
   onClose,
   onSaved,
 }: {
-  workspaceId?: string;
-  userId?: string;
+  workspaceId: string | undefined;
+  userId: string | undefined;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {

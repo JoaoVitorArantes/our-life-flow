@@ -14,8 +14,8 @@ import type { AcademicCourse, AcademicEvaluation, AcademicSession, AcademicTerm 
  */
 
 async function insertAndVerify<T extends { id: string }>(
-  insert: () => Promise<{ data: { id: string } | null; error: unknown }>,
-  readBack: (id: string) => Promise<{ data: T | null; error: unknown }>,
+  insert: () => PromiseLike<{ data: { id: string } | null; error: unknown }>,
+  readBack: (id: string) => PromiseLike<{ data: T | null; error: unknown }>,
   label: string,
 ): Promise<T> {
   const { data, error } = await insert();
