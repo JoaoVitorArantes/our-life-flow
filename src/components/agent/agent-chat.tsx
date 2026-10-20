@@ -18,6 +18,7 @@ import {
   Heart,
   Layers,
   Repeat,
+  GraduationCap,
 } from "lucide-react";
 import {
   Conversation,

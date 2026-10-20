@@ -19,6 +19,9 @@ import {
   isContextIntent,
 } from "@/features/contexts/ai-contract";
 import { executeContextAction } from "@/features/contexts/execute-confirmed";
+import { createEvaluation, createSession } from "@/features/academic/mutations";
+import { isAcademicIntent } from "@/features/plugins/references.shared";
+import type { EvaluationKind } from "@/features/academic/contracts";
 
 /**
  * Executor da Inbox: transforma uma ação JÁ confirmada em chamadas às MESMAS mutações usadas
