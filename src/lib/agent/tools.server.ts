@@ -701,20 +701,20 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             .from("academic_evaluations")
             .select("id,course_id,title,kind,due_date,weight,grade,status")
             .eq("workspace_id", w)
-            .eq("owner_id", userId)
+            .eq("owner_id", ownerId)
             .order("due_date", { ascending: true, nullsFirst: false })
             .limit(100),
           sb
             .from("academic_sessions")
             .select("id,course_id,starts_at,duration_minutes,topic,attended")
             .eq("workspace_id", w)
-            .eq("owner_id", userId)
+            .eq("owner_id", ownerId)
             .order("starts_at", { ascending: false })
             .limit(200),
         ]);
         if (terms.error || courses.error || evaluations.error || sessions.error)
           return fail(
-            "sua vida acadêmica",
+            "a vida acadêmica deste perfil",
             terms.error ?? courses.error ?? evaluations.error ?? sessions.error,
           );
         return {
