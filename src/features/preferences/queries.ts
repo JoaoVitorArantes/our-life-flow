@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/features/auth/session";
-import { NAV_GROUPS, type NavGroup } from "@/features/app/navigation";
+import { useApp } from "@/features/app/app-context";
+import { NAV_GROUPS, academicNavItems, type NavGroup } from "@/features/app/navigation";
 
 export type Favorite = { kind: "module"; to: string };
 
@@ -75,26 +76,34 @@ export function useSavePreferences() {
 /** Navigation groups after applying the person's order, hidden modules and favorites. Hidden ≠ removed. */
 export function useNavGroups(): NavGroup[] {
   const { data } = usePreferences();
+  const { members, memberProfiles, userId } = useApp();
   return useMemo(() => {
     const prefs = data ?? DEFAULT_PREFERENCES;
     const rank = (to: string) => {
       const index = prefs.nav_order.indexOf(to);
       return index === -1 ? 1000 : index;
     };
-    const all = NAV_GROUPS.flatMap((group) => group.items);
+    // Faculdade é privada por pessoa: o atalho estático vira um atalho por membro real.
+    const perPerson =
+      members.length > 0 ? academicNavItems(members, memberProfiles, userId) : null;
+    const expand = (items: NavGroup["items"]) =>
+      items.flatMap((item) =>
+        item.to === "/faculdade" && perPerson ? perPerson : [item],
+      );
+    const all = NAV_GROUPS.flatMap((group) => expand(group.items));
     const favorites = prefs.favorites
       .map((fav) => all.find((item) => item.to === fav.to))
       .filter((item): item is NonNullable<typeof item> => !!item);
     const groups = NAV_GROUPS.map((group) => ({
       label: group.label,
-      items: group.items
+      items: expand(group.items)
         .filter((item) => !prefs.nav_hidden.includes(item.to))
         .map((item, index) => ({ item, index }))
         .sort((a, b) => rank(a.item.to) - rank(b.item.to) || a.index - b.index)
         .map(({ item }) => item),
     })).filter((group) => group.items.length > 0);
     return favorites.length ? [{ label: "Favoritos", items: favorites }, ...groups] : groups;
-  }, [data]);
+  }, [data, members, memberProfiles, userId]);
 }
 
 const HOME_ROUTES = new Set(NAV_GROUPS.flatMap((group) => group.items.map((item) => item.to)));
