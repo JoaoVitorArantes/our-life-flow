@@ -111,9 +111,10 @@ function Faculdade() {
 
   const seedPendings = useMutation({
     mutationFn: async () => {
-      if (!workspaceId || !userId) throw new Error("Selecione um espaço.");
+      if (!workspaceId || !userId || !scopedOwnerId) throw new Error("Selecione um espaço.");
       return seedKnownPendingCourses(
         workspaceId,
+        scopedOwnerId,
         userId,
         KNOWN_PENDING_COURSES,
         courses.map((c) => c.name),
@@ -167,18 +168,13 @@ function Faculdade() {
   }, [evaluations]);
 
   if (!allowed) {
-    const ownerName = memberProfiles.find((p) => p.id === ownerId)?.name.split(/\s+/)[0];
     return (
       <div className="space-y-8">
         <PageHeader title="Faculdade" subtitle={PROGRAM_INFO.disclaimer} />
         <EmptyState
           icon={Lock}
-          title="Sem acesso a esta Faculdade"
-          description={
-            ownerName
-              ? `Os registros acadêmicos de ${ownerName} são privados. Abra o seu atalho "Faculdade" no menu para ver os seus.`
-              : 'Os registros acadêmicos são privados de cada pessoa. Abra o seu atalho "Faculdade" no menu.'
-          }
+          title="Perfil acadêmico não encontrado"
+          description="Este perfil de Faculdade não pertence a nenhum membro deste espaço. Escolha um perfil no submenu Faculdade do menu."
           action={
             <Button asChild variant="outline">
               <Link to="/faculdade">Ir para a minha Faculdade</Link>
@@ -192,7 +188,7 @@ function Faculdade() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Faculdade"
+        title={`Faculdade — ${ownerName}`}
         subtitle={`${PROGRAM_INFO.course} · ${PROGRAM_INFO.institution} · ${PROGRAM_INFO.curriculum} · ${PROGRAM_INFO.admission}`}
         action={
           <div className="flex flex-wrap gap-2">
