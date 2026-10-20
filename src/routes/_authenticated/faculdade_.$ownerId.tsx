@@ -95,6 +95,10 @@ function Faculdade() {
   const scopedOwnerId = allowed ? ownerId : undefined;
   const ownerName = firstName(memberProfiles.find((p) => p.id === ownerId)?.name, "Membro");
   const queryClient = useQueryClient();
+  const { data: profile, isLoading: profileLoading } = useAcademicProfile(
+    workspaceId,
+    scopedOwnerId,
+  );
   const { data: terms = [] } = useAcademicTerms(workspaceId, scopedOwnerId);
   const { data: courses = [] } = useAcademicCourses(workspaceId, scopedOwnerId);
   const { data: evaluations = [] } = useAcademicEvaluations(workspaceId, scopedOwnerId);
@@ -105,12 +109,17 @@ function Faculdade() {
   const [evaluationDialog, setEvaluationDialog] = useState(false);
   const [sessionDialog, setSessionDialog] = useState(false);
   const [importDialog, setImportDialog] = useState(false);
+  const [profileDialog, setProfileDialog] = useState(false);
 
   const invalidate = () =>
     Promise.all(
-      ["academic_terms", "academic_courses", "academic_evaluations", "academic_sessions"].map((k) =>
-        queryClient.invalidateQueries({ queryKey: [k] }),
-      ),
+      [
+        "academic_profiles",
+        "academic_terms",
+        "academic_courses",
+        "academic_evaluations",
+        "academic_sessions",
+      ].map((k) => queryClient.invalidateQueries({ queryKey: [k] })),
     );
 
   const attend = (sessionId: string, attended: boolean) => {
