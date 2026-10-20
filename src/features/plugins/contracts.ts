@@ -111,7 +111,7 @@ export const readInputSchemas = {
   contexts: empty,
   context_details: z.object({ id: z.string().uuid() }).strict(),
   notes: z.object({ search: text }).strict(),
-  academics: empty,
+  academics: z.object({ owner_id: z.string().uuid().optional() }).strict(),
 } satisfies Record<Exclude<ToolName, "propose_action">, z.ZodTypeAny>;
 
 // Outputs are JSON DTOs, never executable objects or nonfinite numbers.
