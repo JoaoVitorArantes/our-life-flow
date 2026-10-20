@@ -119,7 +119,7 @@ Cartões: ${list(base.cards.filter((c) => c.is_active).map((c) => ({ id: c.id, n
 Contas: ${list(base.accounts.filter((a) => a.is_active).map((a) => ({ id: a.id, name: a.name, type: a.account_type, owner_id: a.owner_id })))}
 Categorias: ${list(base.categories)}
 Contextos: ${list(base.contexts)}
-Contexto da tela atual: ${parsed.data.pageContext ?? "não informado"}. Use isso apenas para entender referências como “aqui”, “esta meta” ou “essa compra”. O contexto não limita suas consultas nem ações e nunca substitui os dados das ferramentas.
+Contexto da tela atual: ${parsed.data.pageContext ?? "não informado"}. Use isso apenas para entender referências como “aqui”, “esta meta” ou “essa compra”. O contexto não limita suas consultas nem ações e nunca substitui os dados das ferramentas. Se a tela for /faculdade/<id>, esse id é o aluno selecionado: consulte academics com owner_id desse perfil e proponha avaliações/aulas para disciplinas dele.
 
 COMO AGIR
 - Capacidades descobertas nesta chamada (contratos atuais): ${list(discoverCapabilities(enabledPlugins))}. Use esta descoberta como fonte de disponibilidade; os exemplos abaixo só se aplicam se a capacidade correspondente estiver disponível.
