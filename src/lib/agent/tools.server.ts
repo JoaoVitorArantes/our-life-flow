@@ -676,7 +676,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
 
     academics: tool({
       description:
-        "Consulta a vida acadêmica do espaço: períodos letivos, disciplinas (situação, nota, créditos, pré-requisitos), avaliações e aulas com presença. Campos null = dado não informado; nunca invente.",
+        "Consulta a SUA vida acadêmica (privada por pessoa, mesmo em espaço compartilhado): períodos letivos, disciplinas (situação, nota, créditos, pré-requisitos), avaliações e aulas com presença. Campos null = dado não informado; nunca invente.",
       inputSchema: readInputSchemas.academics,
       execute: async () => {
         const [terms, courses, evaluations, sessions] = await Promise.all([
@@ -684,6 +684,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
             .from("academic_terms")
             .select("id,name,starts_on,ends_on,enrollment_until,status")
             .eq("workspace_id", w)
+            .eq("owner_id", userId)
             .order("starts_on", { ascending: true, nullsFirst: false }),
           sb
             .from("academic_courses")
@@ -691,17 +692,20 @@ export function buildTools(ctx: AgentCtx, base: Base) {
               "id,name,code,semester,credits,status,grade,attendance_percent,prerequisites,term_id",
             )
             .eq("workspace_id", w)
+            .eq("owner_id", userId)
             .order("name"),
           sb
             .from("academic_evaluations")
             .select("id,course_id,title,kind,due_date,weight,grade,status")
             .eq("workspace_id", w)
+            .eq("owner_id", userId)
             .order("due_date", { ascending: true, nullsFirst: false })
             .limit(100),
           sb
             .from("academic_sessions")
             .select("id,course_id,starts_at,duration_minutes,topic,attended")
             .eq("workspace_id", w)
+            .eq("owner_id", userId)
             .order("starts_at", { ascending: false })
             .limit(200),
         ]);
@@ -728,7 +732,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
         const enabled = await loadPluginAccess(sb, userId, w);
         if (!intentAllowed(a.intent, enabled))
           throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
-        await validateActionReferences(sb, w, a);
+        await validateActionReferences(sb, w, userId, a);
         if (
           [
             "create_context",
