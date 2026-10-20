@@ -20,7 +20,7 @@ import {
 } from "@/features/contexts/ai-contract";
 import { executeContextAction } from "@/features/contexts/execute-confirmed";
 import { createEvaluation, createSession } from "@/features/academic/mutations";
-import { isAcademicIntent } from "@/features/plugins/references.shared";
+import { isAcademicIntent } from "@/features/plugins/intents.shared";
 import type { EvaluationKind } from "@/features/academic/contracts";
 
 /**

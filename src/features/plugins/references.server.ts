@@ -9,11 +9,7 @@ import {
 } from "@/features/contexts/ai-contract";
 import { contextSchema } from "@/features/contexts/validation";
 import { evaluationInputSchema, sessionInputSchema } from "@/features/academic/contracts";
-
-const ACADEMIC_INTENTS = ["create_evaluation", "log_class"] as const;
-export function isAcademicIntent(intent: string) {
-  return (ACADEMIC_INTENTS as readonly string[]).includes(intent);
-}
+import { isAcademicIntent } from "./intents.shared";
 
 /** Re-check edited references at the point of confirmation, with the caller's RLS client. */
 export async function validateActionReferences(
