@@ -188,7 +188,7 @@ function Faculdade() {
   if (!allowed) {
     return (
       <div className="space-y-8">
-        <PageHeader title="Faculdade" subtitle={PROGRAM_INFO.disclaimer} />
+        <PageHeader title="Faculdade" subtitle={ACADEMIC_DISCLAIMER} />
         <EmptyState
           icon={Lock}
           title="Perfil acadêmico não encontrado"
@@ -203,13 +203,64 @@ function Faculdade() {
     );
   }
 
+  // Cadastro desde o início: sem perfil configurado, nada é presumido —
+  // a pessoa informa instituição, curso, currículo e ingresso antes de lançar disciplinas.
+  if (!profileLoading && !profile) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title={`Faculdade — ${ownerName}`} subtitle={ACADEMIC_DISCLAIMER} />
+        <EmptyState
+          icon={GraduationCap}
+          title="Configure o perfil acadêmico"
+          description={`Informe a instituição, o curso, o currículo e o ano de ingresso de ${ownerName}. Nada é preenchido automaticamente — o que você não souber ficará como não informado e poderá ser editado depois.`}
+          action={
+            <Button onClick={() => setProfileDialog(true)}>
+              <GraduationCap className="size-4" /> Configurar perfil acadêmico
+            </Button>
+          }
+        />
+        {profileDialog ? (
+          <ProfileDialog
+            workspaceId={workspaceId}
+            ownerId={scopedOwnerId}
+            userId={userId}
+            profile={null}
+            onClose={() => setProfileDialog(false)}
+            onSaved={async () => {
+              await invalidate();
+              setProfileDialog(false);
+            }}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
+  const profileSummary = profile
+    ? [
+        profile.course_name,
+        profile.institution,
+        profile.curriculum,
+        profile.admission_year ? `Ingresso ${profile.admission_year}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ") || "Perfil sem informações declaradas"
+    : "";
+
+  // Atalho das pendências declaradas pelo João: só no perfil BSI/UFU dele.
+  const isBsiUfuProfile =
+    profile?.institution === "UFU" && (profile.course_name ?? "").includes("Sistemas de Informação");
+
   return (
     <div className="space-y-8">
       <PageHeader
         title={`Faculdade — ${ownerName}`}
-        subtitle={`${PROGRAM_INFO.course} · ${PROGRAM_INFO.institution} · ${PROGRAM_INFO.curriculum} · ${PROGRAM_INFO.admission}`}
+        subtitle={profileSummary}
         action={
           <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setProfileDialog(true)}>
+              <Settings2 className="size-4" /> Perfil
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setImportDialog(true)}>
               <Upload className="size-4" /> Importar
             </Button>
@@ -220,7 +271,7 @@ function Faculdade() {
         }
       />
 
-      <p className="text-xs text-muted-foreground">{PROGRAM_INFO.disclaimer}</p>
+      <p className="text-xs text-muted-foreground">{ACADEMIC_DISCLAIMER}</p>
 
       {/* Progresso estimado */}
       <Panel>
