@@ -22,6 +22,8 @@ export type NavItem = {
   label: string;
   icon: LucideIcon;
   emoji: string;
+  /** Subitens exibidos ao expandir o item pai (ex.: perfis de Faculdade). */
+  children?: NavItem[];
 };
 
 export type NavGroup = { label: string; items: NavItem[] };
@@ -90,15 +92,16 @@ export const ALL_NAV = [...PRIMARY_NAV, ...SECONDARY_NAV, ...FOOTER_NAV];
 export type AcademicMember = { user_id: string };
 export type AcademicProfile = { id: string; name: string };
 
-function firstName(name: string | undefined, fallback: string): string {
+export function firstName(name: string | undefined, fallback: string): string {
   const first = name?.trim().split(/\s+/)[0];
   return first && first.length > 0 ? first : fallback;
 }
 
 /**
- * Atalhos de Faculdade: um por membro real do workspace, com o primeiro nome.
- * O usuário autenticado vem primeiro; os demais em ordem alfabética.
- * O atalho NÃO autoriza acesso — a rota confere a sessão e o RLS é a última barreira.
+ * Subitens de Faculdade: um por membro real do workspace, rotulado com o primeiro
+ * nome. O usuário autenticado vem primeiro; os demais em ordem alfabética.
+ * A Faculdade é compartilhada entre membros — o subitem escolhe o aluno (perfil
+ * acadêmico), não autoriza acesso; o RLS por workspace é a última barreira.
  */
 export function academicNavItems(
   members: readonly AcademicMember[],
@@ -116,13 +119,16 @@ export function academicNavItems(
   });
   return sorted.map((member) => ({
     to: `/faculdade/${member.user_id}`,
-    label: `Faculdade — ${firstName(nameOf(member.user_id), "Membro")}`,
+    label: firstName(nameOf(member.user_id), "Membro"),
     icon: GraduationCap,
     emoji: "🎓",
   }));
 }
 
-/** A rota /faculdade/$ownerId só mostra dados quando o dono é o usuário autenticado. */
-export function canViewAcademic(ownerId: string | undefined, userId: string | undefined): boolean {
-  return !!ownerId && !!userId && ownerId === userId;
+/** A rota /faculdade/$ownerId só mostra dados quando o dono é membro do workspace. */
+export function isAcademicMember(
+  ownerId: string | undefined,
+  members: readonly AcademicMember[],
+): boolean {
+  return !!ownerId && members.some((member) => member.user_id === ownerId);
 }
