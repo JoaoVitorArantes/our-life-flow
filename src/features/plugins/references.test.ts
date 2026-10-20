@@ -129,19 +129,20 @@ test("context editing validates merged dates while preserving omitted fields", a
 });
 
 test("academic intent revalidates the course against the caller as owner", async () => {
-  const { sb, filters } = client({ data: { id: "course-1" }, error: null });
+  const courseId = crypto.randomUUID();
+  const { sb, filters } = client({ data: { id: courseId }, error: null });
   await expect(
     validateActionReferences(sb, "workspace", "user-me", {
       ...draft,
       intent: "create_evaluation",
-      academic_course_id: "course-1",
+      academic_course_id: courseId,
       description: "Prova 1",
       amount: null,
     }),
   ).resolves.toBeUndefined();
   expect(filters).toHaveBeenCalledWith("workspace_id", "workspace");
   expect(filters).toHaveBeenCalledWith("owner_id", "user-me");
-  expect(filters).toHaveBeenCalledWith("id", "course-1");
+  expect(filters).toHaveBeenCalledWith("id", courseId);
 });
 
 test("academic intent rejects a course owned by the other person (invisible under RLS)", async () => {
