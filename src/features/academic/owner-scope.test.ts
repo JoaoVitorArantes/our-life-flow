@@ -90,3 +90,41 @@ test("disciplina só referencia período do mesmo dono e workspace (trigger pres
   expect(sql0018).not.toContain("DROP TRIGGER");
   expect(sql0018).not.toContain("DROP FUNCTION");
 });
+
+/**
+ * Contrato da migration 0019: perfil acadêmico por aluno (instituição, curso,
+ * currículo, ingresso) — tudo opcional, sem seed de BSI/UFU para ninguém.
+ */
+const sql0019 = readFileSync("drizzle/migrations/0019_academic_profiles.sql", "utf8");
+
+test("academic_profiles é por aluno dentro do workspace, com FK de membro real", () => {
+  expect(sql0019).toContain("CREATE TABLE public.academic_profiles");
+  expect(sql0019).toContain("PRIMARY KEY (workspace_id, owner_id)");
+  expect(sql0019).toContain(
+    "FOREIGN KEY (workspace_id, owner_id)\n    REFERENCES public.workspace_members (workspace_id, user_id)",
+  );
+});
+
+test("academic_profiles: leitura/edição por membro, criação exige autor da sessão", () => {
+  for (const op of ["select", "update", "delete"] as const) {
+    const statement = sql0019.match(
+      new RegExp(`CREATE POLICY academic_profiles_${op} ON public\\.academic_profiles[^;]+;`),
+    )?.[0];
+    expect(statement, `política ${op}`).toBeDefined();
+    expect(statement).toContain("USING (public.user_is_workspace_member(workspace_id))");
+  }
+  expect(sql0019).toContain(
+    "WITH CHECK (public.user_is_workspace_member(workspace_id) AND created_by = auth.uid())",
+  );
+  expect(sql0019).toContain(
+    "GRANT SELECT, INSERT, UPDATE, DELETE ON public.academic_profiles TO authenticated;",
+  );
+});
+
+test("nenhuma migration semeia instituição, curso ou currículo em perfis alheios", () => {
+  for (const sql of [sql0017, sql0018, sql0019]) {
+    expect(sql).not.toMatch(/INSERT INTO public\.academic_profiles/i);
+    expect(sql).not.toContain("UFU");
+    expect(sql).not.toContain("BSI");
+  }
+});
