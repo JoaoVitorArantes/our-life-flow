@@ -61,7 +61,15 @@ export async function executeAction(
   a: z.infer<typeof actionSchema>,
   ctx: ExecContext,
 ): Promise<ExecResult> {
-  actionSchema.parse(a);
+  // Prévias salvas antes dos campos acadêmicos continuam confirmáveis: preenche nulls ausentes.
+  a = actionSchema.parse({
+    academic_course_id: null,
+    evaluation_kind: null,
+    grade: null,
+    weight: null,
+    attended: null,
+    ...a,
+  });
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
   if (a.intent === "create_context") contextCreateInput(a.description, a.context_data);
