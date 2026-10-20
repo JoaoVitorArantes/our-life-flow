@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useNavGroups } from "@/features/preferences/queries";
-import { PanelLeftClose, PanelLeftOpen, Repeat2 } from "lucide-react";
+import { ChevronDown, PanelLeftClose, PanelLeftOpen, Repeat2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FOOTER_NAV, type NavItem } from "@/features/app/navigation";
 import { useApp } from "@/features/app/app-context";
@@ -18,33 +19,80 @@ function NavLink({
   badge?: number | undefined;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const active = pathname === item.to;
+  const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
+  const children = item.children ?? [];
+  const [open, setOpen] = useState(active);
+  const expanded = open || active;
   return (
-    <Link
-      to={item.to}
-      title={item.label}
-      className={cn(
-        "group relative flex min-h-10 items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-all duration-200",
-        collapsed && "justify-center px-0",
-        active
-          ? "border-primary/20 bg-primary/10 text-foreground shadow-soft"
-          : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-accent/45 hover:text-foreground",
-      )}
-    >
-      {active ? (
-        <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary" aria-hidden />
+    <div>
+      <div className="relative">
+        <Link
+          to={item.to}
+          title={item.label}
+          className={cn(
+            "group relative flex min-h-10 items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-all duration-200",
+            collapsed && "justify-center px-0",
+            active
+              ? "border-primary/20 bg-primary/10 text-foreground shadow-soft"
+              : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-accent/45 hover:text-foreground",
+          )}
+        >
+          {active ? (
+            <span
+              className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary"
+              aria-hidden
+            />
+          ) : null}
+          <item.icon
+            className={cn("size-4 shrink-0 transition-colors", active && "text-primary")}
+          />
+          {collapsed ? null : <span className="truncate font-medium">{item.label}</span>}
+          {!collapsed && badge && badge > 0 ? (
+            <span className="numeric ml-auto flex min-w-5 items-center justify-center rounded-full border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+              {badge > 99 ? "99+" : badge}
+            </span>
+          ) : null}
+          {collapsed && badge && badge > 0 ? (
+            <span className="absolute right-1 top-1 size-1.5 rounded-full bg-primary" />
+          ) : null}
+        </Link>
+        {!collapsed && children.length > 0 ? (
+          <button
+            type="button"
+            aria-label={expanded ? `Recolher ${item.label}` : `Expandir ${item.label}`}
+            aria-expanded={expanded}
+            onClick={() => setOpen((value) => !value)}
+            className="absolute right-1.5 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+          >
+            <ChevronDown
+              className={cn("size-3.5 transition-transform", expanded && "rotate-180")}
+            />
+          </button>
+        ) : null}
+      </div>
+      {!collapsed && children.length > 0 && expanded ? (
+        <div className="ml-5 mt-1 space-y-1 border-l border-sidebar-border pl-2">
+          {children.map((child) => {
+            const childActive = pathname === child.to;
+            return (
+              <Link
+                key={child.to}
+                to={child.to}
+                title={`${item.label} — ${child.label}`}
+                className={cn(
+                  "flex min-h-8 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[13px] transition-all duration-200",
+                  childActive
+                    ? "border-primary/20 bg-primary/10 text-foreground"
+                    : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-accent/45 hover:text-foreground",
+                )}
+              >
+                <span className="truncate font-medium">{child.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       ) : null}
-      <item.icon className={cn("size-4 shrink-0 transition-colors", active && "text-primary")} />
-      {collapsed ? null : <span className="truncate font-medium">{item.label}</span>}
-      {!collapsed && badge && badge > 0 ? (
-        <span className="numeric ml-auto flex min-w-5 items-center justify-center rounded-full border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-          {badge > 99 ? "99+" : badge}
-        </span>
-      ) : null}
-      {collapsed && badge && badge > 0 ? (
-        <span className="absolute right-1 top-1 size-1.5 rounded-full bg-primary" />
-      ) : null}
-    </Link>
+    </div>
   );
 }
 
