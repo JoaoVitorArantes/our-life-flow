@@ -84,6 +84,11 @@ const TOOL_UI: Record<string, { label: string; done: string; icon: typeof Wallet
   contexts: { label: "Consultando contextos…", done: "Contextos consultados", icon: Layers },
   context_details: { label: "Conferindo o contexto…", done: "Contexto verificado", icon: Layers },
   notes: { label: "Consultando notas…", done: "Notas consultadas", icon: Layers },
+  academics: {
+    label: "Consultando sua vida acadêmica…",
+    done: "Faculdade consultada",
+    icon: GraduationCap,
+  },
 };
 
 const FOLLOW_UPS: Record<string, string[]> = {
