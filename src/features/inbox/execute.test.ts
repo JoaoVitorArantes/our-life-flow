@@ -172,10 +172,11 @@ test("subsequent expense keeps verified context ID and the supplied R$120", asyn
 });
 
 function courseLookup(result: { data: unknown; error: unknown }) {
-  const chain: Record<string, unknown> = {};
-  chain.select = () => chain;
-  chain.eq = () => chain;
-  chain.maybeSingle = async () => result;
+  const chain = {
+    select: () => chain,
+    eq: () => chain,
+    maybeSingle: async () => result,
+  };
   vi.mocked(supabase.from).mockReturnValue(chain as never);
 }
 
