@@ -643,6 +643,103 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function ProfileDialog({
+  workspaceId,
+  ownerId,
+  userId,
+  profile,
+  onClose,
+  onSaved,
+}: {
+  workspaceId: string | undefined;
+  ownerId: string | undefined;
+  userId: string | undefined;
+  profile: AcademicProfile | null;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const [institution, setInstitution] = useState(profile?.institution ?? "");
+  const [courseName, setCourseName] = useState(profile?.course_name ?? "");
+  const [curriculum, setCurriculum] = useState(profile?.curriculum ?? "");
+  const [admissionYear, setAdmissionYear] = useState(profile?.admission_year?.toString() ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!workspaceId || !ownerId || !userId) return;
+    setSaving(true);
+    try {
+      await upsertAcademicProfile(workspaceId, ownerId, userId, {
+        institution: institution.trim() || null,
+        course_name: courseName.trim() || null,
+        curriculum: curriculum.trim() || null,
+        admission_year: admissionYear ? Number(admissionYear) : null,
+      });
+      toast.success("Perfil acadêmico salvo.");
+      await onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível salvar.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Perfil acadêmico</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Tudo é opcional: o que você não souber ficará como não informado e poderá ser editado
+            depois. Nada é preenchido automaticamente.
+          </p>
+          <Field label="Instituição">
+            <Input
+              value={institution}
+              onChange={(e) => setInstitution(e.target.value)}
+              placeholder="Ex.: UFU"
+            />
+          </Field>
+          <Field label="Curso">
+            <Input
+              value={courseName}
+              onChange={(e) => setCourseName(e.target.value)}
+              placeholder="Ex.: Sistemas de Informação (BSI)"
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Currículo">
+              <Input
+                value={curriculum}
+                onChange={(e) => setCurriculum(e.target.value)}
+                placeholder="Ex.: 2022-2"
+              />
+            </Field>
+            <Field label="Ano de ingresso">
+              <Input
+                type="number"
+                min={1950}
+                max={2100}
+                value={admissionYear}
+                onChange={(e) => setAdmissionYear(e.target.value)}
+              />
+            </Field>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            Salvar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function CourseDialog({
   workspaceId,
   ownerId,
