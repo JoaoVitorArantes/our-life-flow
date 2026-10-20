@@ -176,6 +176,57 @@ export type Database = {
           },
         ]
       }
+      academic_profiles: {
+        Row: {
+          admission_year: number | null
+          course_name: string | null
+          created_at: string
+          created_by: string
+          curriculum: string | null
+          institution: string | null
+          owner_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          admission_year?: number | null
+          course_name?: string | null
+          created_at?: string
+          created_by: string
+          curriculum?: string | null
+          institution?: string | null
+          owner_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          admission_year?: number | null
+          course_name?: string | null
+          created_at?: string
+          created_by?: string
+          curriculum?: string | null
+          institution?: string | null
+          owner_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_profiles_owner_member_fkey"
+            columns: ["workspace_id", "owner_id"]
+            isOneToOne: true
+            referencedRelation: "workspace_members"
+            referencedColumns: ["workspace_id", "user_id"]
+          },
+          {
+            foreignKeyName: "academic_profiles_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       academic_sessions: {
         Row: {
           attended: boolean | null
