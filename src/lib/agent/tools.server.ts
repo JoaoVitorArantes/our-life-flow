@@ -735,7 +735,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
         const enabled = await loadPluginAccess(sb, userId, w);
         if (!intentAllowed(a.intent, enabled))
           throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
-        await validateActionReferences(sb, w, userId, a);
+        await validateActionReferences(sb, w, a);
         if (
           [
             "create_context",
