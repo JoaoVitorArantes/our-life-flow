@@ -7,6 +7,7 @@ import {
   ClipboardList,
   GraduationCap,
   Lock,
+  Settings2,
   Upload,
   UserCheck,
 } from "lucide-react";
@@ -36,10 +37,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/features/app/app-context";
 import { firstName, isAcademicMember } from "@/features/app/navigation";
 import {
+  ACADEMIC_DISCLAIMER,
   COURSE_STATUSES,
   EVALUATION_KINDS,
   KNOWN_PENDING_COURSES,
-  PROGRAM_INFO,
   courseStatusLabel,
   evaluationKindLabel,
   type CourseStatus,
@@ -53,14 +54,17 @@ import {
   markAttendance,
   seedKnownPendingCourses,
   updateCourse,
+  upsertAcademicProfile,
 } from "@/features/academic/mutations";
 import {
   attendanceFromSessions,
   useAcademicCourses,
   useAcademicEvaluations,
+  useAcademicProfile,
   useAcademicSessions,
   useAcademicTerms,
   type AcademicCourse,
+  type AcademicProfile,
 } from "@/features/academic/queries";
 import { parseImport, type ImportPreview } from "@/features/academic/import";
 import { formatDateShort } from "@/lib/format";
