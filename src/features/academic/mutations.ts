@@ -37,6 +37,38 @@ async function insertAndVerify<T extends { id: string }>(
   return saved;
 }
 
+/**
+ * Cria ou atualiza o perfil acadêmico do aluno (instituição/curso/currículo/ingresso).
+ * Campos deixados em branco ficam null — nada é presumido. Read-back sob RLS.
+ */
+export async function upsertAcademicProfile(
+  workspaceId: string,
+  ownerId: string,
+  userId: string,
+  input: z.infer<typeof academicProfileInputSchema>,
+): Promise<AcademicProfile> {
+  const valid = academicProfileInputSchema.parse(input);
+  const { error } = await supabase.from("academic_profiles").upsert(
+    {
+      ...valid,
+      workspace_id: workspaceId,
+      owner_id: ownerId,
+      created_by: userId,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "workspace_id,owner_id" },
+  );
+  if (error) throw new Error("Não foi possível salvar o perfil acadêmico.");
+  const { data, error: readError } = await supabase
+    .from("academic_profiles")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+  if (readError || !data) throw new Error("Não foi possível confirmar o perfil acadêmico.");
+  return data as AcademicProfile;
+}
+
 export async function createTerm(
   workspaceId: string,
   ownerId: string,
