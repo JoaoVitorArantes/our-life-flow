@@ -986,6 +986,7 @@ function SessionDialog({
 
 function ImportDialog({
   workspaceId,
+  ownerId,
   userId,
   onClose,
   onSaved,
@@ -1004,7 +1005,7 @@ function ImportDialog({
   const buildPreview = () => setPreview(parseImport(text, format));
 
   const confirm = async () => {
-    if (!workspaceId || !userId || !preview) return;
+    if (!workspaceId || !ownerId || !userId || !preview) return;
     const valid = preview.items.flatMap((i) => (i.input ? [i.input] : []));
     if (!valid.length) return;
     setSaving(true);
