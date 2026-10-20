@@ -97,8 +97,27 @@ export function evaluationKindLabel(kind: string) {
 }
 
 /**
- * Pendências informadas pelo usuário (BSI/UFU, currículo 2022-2, ingresso 2025).
- * Semestre, nota, requisitos e datas são desconhecidos — registrados como null.
+ * Perfil acadêmico de um aluno: instituição, curso, currículo e ano de ingresso.
+ * Todos os campos são opcionais — o desconhecido fica explicitamente não informado.
+ * Nada aqui é preenchido automaticamente: cada perfil declara seus próprios dados.
+ */
+export const academicProfileInputSchema = z
+  .object({
+    institution: z.string().trim().max(120).nullable(),
+    course_name: z.string().trim().max(120).nullable(),
+    curriculum: z.string().trim().max(80).nullable(),
+    admission_year: z.number().int().min(1950).max(2100).nullable(),
+  })
+  .strict();
+
+export const ACADEMIC_DISCLAIMER =
+  "Informações declaradas pelos usuários. Grade, pré-requisitos, notas e calendário oficiais devem ser confirmados com a instituição.";
+
+/**
+ * Pendências declaradas pelo João para o perfil BSI/UFU dele. Semestre, nota,
+ * requisitos e datas são desconhecidos — registrados como null. Este atalho só
+ * é oferecido no perfil cujo cadastro declara Sistemas de Informação na UFU;
+ * nunca é sugerido em outros perfis acadêmicos.
  */
 export const KNOWN_PENDING_COURSES: readonly {
   name: string;
@@ -112,12 +131,3 @@ export const KNOWN_PENDING_COURSES: readonly {
   { name: "Cálculo I", notes: "Pendência informada pelo usuário." },
   { name: "Fundamentos de Marketing", notes: "Pendência informada pelo usuário." },
 ];
-
-export const PROGRAM_INFO = {
-  course: "Sistemas de Informação (BSI)",
-  institution: "UFU",
-  curriculum: "Currículo 2022-2",
-  admission: "Ingresso 2025",
-  disclaimer:
-    "Informações declaradas pelo usuário. Grade, pré-requisitos, notas e calendário oficiais devem ser confirmados com a instituição.",
-} as const;
