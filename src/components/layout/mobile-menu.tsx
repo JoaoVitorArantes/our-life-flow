@@ -222,13 +222,33 @@ export function MobileMenu() {
                   </p>
                   <div className="space-y-1">
                     {group.items.map((item) => (
-                      <MobileNavLink
-                        key={item.to}
-                        item={item}
-                        badge={indicators[item.to]}
-                        active={pathname === item.to || pathname.startsWith(`${item.to}/`)}
-                        close={() => setOpen(false)}
-                      />
+                      <div key={item.to}>
+                        <MobileNavLink
+                          item={item}
+                          badge={indicators[item.to]}
+                          active={pathname === item.to || pathname.startsWith(`${item.to}/`)}
+                          close={() => setOpen(false)}
+                        />
+                        {item.children?.length ? (
+                          <div className="ml-5 mt-1 space-y-1 border-l border-sidebar-border pl-2">
+                            {item.children.map((child) => (
+                              <Link
+                                key={child.to}
+                                to={child.to}
+                                onClick={() => setOpen(false)}
+                                className={cn(
+                                  "flex min-h-9 items-center rounded-lg border px-2.5 text-[13px] transition-colors",
+                                  pathname === child.to
+                                    ? "border-primary/20 bg-primary/10 text-foreground"
+                                    : "border-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                                )}
+                              >
+                                <span className="truncate font-medium">{child.label}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     ))}
                   </div>
                 </section>
