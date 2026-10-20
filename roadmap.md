@@ -92,3 +92,5 @@
 - [x] Control Center: Atividade (workspace_activity com metadados mínimos; restauração registrada)
 - [x] Registros com deleted_at fora de telas, contagens, dashboards, buscas e cálculos
 - [x] Validar integridade dos dados existentes e dos módulos atuais
+- [x] Faculdade compartilhada entre membros com separação por aluno (migration 0018, submenu por primeiro nome, IA grava no perfil da disciplina)
+- [ ] Verificação autenticada da Faculdade compartilhada na prévia (bloqueada: sessão não injetada neste contexto)

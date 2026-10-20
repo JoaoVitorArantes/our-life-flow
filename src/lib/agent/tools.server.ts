@@ -676,15 +676,18 @@ export function buildTools(ctx: AgentCtx, base: Base) {
 
     academics: tool({
       description:
-        "Consulta a SUA vida acadêmica (privada por pessoa, mesmo em espaço compartilhado): períodos letivos, disciplinas (situação, nota, créditos, pré-requisitos), avaliações e aulas com presença. Campos null = dado não informado; nunca invente.",
+        "Consulta a vida acadêmica de um aluno do espaço (Faculdade é compartilhada entre os membros, separada por aluno): períodos letivos, disciplinas (situação, nota, créditos, pré-requisitos), avaliações e aulas com presença. owner_id opcional escolhe o aluno (precisa ser membro do espaço; veja Pessoas); sem owner_id, consulta o seu próprio perfil. Se a tela atual for /faculdade/<id>, use esse id como owner_id. Campos null = dado não informado; nunca invente.",
       inputSchema: readInputSchemas.academics,
-      execute: async () => {
+      execute: async ({ owner_id }) => {
+        const ownerId = owner_id ?? userId;
+        if (!base.people.some((p) => p.id === ownerId))
+          return fail("o perfil acadêmico desta pessoa", null);
         const [terms, courses, evaluations, sessions] = await Promise.all([
           sb
             .from("academic_terms")
             .select("id,name,starts_on,ends_on,enrollment_until,status")
             .eq("workspace_id", w)
-            .eq("owner_id", userId)
+            .eq("owner_id", ownerId)
             .order("starts_on", { ascending: true, nullsFirst: false }),
           sb
             .from("academic_courses")
@@ -692,26 +695,26 @@ export function buildTools(ctx: AgentCtx, base: Base) {
               "id,name,code,semester,credits,status,grade,attendance_percent,prerequisites,term_id",
             )
             .eq("workspace_id", w)
-            .eq("owner_id", userId)
+            .eq("owner_id", ownerId)
             .order("name"),
           sb
             .from("academic_evaluations")
             .select("id,course_id,title,kind,due_date,weight,grade,status")
             .eq("workspace_id", w)
-            .eq("owner_id", userId)
+            .eq("owner_id", ownerId)
             .order("due_date", { ascending: true, nullsFirst: false })
             .limit(100),
           sb
             .from("academic_sessions")
             .select("id,course_id,starts_at,duration_minutes,topic,attended")
             .eq("workspace_id", w)
-            .eq("owner_id", userId)
+            .eq("owner_id", ownerId)
             .order("starts_at", { ascending: false })
             .limit(200),
         ]);
         if (terms.error || courses.error || evaluations.error || sessions.error)
           return fail(
-            "sua vida acadêmica",
+            "a vida acadêmica deste perfil",
             terms.error ?? courses.error ?? evaluations.error ?? sessions.error,
           );
         return {
@@ -732,7 +735,7 @@ export function buildTools(ctx: AgentCtx, base: Base) {
         const enabled = await loadPluginAccess(sb, userId, w);
         if (!intentAllowed(a.intent, enabled))
           throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
-        await validateActionReferences(sb, w, userId, a);
+        await validateActionReferences(sb, w, a);
         if (
           [
             "create_context",

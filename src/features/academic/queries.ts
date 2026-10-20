@@ -8,22 +8,22 @@ export type AcademicEvaluation = Tables<"academic_evaluations">;
 export type AcademicSession = Tables<"academic_sessions">;
 
 /**
- * Consultas acadêmicas: sempre escopadas pelo dono autenticado (owner_id = userId).
- * O RLS é a última barreira; o filtro explícito evita depender só dele e mantém
- * a cache do React Query isolada por pessoa.
+ * Consultas acadêmicas: sempre escopadas pelo aluno selecionado (owner_id = ownerId).
+ * A Faculdade é compartilhada entre membros do workspace; o filtro explícito mantém
+ * os perfis separados e a cache do React Query isolada por aluno. O RLS é a última barreira.
  */
 
-export function useAcademicTerms(workspaceId?: string, userId?: string) {
+export function useAcademicTerms(workspaceId?: string, ownerId?: string) {
   return useQuery({
-    queryKey: ["academic_terms", workspaceId, userId],
-    enabled: !!workspaceId && !!userId,
+    queryKey: ["academic_terms", workspaceId, ownerId],
+    enabled: !!workspaceId && !!ownerId,
     queryFn: async () => {
-      if (!workspaceId || !userId) return [];
+      if (!workspaceId || !ownerId) return [];
       const { data, error } = await supabase
         .from("academic_terms")
         .select("*")
         .eq("workspace_id", workspaceId)
-        .eq("owner_id", userId)
+        .eq("owner_id", ownerId)
         .order("starts_on", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data as AcademicTerm[];
@@ -31,17 +31,17 @@ export function useAcademicTerms(workspaceId?: string, userId?: string) {
   });
 }
 
-export function useAcademicCourses(workspaceId?: string, userId?: string) {
+export function useAcademicCourses(workspaceId?: string, ownerId?: string) {
   return useQuery({
-    queryKey: ["academic_courses", workspaceId, userId],
-    enabled: !!workspaceId && !!userId,
+    queryKey: ["academic_courses", workspaceId, ownerId],
+    enabled: !!workspaceId && !!ownerId,
     queryFn: async () => {
-      if (!workspaceId || !userId) return [];
+      if (!workspaceId || !ownerId) return [];
       const { data, error } = await supabase
         .from("academic_courses")
         .select("*")
         .eq("workspace_id", workspaceId)
-        .eq("owner_id", userId)
+        .eq("owner_id", ownerId)
         .order("semester", { ascending: true, nullsFirst: false })
         .order("name", { ascending: true });
       if (error) throw error;
@@ -50,17 +50,17 @@ export function useAcademicCourses(workspaceId?: string, userId?: string) {
   });
 }
 
-export function useAcademicEvaluations(workspaceId?: string, userId?: string) {
+export function useAcademicEvaluations(workspaceId?: string, ownerId?: string) {
   return useQuery({
-    queryKey: ["academic_evaluations", workspaceId, userId],
-    enabled: !!workspaceId && !!userId,
+    queryKey: ["academic_evaluations", workspaceId, ownerId],
+    enabled: !!workspaceId && !!ownerId,
     queryFn: async () => {
-      if (!workspaceId || !userId) return [];
+      if (!workspaceId || !ownerId) return [];
       const { data, error } = await supabase
         .from("academic_evaluations")
         .select("*")
         .eq("workspace_id", workspaceId)
-        .eq("owner_id", userId)
+        .eq("owner_id", ownerId)
         .order("due_date", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data as AcademicEvaluation[];
@@ -68,17 +68,17 @@ export function useAcademicEvaluations(workspaceId?: string, userId?: string) {
   });
 }
 
-export function useAcademicSessions(workspaceId?: string, userId?: string) {
+export function useAcademicSessions(workspaceId?: string, ownerId?: string) {
   return useQuery({
-    queryKey: ["academic_sessions", workspaceId, userId],
-    enabled: !!workspaceId && !!userId,
+    queryKey: ["academic_sessions", workspaceId, ownerId],
+    enabled: !!workspaceId && !!ownerId,
     queryFn: async () => {
-      if (!workspaceId || !userId) return [];
+      if (!workspaceId || !ownerId) return [];
       const { data, error } = await supabase
         .from("academic_sessions")
         .select("*")
         .eq("workspace_id", workspaceId)
-        .eq("owner_id", userId)
+        .eq("owner_id", ownerId)
         .order("starts_at", { ascending: false })
         .limit(300);
       if (error) throw error;

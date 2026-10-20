@@ -57,7 +57,7 @@ test.each(["card_id", "account_id", "category_id", "context_id", "payer_user_id"
   async (field) => {
     const { sb, filters } = client({ data: null, error: null });
     await expect(
-      validateActionReferences(sb, "workspace", "user-me", { ...draft, [field]: "other-id" }),
+      validateActionReferences(sb, "workspace", { ...draft, [field]: "other-id" }),
     ).rejects.toThrow("referência");
     expect(filters).toHaveBeenCalledWith("workspace_id", "workspace");
   },
@@ -65,7 +65,7 @@ test.each(["card_id", "account_id", "category_id", "context_id", "payer_user_id"
 test("active card and unarchived context are rechecked", async () => {
   const { sb, filters } = client({ data: { id: "known" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", {
+    validateActionReferences(sb, "workspace", {
       ...draft,
       card_id: "known",
       context_id: "known",
@@ -77,13 +77,13 @@ test("active card and unarchived context are rechecked", async () => {
 test("expense cannot use an income category", async () => {
   const { sb } = client({ data: { id: "category", type: "INCOME" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", { ...draft, category_id: "category" }),
+    validateActionReferences(sb, "workspace", { ...draft, category_id: "category" }),
   ).rejects.toThrow();
 });
 test("ambiguous payment rejects before any reads", async () => {
   const { sb } = client({ data: { id: "known" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", {
+    validateActionReferences(sb, "workspace", {
       ...draft,
       card_id: "a",
       account_id: "b",
@@ -94,7 +94,7 @@ test("ambiguous payment rejects before any reads", async () => {
 test("context editing rejects other-workspace or missing records through caller RLS", async () => {
   const { sb, filters } = client({ data: null, error: null });
   await expect(
-    validateActionReferences(sb, "active-workspace", "user-me", {
+    validateActionReferences(sb, "active-workspace", {
       ...draft,
       intent: "update_context",
       context_id: "other-context",
@@ -119,7 +119,7 @@ test("context editing validates merged dates while preserving omitted fields", a
     error: null,
   });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", {
+    validateActionReferences(sb, "workspace", {
       ...draft,
       intent: "update_context",
       context_id: "known",
@@ -127,7 +127,7 @@ test("context editing validates merged dates while preserving omitted fields", a
     }),
   ).rejects.toThrow();
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", {
+    validateActionReferences(sb, "workspace", {
       ...draft,
       intent: "update_context",
       context_id: "known",
@@ -136,11 +136,11 @@ test("context editing validates merged dates while preserving omitted fields", a
   ).resolves.toBeUndefined();
 });
 
-test("academic intent revalidates the course against the caller as owner", async () => {
+test("academic intent revalidates the course in the workspace (shared Faculdade)", async () => {
   const courseId = crypto.randomUUID();
   const { sb, filters } = client({ data: { id: courseId }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", {
+    validateActionReferences(sb, "workspace", {
       ...draft,
       intent: "create_evaluation",
       academic_course_id: courseId,
@@ -149,14 +149,31 @@ test("academic intent revalidates the course against the caller as owner", async
     }),
   ).resolves.toBeUndefined();
   expect(filters).toHaveBeenCalledWith("workspace_id", "workspace");
-  expect(filters).toHaveBeenCalledWith("owner_id", "user-me");
   expect(filters).toHaveBeenCalledWith("id", courseId);
+  // Faculdade compartilhada: nenhum filtro por dono na revalidação —
+  // a execução grava no perfil (owner_id) da própria disciplina.
+  expect(filters).not.toHaveBeenCalledWith("owner_id", expect.anything());
 });
 
-test("academic intent rejects a course owned by the other person (invisible under RLS)", async () => {
+test("academic intent accepts a course owned by the other member (shared Faculdade)", async () => {
+  const courseId = crypto.randomUUID();
+  const { sb } = client({ data: { id: courseId }, error: null });
+  await expect(
+    validateActionReferences(sb, "workspace", {
+      ...draft,
+      intent: "log_class",
+      academic_course_id: courseId,
+      description: "Aula",
+      date: "2026-10-20",
+      amount: null,
+    }),
+  ).resolves.toBeUndefined();
+});
+
+test("academic intent rejects a course outside the workspace", async () => {
   const { sb, filters } = client({ data: null, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", {
+    validateActionReferences(sb, "workspace", {
       ...draft,
       intent: "log_class",
       academic_course_id: "partner-course",
@@ -164,6 +181,6 @@ test("academic intent rejects a course owned by the other person (invisible unde
       date: "2026-10-20",
       amount: null,
     }),
-  ).rejects.toThrow("sua Faculdade");
-  expect(filters).toHaveBeenCalledWith("owner_id", "user-me");
+  ).rejects.toThrow("neste espaço");
+  expect(filters).toHaveBeenCalledWith("workspace_id", "workspace");
 });

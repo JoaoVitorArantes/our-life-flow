@@ -15,7 +15,6 @@ import { isAcademicIntent } from "./intents.shared";
 export async function validateActionReferences(
   sb: SupabaseClient<Database>,
   workspaceId: string,
-  userId: string,
   action: z.infer<typeof actionSchema>,
 ) {
   const { card_id, account_id, category_id, context_id, payer_user_id } = action;
@@ -47,17 +46,17 @@ export async function validateActionReferences(
     if (card_id || account_id || category_id || context_id || payer_user_id || action.shared)
       throw new Error("Confira os campos; pagamentos não fazem parte desta ação.");
     if (!action.academic_course_id) throw new Error("Selecione a disciplina antes de confirmar.");
-    // Faculdade é privada por pessoa: a disciplina precisa ser do próprio usuário,
-    // além de pertencer ao workspace (o RLS reforça as duas condições).
+    // Faculdade é compartilhada entre membros: a disciplina precisa existir neste
+    // workspace; a execução grava no perfil (owner_id) da própria disciplina,
+    // nunca em um owner_id escolhido pelo modelo.
     const { data: course, error: courseError } = await sb
       .from("academic_courses")
       .select("id")
       .eq("workspace_id", workspaceId)
-      .eq("owner_id", userId)
       .eq("id", action.academic_course_id)
       .maybeSingle();
     if (courseError || !course)
-      throw new Error("Esta disciplina não está disponível na sua Faculdade.");
+      throw new Error("Esta disciplina não está disponível neste espaço.");
     if (action.intent === "create_evaluation")
       evaluationInputSchema.parse({
         course_id: action.academic_course_id,

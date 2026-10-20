@@ -128,12 +128,7 @@ export const authorizePluginAction = createServerFn({ method: "POST" })
       data.intent,
     );
     const { validateActionReferences } = await import("./references.server");
-    await validateActionReferences(
-      context.supabase,
-      profile.active_workspace_id,
-      context.userId,
-      data.action,
-    );
+    await validateActionReferences(context.supabase, profile.active_workspace_id, data.action);
     const { writeCapabilityAudit } = await import("./audit.server");
     const runId = crypto.randomUUID();
     await writeCapabilityAudit(
