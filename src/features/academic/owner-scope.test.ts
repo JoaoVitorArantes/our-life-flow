@@ -21,8 +21,7 @@ test.each(TABLES)("%s tem owner_id obrigatório preenchido a partir de created_b
 });
 
 test.each(TABLES)("%s: SELECT/UPDATE/DELETE exigem dono e membro do workspace", (table) => {
-  const using =
-    "USING (public.user_is_workspace_member(workspace_id) AND owner_id = auth.uid())";
+  const using = "USING (public.user_is_workspace_member(workspace_id) AND owner_id = auth.uid())";
   for (const op of ["select", "update", "delete"] as const) {
     const statement = sql.match(
       new RegExp(`CREATE POLICY ${table}_${op} ON public\\.${table}[^;]+;`),

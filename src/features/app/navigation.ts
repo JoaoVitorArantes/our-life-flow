@@ -13,7 +13,9 @@ import {
   Settings,
   Sun,
   Repeat,
-  type LucideIcon, MessageSquareText } from "lucide-react";
+  type LucideIcon,
+  MessageSquareText,
+} from "lucide-react";
 
 export type NavItem = {
   to: string;
