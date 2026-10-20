@@ -120,6 +120,13 @@
       "when": 1792457744639,
       "tag": "0016_academic_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792458537869,
+      "tag": "0017_academic_owner_privacy",
+      "breakpoints": true
     }
   ]
 }
