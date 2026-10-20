@@ -249,7 +249,8 @@ function Faculdade() {
 
   // Atalho das pendências declaradas pelo João: só no perfil BSI/UFU dele.
   const isBsiUfuProfile =
-    profile?.institution === "UFU" && (profile.course_name ?? "").includes("Sistemas de Informação");
+    profile?.institution === "UFU" &&
+    (profile.course_name ?? "").includes("Sistemas de Informação");
 
   return (
     <div className="space-y-8">
