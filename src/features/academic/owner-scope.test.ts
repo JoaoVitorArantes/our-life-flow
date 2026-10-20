@@ -21,12 +21,13 @@ test.each(TABLES)("%s tem owner_id obrigatório preenchido a partir de created_b
 });
 
 test.each(TABLES)("%s: SELECT/UPDATE/DELETE exigem dono e membro do workspace", (table) => {
-  const using = `USING (public.user_is_workspace_member(workspace_id) AND owner_id = auth.uid())`;
   expect(sql).toContain(`CREATE POLICY ${table}_select ON public.${table} FOR SELECT`);
   expect(sql).toContain(`CREATE POLICY ${table}_update ON public.${table} FOR UPDATE`);
   expect(sql).toContain(`CREATE POLICY ${table}_delete ON public.${table} FOR DELETE`);
-  // 3 políticas com USING (select/update/delete) + update repete no WITH CHECK.
-  expect(sql.split(using).length - 1).toBeGreaterThanOrEqual(4 * TABLES.indexOf(table) + 3);
+  const section = sql.split(`ON public.${table}`).slice(1).join(`ON public.${table}`);
+  const using = "USING (public.user_is_workspace_member(workspace_id) AND owner_id = auth.uid())";
+  // select, update e delete — uma cláusula USING por operação.
+  expect(section.split(using).length - 1).toBe(3);
 });
 
 test.each(TABLES)("%s: INSERT exige owner_id e created_by do próprio usuário", (table) => {
