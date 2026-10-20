@@ -40,6 +40,7 @@ import { Route as AuthenticatedConfiguracoesPluginsRouteImport } from './routes/
 import { Route as AuthenticatedConfiguracoesSistemaRouteImport } from './routes/_authenticated/configuracoes.sistema'
 import { Route as AuthenticatedContextosIndexRouteImport } from './routes/_authenticated/contextos.index'
 import { Route as AuthenticatedContextosIdRouteImport } from './routes/_authenticated/contextos.$id'
+import { Route as AuthenticatedFaculdadeOwnerIdRouteImport } from './routes/_authenticated/faculdade_.$ownerId'
 import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox.index'
 import { Route as AuthenticatedInboxThreadIdRouteImport } from './routes/_authenticated/inbox.$threadId'
 import { Route as AuthenticatedMetasIdRouteImport } from './routes/_authenticated/metas.$id'
@@ -213,6 +214,12 @@ const AuthenticatedContextosIdRoute =
     path: '/contextos/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFaculdadeOwnerIdRoute =
+  AuthenticatedFaculdadeOwnerIdRouteImport.update({
+    id: '/faculdade_/$ownerId',
+    path: '/faculdade/$ownerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInboxIndexRoute = AuthenticatedInboxIndexRouteImport.update({
   id: '/inbox/',
   path: '/inbox/',
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes/plugins': typeof AuthenticatedConfiguracoesPluginsRoute
   '/configuracoes/sistema': typeof AuthenticatedConfiguracoesSistemaRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
+  '/faculdade/$ownerId': typeof AuthenticatedFaculdadeOwnerIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
   '/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
@@ -300,6 +308,7 @@ export interface FileRoutesByTo {
   '/configuracoes/plugins': typeof AuthenticatedConfiguracoesPluginsRoute
   '/configuracoes/sistema': typeof AuthenticatedConfiguracoesSistemaRoute
   '/contextos/$id': typeof AuthenticatedContextosIdRoute
+  '/faculdade/$ownerId': typeof AuthenticatedFaculdadeOwnerIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesIndexRoute
@@ -338,6 +347,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes/plugins': typeof AuthenticatedConfiguracoesPluginsRoute
   '/_authenticated/configuracoes/sistema': typeof AuthenticatedConfiguracoesSistemaRoute
   '/_authenticated/contextos/$id': typeof AuthenticatedContextosIdRoute
+  '/_authenticated/faculdade_/$ownerId': typeof AuthenticatedFaculdadeOwnerIdRoute
   '/_authenticated/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/_authenticated/metas/$id': typeof AuthenticatedMetasIdRoute
   '/_authenticated/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/configuracoes/plugins'
     | '/configuracoes/sistema'
     | '/contextos/$id'
+    | '/faculdade/$ownerId'
     | '/inbox/$threadId'
     | '/metas/$id'
     | '/configuracoes/'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/configuracoes/plugins'
     | '/configuracoes/sistema'
     | '/contextos/$id'
+    | '/faculdade/$ownerId'
     | '/inbox/$threadId'
     | '/metas/$id'
     | '/configuracoes'
@@ -448,6 +460,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes/plugins'
     | '/_authenticated/configuracoes/sistema'
     | '/_authenticated/contextos/$id'
+    | '/_authenticated/faculdade_/$ownerId'
     | '/_authenticated/inbox/$threadId'
     | '/_authenticated/metas/$id'
     | '/_authenticated/configuracoes/'
@@ -684,6 +697,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContextosIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/faculdade_/$ownerId': {
+      id: '/_authenticated/faculdade_/$ownerId'
+      path: '/faculdade/$ownerId'
+      fullPath: '/faculdade/$ownerId'
+      preLoaderRoute: typeof AuthenticatedFaculdadeOwnerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inbox/': {
       id: '/_authenticated/inbox/'
       path: '/inbox'
@@ -784,6 +804,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRotinasRoute: typeof AuthenticatedRotinasRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
   AuthenticatedContextosIdRoute: typeof AuthenticatedContextosIdRoute
+  AuthenticatedFaculdadeOwnerIdRoute: typeof AuthenticatedFaculdadeOwnerIdRoute
   AuthenticatedInboxThreadIdRoute: typeof AuthenticatedInboxThreadIdRoute
   AuthenticatedContextosIndexRoute: typeof AuthenticatedContextosIndexRoute
   AuthenticatedInboxIndexRoute: typeof AuthenticatedInboxIndexRoute
@@ -804,6 +825,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRotinasRoute: AuthenticatedRotinasRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
   AuthenticatedContextosIdRoute: AuthenticatedContextosIdRoute,
+  AuthenticatedFaculdadeOwnerIdRoute: AuthenticatedFaculdadeOwnerIdRoute,
   AuthenticatedInboxThreadIdRoute: AuthenticatedInboxThreadIdRoute,
   AuthenticatedContextosIndexRoute: AuthenticatedContextosIndexRoute,
   AuthenticatedInboxIndexRoute: AuthenticatedInboxIndexRoute,
