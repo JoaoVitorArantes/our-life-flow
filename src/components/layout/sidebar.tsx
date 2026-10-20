@@ -38,10 +38,7 @@ function NavLink({
           )}
         >
           {active ? (
-            <span
-              className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary"
-              aria-hidden
-            />
+            <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary" aria-hidden />
           ) : null}
           <item.icon
             className={cn("size-4 shrink-0 transition-colors", active && "text-primary")}

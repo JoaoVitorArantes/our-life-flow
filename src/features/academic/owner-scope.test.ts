@@ -16,22 +16,28 @@ const TABLES = [
   "academic_sessions",
 ] as const;
 
-test.each(TABLES)("%s tem owner_id obrigatório preenchido a partir de created_by (0017)", (table) => {
-  expect(sql0017).toContain(`ALTER TABLE public.${table} ADD COLUMN owner_id uuid;`);
-  expect(sql0017).toContain(`UPDATE public.${table} SET owner_id = created_by;`);
-  expect(sql0017).toContain(`ALTER TABLE public.${table} ALTER COLUMN owner_id SET NOT NULL;`);
-});
+test.each(TABLES)(
+  "%s tem owner_id obrigatório preenchido a partir de created_by (0017)",
+  (table) => {
+    expect(sql0017).toContain(`ALTER TABLE public.${table} ADD COLUMN owner_id uuid;`);
+    expect(sql0017).toContain(`UPDATE public.${table} SET owner_id = created_by;`);
+    expect(sql0017).toContain(`ALTER TABLE public.${table} ALTER COLUMN owner_id SET NOT NULL;`);
+  },
+);
 
-test.each(TABLES)("%s: SELECT/UPDATE/DELETE por membro do workspace, sem filtro de dono", (table) => {
-  for (const op of ["select", "update", "delete"] as const) {
-    const statement = sql0018.match(
-      new RegExp(`CREATE POLICY ${table}_${op} ON public\\.${table}[^;]+;`),
-    )?.[0];
-    expect(statement, `política ${op} de ${table}`).toBeDefined();
-    expect(statement).toContain("USING (public.user_is_workspace_member(workspace_id))");
-    expect(statement).not.toContain("owner_id = auth.uid()");
-  }
-});
+test.each(TABLES)(
+  "%s: SELECT/UPDATE/DELETE por membro do workspace, sem filtro de dono",
+  (table) => {
+    for (const op of ["select", "update", "delete"] as const) {
+      const statement = sql0018.match(
+        new RegExp(`CREATE POLICY ${table}_${op} ON public\\.${table}[^;]+;`),
+      )?.[0];
+      expect(statement, `política ${op} de ${table}`).toBeDefined();
+      expect(statement).toContain("USING (public.user_is_workspace_member(workspace_id))");
+      expect(statement).not.toContain("owner_id = auth.uid()");
+    }
+  },
+);
 
 test.each(TABLES)(
   "%s: INSERT exige membro do workspace e created_by da sessão (dono via FK)",
@@ -46,11 +52,14 @@ test.each(TABLES)(
   },
 );
 
-test.each(TABLES)("%s: owner_id precisa ser membro real do mesmo workspace (FK composta)", (table) => {
-  expect(sql0018).toContain(
-    `ADD CONSTRAINT ${table}_owner_member_fkey\n  FOREIGN KEY (workspace_id, owner_id)\n  REFERENCES public.workspace_members (workspace_id, user_id)`,
-  );
-});
+test.each(TABLES)(
+  "%s: owner_id precisa ser membro real do mesmo workspace (FK composta)",
+  (table) => {
+    expect(sql0018).toContain(
+      `ADD CONSTRAINT ${table}_owner_member_fkey\n  FOREIGN KEY (workspace_id, owner_id)\n  REFERENCES public.workspace_members (workspace_id, user_id)`,
+    );
+  },
+);
 
 test("as políticas por dono da 0017 foram substituídas na 0018", () => {
   for (const table of TABLES) {

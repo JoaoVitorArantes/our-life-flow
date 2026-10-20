@@ -236,7 +236,8 @@ export async function executeAction(
       .eq("workspace_id", workspaceId)
       .eq("id", a.academic_course_id ?? "")
       .maybeSingle();
-    if (courseError || !course) throw new Error("Esta disciplina não está disponível neste espaço.");
+    if (courseError || !course)
+      throw new Error("Esta disciplina não está disponível neste espaço.");
     const ownerId = course.owner_id;
     if (a.intent === "create_evaluation") {
       const kind = (
