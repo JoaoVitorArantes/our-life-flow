@@ -10,7 +10,13 @@ vi.mock("@/features/activities/queries", () => ({ createActivity: vi.fn() }));
 vi.mock("@/features/records/mutations", () => ({ saveSimpleRecord: vi.fn() }));
 vi.mock("@/features/plugins/plugins.functions", () => ({ authorizePluginAction: vi.fn() }));
 vi.mock("@/features/contexts/execute-confirmed", () => ({ executeContextAction: vi.fn() }));
+vi.mock("@/features/academic/mutations", () => ({
+  createEvaluation: vi.fn(),
+  createSession: vi.fn(),
+}));
 import { executeContextAction } from "@/features/contexts/execute-confirmed";
+import { createEvaluation, createSession } from "@/features/academic/mutations";
+import { supabase } from "@/integrations/supabase/client";
 import { authorizePluginAction } from "@/features/plugins/plugins.functions";
 import { saveSimpleRecord } from "@/features/records/mutations";
 import { createTransaction } from "@/features/finance/queries";
@@ -163,4 +169,87 @@ test("subsequent expense keeps verified context ID and the supplied R$120", asyn
       ownerId: "actor",
     }),
   );
+});
+
+function courseLookup(result: { data: unknown; error: unknown }) {
+  const chain: Record<string, unknown> = {};
+  chain.select = () => chain;
+  chain.eq = () => chain;
+  chain.maybeSingle = async () => result;
+  vi.mocked(supabase.from).mockReturnValue(chain as never);
+}
+
+test("avaliação confirmada grava no perfil do dono da disciplina, não no do modelo nem no da sessão", async () => {
+  vi.mocked(authorizePluginAction).mockResolvedValue({
+    workspaceId: "ws",
+    userId: "renifer",
+  });
+  courseLookup({ data: { id: "course-1", owner_id: "joao" }, error: null });
+  vi.mocked(createEvaluation).mockResolvedValue({ id: "ev-1" } as never);
+  const result = await executeAction(
+    {
+      ...action,
+      intent: "create_evaluation",
+      description: "Prova 1",
+      date: "2026-10-25",
+      academic_course_id: "course-1",
+      evaluation_kind: "EXAM",
+    },
+    ctx,
+  );
+  expect(createEvaluation).toHaveBeenCalledWith(
+    "ws",
+    "joao",
+    "renifer",
+    expect.objectContaining({ course_id: "course-1", title: "Prova 1" }),
+  );
+  expect(result).toEqual({ id: "ev-1", module: "Faculdade", href: "/faculdade/joao" });
+});
+
+test("aula confirmada grava no perfil do dono da disciplina", async () => {
+  vi.mocked(authorizePluginAction).mockResolvedValue({
+    workspaceId: "ws",
+    userId: "joao",
+  });
+  courseLookup({ data: { id: "course-2", owner_id: "renifer" }, error: null });
+  vi.mocked(createSession).mockResolvedValue({ id: "class-1" } as never);
+  const result = await executeAction(
+    {
+      ...action,
+      intent: "log_class",
+      description: "Aula",
+      date: "2026-10-20",
+      academic_course_id: "course-2",
+    },
+    ctx,
+  );
+  expect(createSession).toHaveBeenCalledWith(
+    "ws",
+    "renifer",
+    "joao",
+    expect.objectContaining({ course_id: "course-2" }),
+  );
+  expect(result.href).toBe("/faculdade/renifer");
+});
+
+test("disciplina inexistente no workspace falha sem gravar", async () => {
+  vi.mocked(authorizePluginAction).mockResolvedValue({
+    workspaceId: "ws",
+    userId: "joao",
+  });
+  courseLookup({ data: null, error: null });
+  await expect(
+    executeAction(
+      {
+        ...action,
+        intent: "log_class",
+        description: "Aula",
+        date: "2026-10-20",
+        academic_course_id: "curso-de-fora",
+      },
+      ctx,
+    ),
+  ).rejects.toThrow("neste espaço");
+  expect(createSession).not.toHaveBeenCalled();
+  expect(createEvaluation).not.toHaveBeenCalled();
 });
