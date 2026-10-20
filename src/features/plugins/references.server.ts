@@ -15,7 +15,6 @@ import { isAcademicIntent } from "./intents.shared";
 export async function validateActionReferences(
   sb: SupabaseClient<Database>,
   workspaceId: string,
-  userId: string,
   action: z.infer<typeof actionSchema>,
 ) {
   const { card_id, account_id, category_id, context_id, payer_user_id } = action;
