@@ -84,12 +84,9 @@ export function useNavGroups(): NavGroup[] {
       return index === -1 ? 1000 : index;
     };
     // Faculdade é privada por pessoa: o atalho estático vira um atalho por membro real.
-    const perPerson =
-      members.length > 0 ? academicNavItems(members, memberProfiles, userId) : null;
+    const perPerson = members.length > 0 ? academicNavItems(members, memberProfiles, userId) : null;
     const expand = (items: NavGroup["items"]) =>
-      items.flatMap((item) =>
-        item.to === "/faculdade" && perPerson ? perPerson : [item],
-      );
+      items.flatMap((item) => (item.to === "/faculdade" && perPerson ? perPerson : [item]));
     const all = NAV_GROUPS.flatMap((group) => expand(group.items));
     const favorites = prefs.favorites
       .map((fav) => all.find((item) => item.to === fav.to))

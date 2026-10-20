@@ -174,7 +174,7 @@ function Faculdade() {
           description={
             ownerName
               ? `Os registros acadêmicos de ${ownerName} são privados. Abra o seu atalho "Faculdade" no menu para ver os seus.`
-              : "Os registros acadêmicos são privados de cada pessoa. Abra o seu atalho \"Faculdade\" no menu."
+              : 'Os registros acadêmicos são privados de cada pessoa. Abra o seu atalho "Faculdade" no menu.'
           }
           action={
             <Button asChild variant="outline">

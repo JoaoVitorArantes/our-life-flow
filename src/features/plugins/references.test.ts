@@ -65,7 +65,11 @@ test.each(["card_id", "account_id", "category_id", "context_id", "payer_user_id"
 test("active card and unarchived context are rechecked", async () => {
   const { sb, filters } = client({ data: { id: "known" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", { ...draft, card_id: "known", context_id: "known" }),
+    validateActionReferences(sb, "workspace", "user-me", {
+      ...draft,
+      card_id: "known",
+      context_id: "known",
+    }),
   ).resolves.toBeUndefined();
   expect(filters).toHaveBeenCalledWith("is_active", true);
   expect(filters).toHaveBeenCalledWith("status", "ARCHIVED");
@@ -79,7 +83,11 @@ test("expense cannot use an income category", async () => {
 test("ambiguous payment rejects before any reads", async () => {
   const { sb } = client({ data: { id: "known" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", "user-me", { ...draft, card_id: "a", account_id: "b" }),
+    validateActionReferences(sb, "workspace", "user-me", {
+      ...draft,
+      card_id: "a",
+      account_id: "b",
+    }),
   ).rejects.toThrow("não ambos");
   expect(sb.from).not.toHaveBeenCalled();
 });
