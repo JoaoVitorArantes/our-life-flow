@@ -346,14 +346,16 @@ function Faculdade() {
       <Panel>
         <PanelTitle
           action={
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => seedPendings.mutate()}
-              disabled={seedPendings.isPending}
-            >
-              Registrar pendências conhecidas
-            </Button>
+            isBsiUfuProfile ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => seedPendings.mutate()}
+                disabled={seedPendings.isPending}
+              >
+                Registrar pendências conhecidas
+              </Button>
+            ) : undefined
           }
         >
           Disciplinas
@@ -362,7 +364,11 @@ function Faculdade() {
           <EmptyState
             icon={BookOpen}
             title="Nenhuma disciplina registrada"
-            description="Cadastre manualmente, importe CSV/JSON ou registre as quatro pendências conhecidas informadas por você."
+            description={
+              isBsiUfuProfile
+                ? "Cadastre manualmente, importe CSV/JSON ou registre as quatro pendências conhecidas informadas por você."
+                : "Cadastre manualmente ou importe CSV/JSON com a grade real do curso."
+            }
           />
         ) : (
           <div className="space-y-6">
