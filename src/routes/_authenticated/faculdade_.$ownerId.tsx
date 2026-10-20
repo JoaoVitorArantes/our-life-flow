@@ -553,6 +553,19 @@ function Faculdade() {
         )}
       </Panel>
 
+      {profileDialog ? (
+        <ProfileDialog
+          workspaceId={workspaceId}
+          ownerId={scopedOwnerId}
+          userId={userId}
+          profile={profile ?? null}
+          onClose={() => setProfileDialog(false)}
+          onSaved={async () => {
+            await invalidate();
+            setProfileDialog(false);
+          }}
+        />
+      ) : null}
       {courseDialog ? (
         <CourseDialog
           workspaceId={workspaceId}
