@@ -542,7 +542,9 @@ function CourseDialog({
   const [code, setCode] = useState(course?.code ?? "");
   const [semester, setSemester] = useState(course?.semester?.toString() ?? "");
   const [credits, setCredits] = useState(course?.credits?.toString() ?? "");
-  const [status, setStatus] = useState<CourseStatus>(course?.status ?? "PENDING");
+  const [status, setStatus] = useState<CourseStatus>(
+    (course?.status as CourseStatus | undefined) ?? "PENDING",
+  );
   const [grade, setGrade] = useState(course?.grade?.toString() ?? "");
   const [termId, setTermId] = useState(course?.term_id ?? NONE);
   const [prerequisites, setPrerequisites] = useState(course?.prerequisites.join(", ") ?? "");
