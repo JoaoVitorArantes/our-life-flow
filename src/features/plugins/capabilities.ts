@@ -40,6 +40,10 @@ const labels: Record<ToolName, [string, string]> = {
     "Dados atuais de um contexto acessível, inclusive arquivado.",
   ],
   notes: ["Consultar notas", "Anotações acessíveis no espaço, com busca opcional."],
+  academics: [
+    "Vida acadêmica",
+    "Disciplinas, avaliações, aulas e frequência registradas no espaço.",
+  ],
   propose_action: [
     "Prévia de registro",
     "Prepara uma ação sem gravar; exige confirmação explícita.",
@@ -93,4 +97,6 @@ export const INTENT_LABELS = {
   update_context: "Editar contexto",
   archive_context: "Arquivar contexto",
   delete_context: "Mover contexto para lixeira",
+  create_evaluation: "Nova avaliação",
+  log_class: "Registrar aula",
 } satisfies Record<z.infer<typeof actionSchema>["intent"], string>;
