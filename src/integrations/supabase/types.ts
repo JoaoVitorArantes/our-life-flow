@@ -74,6 +74,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "academic_courses_owner_member_fkey"
+            columns: ["workspace_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["workspace_id", "user_id"]
+          },
+          {
             foreignKeyName: "academic_courses_term_id_fkey"
             columns: ["term_id"]
             isOneToOne: false
@@ -154,6 +161,13 @@ export type Database = {
             referencedColumns: ["id", "workspace_id", "owner_id"]
           },
           {
+            foreignKeyName: "academic_evaluations_owner_member_fkey"
+            columns: ["workspace_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["workspace_id", "user_id"]
+          },
+          {
             foreignKeyName: "academic_evaluations_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
@@ -221,6 +235,13 @@ export type Database = {
             referencedColumns: ["id", "workspace_id", "owner_id"]
           },
           {
+            foreignKeyName: "academic_sessions_owner_member_fkey"
+            columns: ["workspace_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["workspace_id", "user_id"]
+          },
+          {
             foreignKeyName: "academic_sessions_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
@@ -273,6 +294,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "academic_terms_owner_member_fkey"
+            columns: ["workspace_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["workspace_id", "user_id"]
+          },
           {
             foreignKeyName: "academic_terms_workspace_id_fkey"
             columns: ["workspace_id"]

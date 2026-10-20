@@ -127,6 +127,13 @@
       "when": 1792458537869,
       "tag": "0017_academic_owner_privacy",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792459152227,
+      "tag": "0018_academic_shared_members",
+      "breakpoints": true
     }
   ]
 }
