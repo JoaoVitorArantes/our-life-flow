@@ -19,6 +19,9 @@ import {
   isContextIntent,
 } from "@/features/contexts/ai-contract";
 import { executeContextAction } from "@/features/contexts/execute-confirmed";
+import { createEvaluation, createSession } from "@/features/academic/mutations";
+import { isAcademicIntent } from "@/features/plugins/intents.shared";
+import type { EvaluationKind } from "@/features/academic/contracts";
 
 /**
  * Executor da Inbox: transforma uma ação JÁ confirmada em chamadas às MESMAS mutações usadas
@@ -49,6 +52,8 @@ export function missingFields(a: z.infer<typeof actionSchema>): string[] {
     missing.push("data");
   if (a.intent === "expense" && a.installments && a.shared)
     missing.push("parcelamento dividido ainda não suportado nesta prévia");
+  if (isAcademicIntent(a.intent) && !a.academic_course_id) missing.push("disciplina");
+  if (a.intent === "log_class" && !a.date) missing.push("data da aula");
   return missing;
 }
 
@@ -56,7 +61,15 @@ export async function executeAction(
   a: z.infer<typeof actionSchema>,
   ctx: ExecContext,
 ): Promise<ExecResult> {
-  actionSchema.parse(a);
+  // Prévias salvas antes dos campos acadêmicos continuam confirmáveis: preenche nulls ausentes.
+  const legacyDefaults = {
+    academic_course_id: null,
+    evaluation_kind: null,
+    grade: null,
+    weight: null,
+    attended: null,
+  };
+  a = actionSchema.parse({ ...legacyDefaults, ...(a as object) });
   const missing = missingFields(a);
   if (missing.length) throw new Error(`Confira os campos: ${missing.join(", ")}.`);
   if (a.intent === "create_context") contextCreateInput(a.description, a.context_data);
@@ -214,6 +227,38 @@ export async function executeAction(
     await invalidate("workspace");
     return { id: workspaceId, module: "Meu espaço", href: "/configuracoes/espaco" };
   }
+  if (a.intent === "create_evaluation") {
+    const kind = (
+      ["EXAM", "ASSIGNMENT", "PROJECT", "QUIZ", "OTHER"].includes(a.evaluation_kind ?? "")
+        ? a.evaluation_kind
+        : "EXAM"
+    ) as EvaluationKind;
+    const evaluation = await createEvaluation(workspaceId, userId, {
+      course_id: a.academic_course_id ?? "",
+      title: a.description,
+      kind,
+      due_date: a.date,
+      weight: a.weight,
+      grade: a.grade,
+      status: a.grade != null ? "GRADED" : "PENDING",
+    });
+    await invalidate("academic_evaluations", "academic_courses");
+    return { id: evaluation.id, module: "Faculdade", href: "/faculdade" };
+  }
+
+  if (a.intent === "log_class") {
+    const session = await createSession(workspaceId, userId, {
+      course_id: a.academic_course_id ?? "",
+      date: date ?? "",
+      time: a.time,
+      duration_minutes: a.duration_minutes ? Math.round(a.duration_minutes) : null,
+      topic: a.content,
+      attended: a.attended,
+    });
+    await invalidate("academic_sessions");
+    return { id: session.id, module: "Faculdade", href: "/faculdade" };
+  }
+
   if (!["event", "task", "goal", "note"].includes(a.intent))
     throw new Error("Esta ação não está disponível.");
   const kind = a.intent as "event" | "task" | "goal" | "note";

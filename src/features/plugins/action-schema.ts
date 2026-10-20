@@ -32,6 +32,11 @@ export const actionSchema = z
     person_scope: z.string().nullable(),
     priority: z.string().nullable(),
     purchase_category: z.string().nullable(),
+    academic_course_id: z.string().nullable(),
+    evaluation_kind: z.string().nullable(),
+    grade: z.number().nullable(),
+    weight: z.number().nullable(),
+    attended: z.boolean().nullable(),
     context_data: contextProposalSchema.nullable().optional(),
   })
   .strict();

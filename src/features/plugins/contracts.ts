@@ -14,6 +14,8 @@ export const intentSchema = z.enum([
   "update_context",
   "archive_context",
   "delete_context",
+  "create_evaluation",
+  "log_class",
 ]);
 export const toolNameSchema = z.enum([
   "financial_overview",
@@ -32,6 +34,7 @@ export const toolNameSchema = z.enum([
   "contexts",
   "context_details",
   "notes",
+  "academics",
   "propose_action",
 ]);
 export type ToolName = z.infer<typeof toolNameSchema>;
@@ -108,6 +111,7 @@ export const readInputSchemas = {
   contexts: empty,
   context_details: z.object({ id: z.string().uuid() }).strict(),
   notes: z.object({ search: text }).strict(),
+  academics: empty,
 } satisfies Record<Exclude<ToolName, "propose_action">, z.ZodTypeAny>;
 
 // Outputs are JSON DTOs, never executable objects or nonfinite numbers.

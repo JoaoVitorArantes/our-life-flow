@@ -674,9 +674,54 @@ export function buildTools(ctx: AgentCtx, base: Base) {
       },
     }),
 
+    academics: tool({
+      description:
+        "Consulta a vida acadêmica do espaço: períodos letivos, disciplinas (situação, nota, créditos, pré-requisitos), avaliações e aulas com presença. Campos null = dado não informado; nunca invente.",
+      inputSchema: readInputSchemas.academics,
+      execute: async () => {
+        const [terms, courses, evaluations, sessions] = await Promise.all([
+          sb
+            .from("academic_terms")
+            .select("id,name,starts_on,ends_on,enrollment_until,status")
+            .eq("workspace_id", w)
+            .order("starts_on", { ascending: true, nullsFirst: false }),
+          sb
+            .from("academic_courses")
+            .select(
+              "id,name,code,semester,credits,status,grade,attendance_percent,prerequisites,term_id",
+            )
+            .eq("workspace_id", w)
+            .order("name"),
+          sb
+            .from("academic_evaluations")
+            .select("id,course_id,title,kind,due_date,weight,grade,status")
+            .eq("workspace_id", w)
+            .order("due_date", { ascending: true, nullsFirst: false })
+            .limit(100),
+          sb
+            .from("academic_sessions")
+            .select("id,course_id,starts_at,duration_minutes,topic,attended")
+            .eq("workspace_id", w)
+            .order("starts_at", { ascending: false })
+            .limit(200),
+        ]);
+        if (terms.error || courses.error || evaluations.error || sessions.error)
+          return fail(
+            "sua vida acadêmica",
+            terms.error ?? courses.error ?? evaluations.error ?? sessions.error,
+          );
+        return {
+          periodos: terms.data ?? [],
+          disciplinas: courses.data ?? [],
+          avaliacoes: evaluations.data ?? [],
+          aulas: sessions.data ?? [],
+        };
+      },
+    }),
+
     propose_action: tool({
       description:
-        "Propõe registro ou operação de Contextos (create_context, update_context, archive_context, delete_context). description = nome; context_data = campos opcionais; context_id = id real apenas para alterar existente. Criar só exige nome (Pessoal, Ativo, Compartilhado). NÃO salva: usuário confirma. Despesas precisam forma de pagamento; pergunte quando ambíguo. Nunca substitua ids desconhecidos nem proponha gasto vinculado a contexto ainda não criado.",
+        "Propõe registro: Contextos (create_context, update_context, archive_context, delete_context) e Faculdade (create_evaluation, log_class). description = nome/título; context_data = campos de contexto; context_id = id real apenas para alterar existente; academic_course_id = id real de disciplina (obrigatório para avaliação/aula); evaluation_kind = EXAM/ASSIGNMENT/PROJECT/QUIZ/OTHER; log_class exige date, aceita time, duration_minutes, content (assunto) e attended. Criar contexto só exige nome (Pessoal, Ativo, Compartilhado). NÃO salva: usuário confirma. Despesas precisam forma de pagamento; pergunte quando ambíguo. Nunca substitua ids desconhecidos nem proponha gasto vinculado a contexto ainda não criado.",
       inputSchema: proposalInputSchema,
       execute: async (input) => {
         const a = normalizeProposal(input);
@@ -685,9 +730,14 @@ export function buildTools(ctx: AgentCtx, base: Base) {
           throw new Error("Plugin desativado ou permissão necessária. Nenhuma ação foi proposta.");
         await validateActionReferences(sb, w, a);
         if (
-          ["create_context", "update_context", "archive_context", "delete_context"].includes(
-            a.intent,
-          )
+          [
+            "create_context",
+            "update_context",
+            "archive_context",
+            "delete_context",
+            "create_evaluation",
+            "log_class",
+          ].includes(a.intent)
         )
           return a;
         const ok = (set: { id: string }[], id: string | null) =>

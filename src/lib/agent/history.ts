@@ -14,6 +14,10 @@ export const agentBodySchema = z
     threadId: z.string().uuid(),
     messages: z.array(messageSchema).min(1).max(200),
     pageContext: z.string().max(300).optional(),
+    // Envelope do DefaultChatTransport (AI SDK v7): validado e ignorado pelo handler.
+    id: z.string().min(1).max(200).optional(),
+    trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
+    messageId: z.string().max(200).nullish(),
   })
   .strict();
 const textPart = z.object({ type: z.literal("text"), text: z.string().max(20000) }).passthrough();

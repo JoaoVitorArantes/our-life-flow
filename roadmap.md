@@ -1,5 +1,13 @@
 # Roadmap
 
+## Etapa 20/10/2026 — erro do chat e fundação acadêmica
+- [x] Fase 1: provar causa do 400 do chat (envelope do DefaultChatTransport v7 com id/trigger/messageId rejeitado pelo schema estrito) com teste de captura do payload real; corrigir agentBodySchema mantendo strict e validações.
+- [x] Fase 2: migration aditiva 0016 (períodos, disciplinas, avaliações, aulas) com workspace_id, RLS por membro e grants; módulo Faculdade (BSI/UFU, currículo 2022-2, ingresso 2025) com pendências conhecidas marcadas como informação do usuário, importação CSV/JSON com prévia validada, frequência por presença e progresso com avisos de dados faltantes.
+- [x] Plugin "academico" no registry central: leitura `academics` e intents `create_evaluation`/`log_class` com confirmação, revalidação de disciplina no servidor e read-back após gravação.
+- [x] 107 testes aprovados, tipos limpos, build OK; lint direcionado 0 erros novos.
+- [ ] Verificar gravação acadêmica real e isolamento João/Renifer — bloqueado: requer espaço de teste isolado e sessões autorizadas, sem dados reais.
+
+
 ## Life AI — operações unificadas (pedido de 18/10/2026)
 - [x] A: catalogar operações reais de todos os módulos e lacunas do agente em docs/life-ai-evolution-diagnosis.md.
 - [x] B: integrar criação, consulta, edição, arquivo e lixeira de Contextos aos serviços existentes, com confirmação e read-back.

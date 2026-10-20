@@ -137,6 +137,13 @@ const definitions: readonly Plugin[] = [
     ["note"],
   ),
   internal(
+    "academico",
+    "Faculdade",
+    "Disciplinas, avaliações e frequência; novos registros com confirmação.",
+    ["academics"],
+    ["create_evaluation", "log_class"],
+  ),
+  internal(
     "workspace",
     "Meu espaço",
     "Propor um novo nome para o espaço, respeitando suas permissões.",

@@ -14,6 +14,248 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_courses: {
+        Row: {
+          attendance_percent: number | null
+          code: string | null
+          created_at: string
+          created_by: string
+          credits: number | null
+          grade: number | null
+          id: string
+          name: string
+          notes: string | null
+          prerequisites: string[]
+          semester: number | null
+          source: string
+          status: string
+          term_id: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          attendance_percent?: number | null
+          code?: string | null
+          created_at?: string
+          created_by: string
+          credits?: number | null
+          grade?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          prerequisites?: string[]
+          semester?: number | null
+          source?: string
+          status?: string
+          term_id?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          attendance_percent?: number | null
+          code?: string | null
+          created_at?: string
+          created_by?: string
+          credits?: number | null
+          grade?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          prerequisites?: string[]
+          semester?: number | null
+          source?: string
+          status?: string
+          term_id?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_courses_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "academic_terms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_courses_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academic_evaluations: {
+        Row: {
+          course_id: string
+          created_at: string
+          created_by: string
+          due_date: string | null
+          grade: number | null
+          id: string
+          kind: string
+          source: string
+          status: string
+          title: string
+          updated_at: string
+          weight: number | null
+          workspace_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          created_by: string
+          due_date?: string | null
+          grade?: number | null
+          id?: string
+          kind?: string
+          source?: string
+          status?: string
+          title: string
+          updated_at?: string
+          weight?: number | null
+          workspace_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          created_by?: string
+          due_date?: string | null
+          grade?: number | null
+          id?: string
+          kind?: string
+          source?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          weight?: number | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_evaluations_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academic_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_evaluations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academic_sessions: {
+        Row: {
+          attended: boolean | null
+          course_id: string
+          created_at: string
+          created_by: string
+          duration_minutes: number | null
+          id: string
+          source: string
+          starts_at: string
+          topic: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          attended?: boolean | null
+          course_id: string
+          created_at?: string
+          created_by: string
+          duration_minutes?: number | null
+          id?: string
+          source?: string
+          starts_at: string
+          topic?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          attended?: boolean | null
+          course_id?: string
+          created_at?: string
+          created_by?: string
+          duration_minutes?: number | null
+          id?: string
+          source?: string
+          starts_at?: string
+          topic?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academic_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_sessions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academic_terms: {
+        Row: {
+          created_at: string
+          created_by: string
+          ends_on: string | null
+          enrollment_until: string | null
+          id: string
+          name: string
+          source: string
+          starts_on: string | null
+          status: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          ends_on?: string | null
+          enrollment_until?: string | null
+          id?: string
+          name: string
+          source?: string
+          starts_on?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          ends_on?: string | null
+          enrollment_until?: string | null
+          id?: string
+          name?: string
+          source?: string
+          starts_on?: string | null
+          status?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_terms_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounts: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]

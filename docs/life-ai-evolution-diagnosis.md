@@ -77,3 +77,20 @@ Contexto → gasto: propor primeiro o contexto, aguardar confirmação e consult
 ### Limitações explícitas
 
 Validação autenticada nesta etapa foi somente navegação do catálogo, sem consultar ou modificar registros pessoais. Criação/consulta/edição/recarga pelo chat e isolamento real João/Renifer continuam **NÃO VERIFICADOS**: exigem um espaço de teste isolado e sessão autorizada. Não houve chamada real do modelo nesta etapa; aceitação pela API e diálogo sequencial continuam **NÃO VERIFICADOS**. Não afirmar conclusão do objetivo de operar todo o sistema; os demais módulos serão integrados por contratos de domínio, em etapas, após a validação central de Contextos.
+## Etapa 20/10/2026 — chat e fundação acadêmica
+
+### Fase 1 — causa demonstrada do erro do chat
+
+O `DefaultChatTransport` do AI SDK v7.0.127 envia `{ ...body, id, messages, trigger, messageId }`; o `agentBodySchema` estrito rejeitava `id`, `trigger` e `messageId`, gerando 400 "Mensagem inválida." em toda mensagem. Prova: `src/lib/agent/transport-payload.test.ts` captura o envelope real do transporte (fetch stub, sem sessão nem dados) e falhava antes da correção. Correção mínima: schema aceita os três campos opcionais validados (ignorados pelo handler), mantendo `.strict()`, rejeição de texto inválido, autenticação Bearer e workspace derivado da conversa via RLS. Endpoint sem credenciais responde 401 antes de ler o corpo.
+
+### Fase 2 — módulo Faculdade (fundação)
+
+Auditoria confirmou que só existia um placeholder. Migration aditiva `0016_academic_foundation.sql`: `academic_terms`, `academic_courses`, `academic_evaluations`, `academic_sessions` — todas com `workspace_id`, RLS por membro (`user_is_workspace_member`), grants authenticated/service_role, sem seed. Módulo em `src/features/academic/` (contratos Zod, consultas, mutações com read-back sob RLS, importação CSV/JSON com prévia validada) e página `faculdade.tsx` reescrita: BSI/UFU, currículo 2022-2, ingresso 2025; as quatro pendências (Algoritmos e Programação, Arquitetura e Organização de Computadores, Cálculo I, Fundamentos de Marketing) registradas só por ação do usuário, marcadas como informação declarada, com semestre/nota/requisitos/datas desconhecidos; progresso e frequência sempre sinalizam dados faltantes e nunca se apresentam como oficiais.
+
+Plugin "academico" no registry central: ferramenta de leitura `academics` e intents `create_evaluation`/`log_class` com confirmação explícita, revalidação da disciplina no ponto de confirmação (references.server) e read-back após gravação. Prévias legadas continuam confirmáveis (campos novos preenchidos com null na execução); o schema do modelo segue estrito com todas as propriedades obrigatórias.
+
+Verificações: 25 arquivos / 107 testes aprovados (`bunx vitest run`); `tsgo --noEmit` limpo; build OK 01:02 UTC; lint direcionado 0 erros novos (1 erro de formatação pré-existente em `features/inbox/history.ts`, não tocado; 8 avisos pré-existentes de hooks no chat).
+
+### Lacunas que dependem de dados do usuário
+
+Grade oficial, pré-requisitos reais, notas, frequência mínima e calendário acadêmico dependem de matrícula/dados da instituição — o módulo registra e sinaliza ausências, não inventa. Gravação acadêmica real via chat e isolamento João/Renifer seguem NÃO VERIFICADOS (requerem espaço de teste isolado e sessões autorizadas). Nenhuma publicação; nenhum dado real alterado.

@@ -25,6 +25,11 @@ export const draft = actionSchema.parse({
   person_scope: null,
   priority: null,
   purchase_category: null,
+  academic_course_id: null,
+  evaluation_kind: null,
+  grade: null,
+  weight: null,
+  attended: null,
 });
 
 function client(result: unknown) {

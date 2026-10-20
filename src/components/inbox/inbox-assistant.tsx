@@ -43,6 +43,8 @@ export const INTENT: Record<InboxAction["intent"], { label: string; emoji: strin
   update_context: { label: "Editar contexto", emoji: "🌱" },
   archive_context: { label: "Arquivar contexto", emoji: "📦" },
   delete_context: { label: "Mover contexto para lixeira", emoji: "🗑️" },
+  create_evaluation: { label: "Avaliação", emoji: "🎓" },
+  log_class: { label: "Aula", emoji: "🎓" },
 };
 
 const EXAMPLES = [
