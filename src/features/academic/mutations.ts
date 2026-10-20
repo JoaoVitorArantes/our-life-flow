@@ -11,6 +11,11 @@ import type { AcademicCourse, AcademicEvaluation, AcademicSession, AcademicTerm 
 /**
  * Mutações acadêmicas: validam a entrada, gravam com o cliente do usuário (RLS)
  * e confirmam a gravação com uma leitura sob RLS antes de reportar sucesso.
+ *
+ * A Faculdade é compartilhada entre membros do workspace: `ownerId` é o aluno
+ * (perfil acadêmico) selecionado e `userId` é a pessoa autenticada que registra
+ * (created_by). Atualizações e exclusões filtram workspace + aluno explicitamente;
+ * o RLS por workspace é a última barreira.
  */
 
 async function insertAndVerify<T extends { id: string }>(
@@ -27,6 +32,7 @@ async function insertAndVerify<T extends { id: string }>(
 
 export async function createTerm(
   workspaceId: string,
+  ownerId: string,
   userId: string,
   input: z.infer<typeof termInputSchema>,
 ): Promise<AcademicTerm> {
@@ -35,16 +41,24 @@ export async function createTerm(
     () =>
       supabase
         .from("academic_terms")
-        .insert({ ...valid, workspace_id: workspaceId, owner_id: userId, created_by: userId })
+        .insert({ ...valid, workspace_id: workspaceId, owner_id: ownerId, created_by: userId })
         .select("id")
         .single(),
-    (id) => supabase.from("academic_terms").select("*").eq("id", id).single(),
+    (id) =>
+      supabase
+        .from("academic_terms")
+        .select("*")
+        .eq("id", id)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
+        .single(),
     "o período",
   );
 }
 
 export async function createCourse(
   workspaceId: string,
+  ownerId: string,
   userId: string,
   input: z.infer<typeof courseInputSchema>,
   source: "USER" | "IMPORT" = "USER",
@@ -57,18 +71,27 @@ export async function createCourse(
         .insert({
           ...valid,
           workspace_id: workspaceId,
-          owner_id: userId,
+          owner_id: ownerId,
           created_by: userId,
           source,
         })
         .select("id")
         .single(),
-    (id) => supabase.from("academic_courses").select("*").eq("id", id).single(),
+    (id) =>
+      supabase
+        .from("academic_courses")
+        .select("*")
+        .eq("id", id)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
+        .single(),
     "a disciplina",
   );
 }
 
 export async function updateCourse(
+  workspaceId: string,
+  ownerId: string,
   courseId: string,
   input: z.infer<typeof courseInputSchema>,
 ): Promise<AcademicCourse> {
@@ -79,20 +102,39 @@ export async function updateCourse(
         .from("academic_courses")
         .update({ ...valid, updated_at: new Date().toISOString() })
         .eq("id", courseId)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
         .select("id")
         .single(),
-    (id) => supabase.from("academic_courses").select("*").eq("id", id).single(),
+    (id) =>
+      supabase
+        .from("academic_courses")
+        .select("*")
+        .eq("id", id)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
+        .single(),
     "a disciplina",
   );
 }
 
-export async function deleteCourse(courseId: string): Promise<void> {
-  const { error } = await supabase.from("academic_courses").delete().eq("id", courseId);
+export async function deleteCourse(
+  workspaceId: string,
+  ownerId: string,
+  courseId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("academic_courses")
+    .delete()
+    .eq("id", courseId)
+    .eq("workspace_id", workspaceId)
+    .eq("owner_id", ownerId);
   if (error) throw new Error("Não foi possível remover a disciplina.");
 }
 
 export async function createEvaluation(
   workspaceId: string,
+  ownerId: string,
   userId: string,
   input: z.infer<typeof evaluationInputSchema>,
   source: "USER" | "IMPORT" = "USER",
@@ -105,18 +147,27 @@ export async function createEvaluation(
         .insert({
           ...valid,
           workspace_id: workspaceId,
-          owner_id: userId,
+          owner_id: ownerId,
           created_by: userId,
           source,
         })
         .select("id")
         .single(),
-    (id) => supabase.from("academic_evaluations").select("*").eq("id", id).single(),
+    (id) =>
+      supabase
+        .from("academic_evaluations")
+        .select("*")
+        .eq("id", id)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
+        .single(),
     "a avaliação",
   );
 }
 
 export async function updateEvaluation(
+  workspaceId: string,
+  ownerId: string,
   evaluationId: string,
   input: z.infer<typeof evaluationInputSchema>,
 ): Promise<AcademicEvaluation> {
@@ -127,15 +178,25 @@ export async function updateEvaluation(
         .from("academic_evaluations")
         .update({ ...valid, updated_at: new Date().toISOString() })
         .eq("id", evaluationId)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
         .select("id")
         .single(),
-    (id) => supabase.from("academic_evaluations").select("*").eq("id", id).single(),
+    (id) =>
+      supabase
+        .from("academic_evaluations")
+        .select("*")
+        .eq("id", id)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
+        .single(),
     "a avaliação",
   );
 }
 
 export async function createSession(
   workspaceId: string,
+  ownerId: string,
   userId: string,
   input: z.infer<typeof sessionInputSchema>,
   source: "USER" | "IMPORT" = "USER",
@@ -155,22 +216,36 @@ export async function createSession(
           topic: valid.topic,
           attended: valid.attended,
           workspace_id: workspaceId,
-          owner_id: userId,
+          owner_id: ownerId,
           created_by: userId,
           source,
         })
         .select("id")
         .single(),
-    (id) => supabase.from("academic_sessions").select("*").eq("id", id).single(),
+    (id) =>
+      supabase
+        .from("academic_sessions")
+        .select("*")
+        .eq("id", id)
+        .eq("workspace_id", workspaceId)
+        .eq("owner_id", ownerId)
+        .single(),
     "a aula",
   );
 }
 
-export async function markAttendance(sessionId: string, attended: boolean): Promise<void> {
+export async function markAttendance(
+  workspaceId: string,
+  ownerId: string,
+  sessionId: string,
+  attended: boolean,
+): Promise<void> {
   const { data, error } = await supabase
     .from("academic_sessions")
     .update({ attended, updated_at: new Date().toISOString() })
     .eq("id", sessionId)
+    .eq("workspace_id", workspaceId)
+    .eq("owner_id", ownerId)
     .select("id")
     .single();
   if (error || !data) throw new Error("Não foi possível registrar a presença.");
@@ -179,6 +254,7 @@ export async function markAttendance(sessionId: string, attended: boolean): Prom
 /** Registra as pendências conhecidas informadas pelo usuário, sem duplicar nomes existentes. */
 export async function seedKnownPendingCourses(
   workspaceId: string,
+  ownerId: string,
   userId: string,
   names: readonly { name: string; notes: string }[],
   existingNames: readonly string[],
@@ -189,6 +265,7 @@ export async function seedKnownPendingCourses(
     if (existing.has(pending.name.trim().toLocaleLowerCase())) continue;
     await createCourse(
       workspaceId,
+      ownerId,
       userId,
       {
         name: pending.name,
