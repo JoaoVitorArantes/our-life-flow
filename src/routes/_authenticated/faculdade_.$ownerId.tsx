@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/features/app/app-context";
-import { canViewAcademic } from "@/features/app/navigation";
+import { firstName, isAcademicMember } from "@/features/app/navigation";
 import {
   COURSE_STATUSES,
   EVALUATION_KINDS,
@@ -84,14 +84,17 @@ const NONE = "__none__";
 
 function Faculdade() {
   const { ownerId } = Route.useParams();
-  const { workspaceId, userId, memberProfiles } = useApp();
-  const allowed = canViewAcademic(ownerId, userId);
-  const scopedUserId = allowed ? userId : undefined;
+  const { workspaceId, userId, members, memberProfiles } = useApp();
+  // Faculdade compartilhada: qualquer membro abre os dois perfis; o estado
+  // "Sem acesso" só aparece para um ownerId que não é membro do workspace.
+  const allowed = isAcademicMember(ownerId, members);
+  const scopedOwnerId = allowed ? ownerId : undefined;
+  const ownerName = firstName(memberProfiles.find((p) => p.id === ownerId)?.name, "Membro");
   const queryClient = useQueryClient();
-  const { data: terms = [] } = useAcademicTerms(workspaceId, scopedUserId);
-  const { data: courses = [] } = useAcademicCourses(workspaceId, scopedUserId);
-  const { data: evaluations = [] } = useAcademicEvaluations(workspaceId, scopedUserId);
-  const { data: sessions = [] } = useAcademicSessions(workspaceId, scopedUserId);
+  const { data: terms = [] } = useAcademicTerms(workspaceId, scopedOwnerId);
+  const { data: courses = [] } = useAcademicCourses(workspaceId, scopedOwnerId);
+  const { data: evaluations = [] } = useAcademicEvaluations(workspaceId, scopedOwnerId);
+  const { data: sessions = [] } = useAcademicSessions(workspaceId, scopedOwnerId);
 
   const [courseDialog, setCourseDialog] = useState<AcademicCourse | "new" | null>(null);
   const [termDialog, setTermDialog] = useState(false);
