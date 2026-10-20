@@ -25,6 +25,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          owner_id: string
           prerequisites: string[]
           semester: number | null
           source: string
@@ -43,6 +44,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          owner_id: string
           prerequisites?: string[]
           semester?: number | null
           source?: string
@@ -61,6 +63,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          owner_id?: string
           prerequisites?: string[]
           semester?: number | null
           source?: string
@@ -95,6 +98,7 @@ export type Database = {
           grade: number | null
           id: string
           kind: string
+          owner_id: string
           source: string
           status: string
           title: string
@@ -110,6 +114,7 @@ export type Database = {
           grade?: number | null
           id?: string
           kind?: string
+          owner_id: string
           source?: string
           status?: string
           title: string
@@ -125,6 +130,7 @@ export type Database = {
           grade?: number | null
           id?: string
           kind?: string
+          owner_id?: string
           source?: string
           status?: string
           title?: string
@@ -139,6 +145,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "academic_courses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_evaluations_course_owner_fkey"
+            columns: ["course_id", "workspace_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "academic_courses"
+            referencedColumns: ["id", "workspace_id", "owner_id"]
           },
           {
             foreignKeyName: "academic_evaluations_workspace_id_fkey"
@@ -157,6 +170,7 @@ export type Database = {
           created_by: string
           duration_minutes: number | null
           id: string
+          owner_id: string
           source: string
           starts_at: string
           topic: string | null
@@ -170,6 +184,7 @@ export type Database = {
           created_by: string
           duration_minutes?: number | null
           id?: string
+          owner_id: string
           source?: string
           starts_at: string
           topic?: string | null
@@ -183,6 +198,7 @@ export type Database = {
           created_by?: string
           duration_minutes?: number | null
           id?: string
+          owner_id?: string
           source?: string
           starts_at?: string
           topic?: string | null
@@ -196,6 +212,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "academic_courses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_sessions_course_owner_fkey"
+            columns: ["course_id", "workspace_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "academic_courses"
+            referencedColumns: ["id", "workspace_id", "owner_id"]
           },
           {
             foreignKeyName: "academic_sessions_workspace_id_fkey"
@@ -214,6 +237,7 @@ export type Database = {
           enrollment_until: string | null
           id: string
           name: string
+          owner_id: string
           source: string
           starts_on: string | null
           status: string
@@ -227,6 +251,7 @@ export type Database = {
           enrollment_until?: string | null
           id?: string
           name: string
+          owner_id: string
           source?: string
           starts_on?: string | null
           status?: string
@@ -240,6 +265,7 @@ export type Database = {
           enrollment_until?: string | null
           id?: string
           name?: string
+          owner_id?: string
           source?: string
           starts_on?: string | null
           status?: string

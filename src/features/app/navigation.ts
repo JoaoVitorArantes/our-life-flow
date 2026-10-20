@@ -13,7 +13,9 @@ import {
   Settings,
   Sun,
   Repeat,
-  type LucideIcon, MessageSquareText } from "lucide-react";
+  type LucideIcon,
+  MessageSquareText,
+} from "lucide-react";
 
 export type NavItem = {
   to: string;
@@ -84,3 +86,43 @@ export const FOOTER_NAV: NavItem[] = [
 ];
 
 export const ALL_NAV = [...PRIMARY_NAV, ...SECONDARY_NAV, ...FOOTER_NAV];
+
+export type AcademicMember = { user_id: string };
+export type AcademicProfile = { id: string; name: string };
+
+function firstName(name: string | undefined, fallback: string): string {
+  const first = name?.trim().split(/\s+/)[0];
+  return first && first.length > 0 ? first : fallback;
+}
+
+/**
+ * Atalhos de Faculdade: um por membro real do workspace, com o primeiro nome.
+ * O usuário autenticado vem primeiro; os demais em ordem alfabética.
+ * O atalho NÃO autoriza acesso — a rota confere a sessão e o RLS é a última barreira.
+ */
+export function academicNavItems(
+  members: readonly AcademicMember[],
+  profiles: readonly AcademicProfile[],
+  currentUserId?: string,
+): NavItem[] {
+  const nameOf = (id: string) => profiles.find((p) => p.id === id)?.name;
+  const sorted = [...members].sort((a, b) => {
+    if (a.user_id === currentUserId) return -1;
+    if (b.user_id === currentUserId) return 1;
+    return firstName(nameOf(a.user_id), "Membro").localeCompare(
+      firstName(nameOf(b.user_id), "Membro"),
+      "pt-BR",
+    );
+  });
+  return sorted.map((member) => ({
+    to: `/faculdade/${member.user_id}`,
+    label: `Faculdade — ${firstName(nameOf(member.user_id), "Membro")}`,
+    icon: GraduationCap,
+    emoji: "🎓",
+  }));
+}
+
+/** A rota /faculdade/$ownerId só mostra dados quando o dono é o usuário autenticado. */
+export function canViewAcademic(ownerId: string | undefined, userId: string | undefined): boolean {
+  return !!ownerId && !!userId && ownerId === userId;
+}

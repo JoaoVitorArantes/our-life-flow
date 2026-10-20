@@ -57,7 +57,7 @@ test.each(["card_id", "account_id", "category_id", "context_id", "payer_user_id"
   async (field) => {
     const { sb, filters } = client({ data: null, error: null });
     await expect(
-      validateActionReferences(sb, "workspace", { ...draft, [field]: "other-id" }),
+      validateActionReferences(sb, "workspace", "user-me", { ...draft, [field]: "other-id" }),
     ).rejects.toThrow("referência");
     expect(filters).toHaveBeenCalledWith("workspace_id", "workspace");
   },
@@ -65,7 +65,11 @@ test.each(["card_id", "account_id", "category_id", "context_id", "payer_user_id"
 test("active card and unarchived context are rechecked", async () => {
   const { sb, filters } = client({ data: { id: "known" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", { ...draft, card_id: "known", context_id: "known" }),
+    validateActionReferences(sb, "workspace", "user-me", {
+      ...draft,
+      card_id: "known",
+      context_id: "known",
+    }),
   ).resolves.toBeUndefined();
   expect(filters).toHaveBeenCalledWith("is_active", true);
   expect(filters).toHaveBeenCalledWith("status", "ARCHIVED");
@@ -73,20 +77,24 @@ test("active card and unarchived context are rechecked", async () => {
 test("expense cannot use an income category", async () => {
   const { sb } = client({ data: { id: "category", type: "INCOME" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", { ...draft, category_id: "category" }),
+    validateActionReferences(sb, "workspace", "user-me", { ...draft, category_id: "category" }),
   ).rejects.toThrow();
 });
 test("ambiguous payment rejects before any reads", async () => {
   const { sb } = client({ data: { id: "known" }, error: null });
   await expect(
-    validateActionReferences(sb, "workspace", { ...draft, card_id: "a", account_id: "b" }),
+    validateActionReferences(sb, "workspace", "user-me", {
+      ...draft,
+      card_id: "a",
+      account_id: "b",
+    }),
   ).rejects.toThrow("não ambos");
   expect(sb.from).not.toHaveBeenCalled();
 });
 test("context editing rejects other-workspace or missing records through caller RLS", async () => {
   const { sb, filters } = client({ data: null, error: null });
   await expect(
-    validateActionReferences(sb, "active-workspace", {
+    validateActionReferences(sb, "active-workspace", "user-me", {
       ...draft,
       intent: "update_context",
       context_id: "other-context",
@@ -111,7 +119,7 @@ test("context editing validates merged dates while preserving omitted fields", a
     error: null,
   });
   await expect(
-    validateActionReferences(sb, "workspace", {
+    validateActionReferences(sb, "workspace", "user-me", {
       ...draft,
       intent: "update_context",
       context_id: "known",
@@ -119,11 +127,43 @@ test("context editing validates merged dates while preserving omitted fields", a
     }),
   ).rejects.toThrow();
   await expect(
-    validateActionReferences(sb, "workspace", {
+    validateActionReferences(sb, "workspace", "user-me", {
       ...draft,
       intent: "update_context",
       context_id: "known",
       context_data: { budget_amount: 120 },
     }),
   ).resolves.toBeUndefined();
+});
+
+test("academic intent revalidates the course against the caller as owner", async () => {
+  const courseId = crypto.randomUUID();
+  const { sb, filters } = client({ data: { id: courseId }, error: null });
+  await expect(
+    validateActionReferences(sb, "workspace", "user-me", {
+      ...draft,
+      intent: "create_evaluation",
+      academic_course_id: courseId,
+      description: "Prova 1",
+      amount: null,
+    }),
+  ).resolves.toBeUndefined();
+  expect(filters).toHaveBeenCalledWith("workspace_id", "workspace");
+  expect(filters).toHaveBeenCalledWith("owner_id", "user-me");
+  expect(filters).toHaveBeenCalledWith("id", courseId);
+});
+
+test("academic intent rejects a course owned by the other person (invisible under RLS)", async () => {
+  const { sb, filters } = client({ data: null, error: null });
+  await expect(
+    validateActionReferences(sb, "workspace", "user-me", {
+      ...draft,
+      intent: "log_class",
+      academic_course_id: "partner-course",
+      description: "Aula",
+      date: "2026-10-20",
+      amount: null,
+    }),
+  ).rejects.toThrow("sua Faculdade");
+  expect(filters).toHaveBeenCalledWith("owner_id", "user-me");
 });

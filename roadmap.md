@@ -1,5 +1,12 @@
 # Roadmap
 
+## Etapa 20/10/2026 (2) — Faculdade privada por pessoa
+- [x] Migration aditiva 0017 criada E aplicada no preview: owner_id nas 4 tabelas acadêmicas (backfill de created_by), RLS por dono+workspace, FKs compostas/trigger de integridade dono+workspace.
+- [x] Consultas, mutações, importação e read-back escopados por owner_id=userId; ferramenta `academics` e revalidação de disciplina por dono no servidor.
+- [x] Dois atalhos de navegação por membro real ("Faculdade — <nome>"), rota /faculdade/$ownerId com estado sem acesso para não-dono.
+- [x] Testes de contrato/política (129 aprovados), regressão das ações acadêmicas do AI, typecheck/build/lint limpos; não publicado.
+- [ ] Verificação autenticada na prévia dos dois atalhos e do estado sem acesso — bloqueado: aprovação de sessão indisponível neste contexto.
+
 ## Etapa 20/10/2026 — erro do chat e fundação acadêmica
 - [x] Fase 1: provar causa do 400 do chat (envelope do DefaultChatTransport v7 com id/trigger/messageId rejeitado pelo schema estrito) com teste de captura do payload real; corrigir agentBodySchema mantendo strict e validações.
 - [x] Fase 2: migration aditiva 0016 (períodos, disciplinas, avaliações, aulas) com workspace_id, RLS por membro e grants; módulo Faculdade (BSI/UFU, currículo 2022-2, ingresso 2025) com pendências conhecidas marcadas como informação do usuário, importação CSV/JSON com prévia validada, frequência por presença e progresso com avisos de dados faltantes.
