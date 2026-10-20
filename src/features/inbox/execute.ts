@@ -227,28 +227,37 @@ export async function executeAction(
     await invalidate("workspace");
     return { id: workspaceId, module: "Meu espaço", href: "/configuracoes/espaco" };
   }
-  if (a.intent === "create_evaluation") {
-    const kind = (
-      ["EXAM", "ASSIGNMENT", "PROJECT", "QUIZ", "OTHER"].includes(a.evaluation_kind ?? "")
-        ? a.evaluation_kind
-        : "EXAM"
-    ) as EvaluationKind;
-    const evaluation = await createEvaluation(workspaceId, userId, {
-      course_id: a.academic_course_id ?? "",
-      title: a.description,
-      kind,
-      due_date: a.date,
-      weight: a.weight,
-      grade: a.grade,
-      status: a.grade != null ? "GRADED" : "PENDING",
-    });
-    await invalidate("academic_evaluations", "academic_courses");
-    return { id: evaluation.id, module: "Faculdade", href: "/faculdade" };
-  }
-
-  if (a.intent === "log_class") {
-    const session = await createSession(workspaceId, userId, {
-      course_id: a.academic_course_id ?? "",
+  if (a.intent === "create_evaluation" || a.intent === "log_class") {
+    // A Faculdade é compartilhada: a gravação vai para o perfil (owner_id) da
+    // disciplina real resolvida neste workspace — nunca para um owner_id do modelo.
+    const { data: course, error: courseError } = await supabase
+      .from("academic_courses")
+      .select("id,owner_id")
+      .eq("workspace_id", workspaceId)
+      .eq("id", a.academic_course_id ?? "")
+      .maybeSingle();
+    if (courseError || !course) throw new Error("Esta disciplina não está disponível neste espaço.");
+    const ownerId = course.owner_id;
+    if (a.intent === "create_evaluation") {
+      const kind = (
+        ["EXAM", "ASSIGNMENT", "PROJECT", "QUIZ", "OTHER"].includes(a.evaluation_kind ?? "")
+          ? a.evaluation_kind
+          : "EXAM"
+      ) as EvaluationKind;
+      const evaluation = await createEvaluation(workspaceId, ownerId, userId, {
+        course_id: course.id,
+        title: a.description,
+        kind,
+        due_date: a.date,
+        weight: a.weight,
+        grade: a.grade,
+        status: a.grade != null ? "GRADED" : "PENDING",
+      });
+      await invalidate("academic_evaluations", "academic_courses");
+      return { id: evaluation.id, module: "Faculdade", href: `/faculdade/${ownerId}` };
+    }
+    const session = await createSession(workspaceId, ownerId, userId, {
+      course_id: course.id,
       date: date ?? "",
       time: a.time,
       duration_minutes: a.duration_minutes ? Math.round(a.duration_minutes) : null,
@@ -256,7 +265,7 @@ export async function executeAction(
       attended: a.attended,
     });
     await invalidate("academic_sessions");
-    return { id: session.id, module: "Faculdade", href: "/faculdade" };
+    return { id: session.id, module: "Faculdade", href: `/faculdade/${ownerId}` };
   }
 
   if (!["event", "task", "goal", "note"].includes(a.intent))
