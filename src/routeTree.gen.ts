@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
+import { Route as AuthenticatedCasamentoRouteImport } from './routes/_authenticated/casamento'
 import { Route as AuthenticatedComprasRouteImport } from './routes/_authenticated/compras'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -27,6 +28,10 @@ import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedRotinasRouteImport } from './routes/_authenticated/rotinas'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
+import { Route as AuthenticatedCasamentoIndexRouteImport } from './routes/_authenticated/casamento.index'
+import { Route as AuthenticatedCasamentoAreaRouteImport } from './routes/_authenticated/casamento.$area'
+import { Route as AuthenticatedCasamentoCasaRouteImport } from './routes/_authenticated/casamento.casa'
+import { Route as AuthenticatedCasamentoConfiguracoesRouteImport } from './routes/_authenticated/casamento.configuracoes'
 import { Route as AuthenticatedConfiguracoesIndexRouteImport } from './routes/_authenticated/configuracoes.index'
 import { Route as AuthenticatedConfiguracoesAtividadeRouteImport } from './routes/_authenticated/configuracoes.atividade'
 import { Route as AuthenticatedConfiguracoesCategoriasRouteImport } from './routes/_authenticated/configuracoes.categorias'
@@ -68,6 +73,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
   id: '/agenda',
   path: '/agenda',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCasamentoRoute = AuthenticatedCasamentoRouteImport.update({
+  id: '/casamento',
+  path: '/casamento',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedComprasRoute = AuthenticatedComprasRouteImport.update({
@@ -136,6 +146,30 @@ const ApiAgentRoute = ApiAgentRouteImport.update({
   path: '/api/agent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCasamentoIndexRoute =
+  AuthenticatedCasamentoIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoAreaRoute =
+  AuthenticatedCasamentoAreaRouteImport.update({
+    id: '/$area',
+    path: '/$area',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoCasaRoute =
+  AuthenticatedCasamentoCasaRouteImport.update({
+    id: '/casa',
+    path: '/casa',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoConfiguracoesRoute =
+  AuthenticatedCasamentoConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
 const AuthenticatedConfiguracoesIndexRoute =
   AuthenticatedConfiguracoesIndexRouteImport.update({
     id: '/',
@@ -248,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/agenda': typeof AuthenticatedAgendaRoute
+  '/casamento': typeof AuthenticatedCasamentoRouteWithChildren
   '/compras': typeof AuthenticatedComprasRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -261,6 +296,9 @@ export interface FileRoutesByFullPath {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/casamento/$area': typeof AuthenticatedCasamentoAreaRoute
+  '/casamento/casa': typeof AuthenticatedCasamentoCasaRoute
+  '/casamento/configuracoes': typeof AuthenticatedCasamentoConfiguracoesRoute
   '/configuracoes/atividade': typeof AuthenticatedConfiguracoesAtividadeRoute
   '/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/configuracoes/dados': typeof AuthenticatedConfiguracoesDadosRoute
@@ -275,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/faculdade/$ownerId': typeof AuthenticatedFaculdadeOwnerIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
+  '/casamento/': typeof AuthenticatedCasamentoIndexRoute
   '/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos/': typeof AuthenticatedContextosIndexRoute
   '/inbox/': typeof AuthenticatedInboxIndexRoute
@@ -297,6 +336,9 @@ export interface FileRoutesByTo {
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/casamento/$area': typeof AuthenticatedCasamentoAreaRoute
+  '/casamento/casa': typeof AuthenticatedCasamentoCasaRoute
+  '/casamento/configuracoes': typeof AuthenticatedCasamentoConfiguracoesRoute
   '/configuracoes/atividade': typeof AuthenticatedConfiguracoesAtividadeRoute
   '/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/configuracoes/dados': typeof AuthenticatedConfiguracoesDadosRoute
@@ -311,6 +353,7 @@ export interface FileRoutesByTo {
   '/faculdade/$ownerId': typeof AuthenticatedFaculdadeOwnerIdRoute
   '/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/metas/$id': typeof AuthenticatedMetasIdRoute
+  '/casamento': typeof AuthenticatedCasamentoIndexRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos': typeof AuthenticatedContextosIndexRoute
   '/inbox': typeof AuthenticatedInboxIndexRoute
@@ -323,6 +366,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
+  '/_authenticated/casamento': typeof AuthenticatedCasamentoRouteWithChildren
   '/_authenticated/compras': typeof AuthenticatedComprasRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -336,6 +380,9 @@ export interface FileRoutesById {
   '/_authenticated/rotinas': typeof AuthenticatedRotinasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
+  '/_authenticated/casamento/$area': typeof AuthenticatedCasamentoAreaRoute
+  '/_authenticated/casamento/casa': typeof AuthenticatedCasamentoCasaRoute
+  '/_authenticated/casamento/configuracoes': typeof AuthenticatedCasamentoConfiguracoesRoute
   '/_authenticated/configuracoes/atividade': typeof AuthenticatedConfiguracoesAtividadeRoute
   '/_authenticated/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/_authenticated/configuracoes/dados': typeof AuthenticatedConfiguracoesDadosRoute
@@ -350,6 +397,7 @@ export interface FileRoutesById {
   '/_authenticated/faculdade_/$ownerId': typeof AuthenticatedFaculdadeOwnerIdRoute
   '/_authenticated/inbox/$threadId': typeof AuthenticatedInboxThreadIdRoute
   '/_authenticated/metas/$id': typeof AuthenticatedMetasIdRoute
+  '/_authenticated/casamento/': typeof AuthenticatedCasamentoIndexRoute
   '/_authenticated/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/_authenticated/contextos/': typeof AuthenticatedContextosIndexRoute
   '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
@@ -362,6 +410,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/agenda'
+    | '/casamento'
     | '/compras'
     | '/configuracoes'
     | '/dashboard'
@@ -375,6 +424,9 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/casamento/$area'
+    | '/casamento/casa'
+    | '/casamento/configuracoes'
     | '/configuracoes/atividade'
     | '/configuracoes/categorias'
     | '/configuracoes/dados'
@@ -389,6 +441,7 @@ export interface FileRouteTypes {
     | '/faculdade/$ownerId'
     | '/inbox/$threadId'
     | '/metas/$id'
+    | '/casamento/'
     | '/configuracoes/'
     | '/contextos/'
     | '/inbox/'
@@ -411,6 +464,9 @@ export interface FileRouteTypes {
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
+    | '/casamento/$area'
+    | '/casamento/casa'
+    | '/casamento/configuracoes'
     | '/configuracoes/atividade'
     | '/configuracoes/categorias'
     | '/configuracoes/dados'
@@ -425,6 +481,7 @@ export interface FileRouteTypes {
     | '/faculdade/$ownerId'
     | '/inbox/$threadId'
     | '/metas/$id'
+    | '/casamento'
     | '/configuracoes'
     | '/contextos'
     | '/inbox'
@@ -436,6 +493,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/agenda'
+    | '/_authenticated/casamento'
     | '/_authenticated/compras'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
@@ -449,6 +507,9 @@ export interface FileRouteTypes {
     | '/_authenticated/rotinas'
     | '/_authenticated/tarefas'
     | '/api/agent'
+    | '/_authenticated/casamento/$area'
+    | '/_authenticated/casamento/casa'
+    | '/_authenticated/casamento/configuracoes'
     | '/_authenticated/configuracoes/atividade'
     | '/_authenticated/configuracoes/categorias'
     | '/_authenticated/configuracoes/dados'
@@ -463,6 +524,7 @@ export interface FileRouteTypes {
     | '/_authenticated/faculdade_/$ownerId'
     | '/_authenticated/inbox/$threadId'
     | '/_authenticated/metas/$id'
+    | '/_authenticated/casamento/'
     | '/_authenticated/configuracoes/'
     | '/_authenticated/contextos/'
     | '/_authenticated/inbox/'
@@ -513,6 +575,13 @@ declare module '@tanstack/react-router' {
       path: '/agenda'
       fullPath: '/agenda'
       preLoaderRoute: typeof AuthenticatedAgendaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/casamento': {
+      id: '/_authenticated/casamento'
+      path: '/casamento'
+      fullPath: '/casamento'
+      preLoaderRoute: typeof AuthenticatedCasamentoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/compras': {
@@ -605,6 +674,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/agent'
       preLoaderRoute: typeof ApiAgentRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/casamento/': {
+      id: '/_authenticated/casamento/'
+      path: '/'
+      fullPath: '/casamento/'
+      preLoaderRoute: typeof AuthenticatedCasamentoIndexRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/$area': {
+      id: '/_authenticated/casamento/$area'
+      path: '/$area'
+      fullPath: '/casamento/$area'
+      preLoaderRoute: typeof AuthenticatedCasamentoAreaRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/casa': {
+      id: '/_authenticated/casamento/casa'
+      path: '/casa'
+      fullPath: '/casamento/casa'
+      preLoaderRoute: typeof AuthenticatedCasamentoCasaRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/configuracoes': {
+      id: '/_authenticated/casamento/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/casamento/configuracoes'
+      preLoaderRoute: typeof AuthenticatedCasamentoConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
     }
     '/_authenticated/configuracoes/': {
       id: '/_authenticated/configuracoes/'
@@ -735,6 +832,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedCasamentoRouteChildren {
+  AuthenticatedCasamentoAreaRoute: typeof AuthenticatedCasamentoAreaRoute
+  AuthenticatedCasamentoCasaRoute: typeof AuthenticatedCasamentoCasaRoute
+  AuthenticatedCasamentoConfiguracoesRoute: typeof AuthenticatedCasamentoConfiguracoesRoute
+  AuthenticatedCasamentoIndexRoute: typeof AuthenticatedCasamentoIndexRoute
+}
+
+const AuthenticatedCasamentoRouteChildren: AuthenticatedCasamentoRouteChildren =
+  {
+    AuthenticatedCasamentoAreaRoute: AuthenticatedCasamentoAreaRoute,
+    AuthenticatedCasamentoCasaRoute: AuthenticatedCasamentoCasaRoute,
+    AuthenticatedCasamentoConfiguracoesRoute:
+      AuthenticatedCasamentoConfiguracoesRoute,
+    AuthenticatedCasamentoIndexRoute: AuthenticatedCasamentoIndexRoute,
+  }
+
+const AuthenticatedCasamentoRouteWithChildren =
+  AuthenticatedCasamentoRoute._addFileChildren(
+    AuthenticatedCasamentoRouteChildren,
+  )
+
 interface AuthenticatedConfiguracoesRouteChildren {
   AuthenticatedConfiguracoesAtividadeRoute: typeof AuthenticatedConfiguracoesAtividadeRoute
   AuthenticatedConfiguracoesCategoriasRoute: typeof AuthenticatedConfiguracoesCategoriasRoute
@@ -791,6 +909,7 @@ const AuthenticatedMetasRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
+  AuthenticatedCasamentoRoute: typeof AuthenticatedCasamentoRouteWithChildren
   AuthenticatedComprasRoute: typeof AuthenticatedComprasRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -812,6 +931,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
+  AuthenticatedCasamentoRoute: AuthenticatedCasamentoRouteWithChildren,
   AuthenticatedComprasRoute: AuthenticatedComprasRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,

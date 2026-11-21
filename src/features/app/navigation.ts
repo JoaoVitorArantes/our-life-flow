@@ -15,6 +15,8 @@ import {
   Repeat,
   type LucideIcon,
   MessageSquareText,
+  Gem,
+  Home,
 } from "lucide-react";
 
 export type NavItem = {
@@ -45,6 +47,21 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/tarefas", label: "Tarefas", icon: CheckSquare, emoji: "✅" },
       { to: "/rotinas", label: "Rotinas & Hábitos", icon: Repeat, emoji: "🌱" },
       { to: "/contextos", label: "Contextos", icon: Compass, emoji: "🧭" },
+    ],
+  },
+  {
+    label: "Casamento",
+    items: [
+      {
+        to: "/casamento",
+        label: "Casamento",
+        icon: Gem,
+        emoji: "💍",
+        children: [
+          { to: "/casamento/casa", label: "Nossa Casa / Enxoval", icon: Home, emoji: "🏡" },
+          { to: "/casamento/configuracoes", label: "Configurações", icon: Settings, emoji: "⚙️" },
+        ],
+      },
     ],
   },
   {
@@ -81,6 +98,7 @@ export const SECONDARY_NAV: NavItem[] = [
   { to: "/notas", label: "Notas", icon: StickyNote, emoji: "📝" },
   { to: "/contextos", label: "Contextos", icon: Compass, emoji: "🧭" },
   { to: "/compras", label: "Compras", icon: ShoppingBag, emoji: "🛍️" },
+  { to: "/casamento", label: "Casamento", icon: Gem, emoji: "💍" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [
