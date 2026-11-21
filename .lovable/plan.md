@@ -1,73 +1,79 @@
-# Plano — Módulo "Casamento" (Nossa Casa / Enxoval)
+# Plano — Módulo "Casamento" (isolado dentro do Life OS)
 
-Seção dentro do Life OS, compartilhada no workspace do casal. Nada implementado ainda.
+Área independente com navegação, dashboard, dados, categorias, status e configurações próprios. Mesmo login e mesmo workspace do casal. Nada implementado ainda.
 
-## 1. O que já existe e será reutilizado
-- **Workspace + RLS**: `workspace_members`, `user_is_workspace_member`, `workspace_can`, FKs compostas para membro real (padrão da Faculdade 0018/0019).
-- **Contextos** (`contexts`, tipo `COUPLE`/`PROJECT`, `budget_amount`): o Casamento será um contexto âncora; tarefas, notas, eventos, metas e transações já têm `context_id`.
-- **Metas** (`goals` + `goal_contributions` com `user_id`, `movement_type` CONTRIBUTION/WITHDRAWAL): meta de economia e aportes por pessoa — sem tabela nova de poupança.
-- **Financeiro** (`transactions`, `transaction_payers`, `transaction_splits`, `settlements`): compras viram transações reais vinculadas ao item; divisão segue as regras de compartilhamento existentes.
-- **Compras** (`purchases`, com `transaction_id`, `found_price`, `purchase_url`): referência de padrão (status, link, conversão em transação).
-- **Tarefas/Agenda/Notas** com `context_id`: Preparativos e cronograma.
-- **Lixeira** (`trash_record`/`list_trash`), **sync em tempo real** (`workspace_sync_events`), **auditoria** (`workspace_activity`), **preferências de menu** (`user_preferences`), **registry de plugins/Life AI** com confirmação.
-- **Design**: tokens atuais (#0B0D10 / #12151A / #7C5CFC), componentes shadcn, padrão de cabeçalho premium da Faculdade.
+## 1. Princípio de isolamento
+- Fonte de verdade única: tabelas `wedding_*`. Nenhum registro é criado, lido ou somado a partir de Financeiro, Metas, Tarefas, Agenda, Notas, Compras ou Contextos.
+- Nenhum lançamento financeiro geral em segundo plano; nenhum item do Casamento aparece em outras telas, contagens ou buscas gerais.
+- Integração futura (importar/exportar/vincular) só por ação explícita do usuário, com prévia e sem duplicação — fora do escopo inicial.
 
-## 2. Páginas / abas (rota `/casamento`, item de menu próprio)
-1. **Visão geral** — custo estimado (soma preço-meta × qtd), meta de economia, acumulado (da meta), gasto (transações vinculadas), saldo restante, progresso por prioridade P1/P2/P3 e por cômodo; avisos de "itens sem preço" (total marcado como parcial).
-2. **Nossa Casa / Enxoval** — inventário por cômodo/categoria, filtros (cômodo, prioridade, status, responsável), edição em linha mobile-first, ação "Registrar compra".
-3. **Planejamento financeiro** — meta mensal a partir de jan/2027, aportes por pessoa (goal_contributions), projeção vs. realizado.
-4. **Preparativos** — tarefas, decisões, prazos e responsáveis (tasks/events/notes do contexto).
-5. **Configurações do plano** — data do casamento, data de mudança, orçamento total, cidade, tipo de imóvel: todos opcionais, vazios = "não informado".
+Reutilizado apenas como infraestrutura transversal: autenticação, `workspace_members` / `user_is_workspace_member` / `workspace_can`, padrão de FK composta para membro real, design system e componentes, upload de imagens com caminho por workspace, sync em tempo real (`workspace_sync_events`), auditoria mínima (`workspace_activity`), lixeira (`trash_record`/`list_trash` estendidos) e preferências de menu.
 
-## 3. Entidades novas (migration aditiva 0020)
+## 2. Navegação e páginas
+Item de menu "Casamento" com submenu (mesmo padrão do submenu da Faculdade):
 ```text
-wedding_plans (1 por workspace)
-  workspace_id PK/FK, context_id -> contexts, goal_id -> goals,
-  wedding_date?, move_in_date?, total_budget?, savings_start (default null),
-  monthly_savings_target?, housing_type?, bedrooms?, notes?, created_by
-
-home_rooms            (cômodos/categorias; editáveis, ordem)
-  id, workspace_id, name, sort_order, created_by
-
-home_items
-  id, workspace_id, room_id, name, quantity, priority (P1|P2|P3),
-  price_low?, price_target?, price_high?, price_actual?,
-  status (to_research|researched|planned|bought),
-  responsible_user_id? -> workspace_members(workspace_id,user_id),
-  notes?, links text[], transaction_id? -> transactions,
-  deleted_at/deleted_by (lixeira), created_by, timestamps
+/casamento                 Visão geral do casamento (dashboard consolidado)
+/casamento/casa            Nossa Casa / Enxoval   (escopo funcional inicial)
+  abas: Painel | Inventário | Economia | Despesas | Preparativos | Fornecedores
+/casamento/cerimonia       placeholder "Em breve"
+/casamento/festa           placeholder "Em breve"
+/casamento/lua-de-mel      placeholder "Em breve"
+/casamento/planejamento    placeholder "Em breve"
+/casamento/configuracoes   dados do plano, categorias, status, responsáveis
 ```
-- Decisões do cronograma = `tasks` com `context_id` (status/prazo/responsável); sem tabela nova inicialmente.
-- Preços em `numeric`, nunca preenchidos por seed.
+- **Painel Nossa Casa**: custo estimado (preço-meta × qtd), meta de economia, acumulado, gasto, saldo restante, progresso por prioridade e por cômodo, alerta "X itens sem preço" (totais parciais).
+- **Inventário**: por cômodo/categoria, filtros (cômodo, prioridade, status, responsável, faixa), edição mobile-first, "Marcar comprado" que gera despesa interna do módulo.
+- **Economia**: metas mensais a partir de jan/2027, aportes por pessoa, projetado × realizado.
+- **Despesas**: gastos do módulo (compras de itens e custos de mudança/instalação).
+- **Preparativos**: tarefas, decisões, prazos, responsáveis, notas.
+- **Fornecedores**: lojas/prestadores com contato e links.
 
-## 4. Integração sem duplicar lançamentos
-- "Registrar compra" cria **uma** transação EXPENSE via mutação existente (com payers/splits), grava `home_items.transaction_id` e `status=bought`; `price_actual` pode ser lido da transação. Gasto do dashboard = soma das transações vinculadas (fonte única).
-- Aportes = `goal_contributions` da meta do plano; acumulado = `goals.current_amount`.
-- Tudo com `context_id` do contexto Casamento, aparecendo também em Financeiro/Metas/Agenda sem cópia.
+## 3. Entidades próprias (migration aditiva 0020)
+```text
+wedding_plans          1 por workspace: wedding_date?, move_in_date?, total_budget?,
+                       housing ('rent'), bedrooms (2), standard ('intermediate'),
+                       savings_start (2027-01-01), notes?          [premissas declaradas, editáveis]
+wedding_areas          subáreas: house | ceremony | party | honeymoon | planning (enabled flag)
+wedding_rooms          cômodos/categorias editáveis (area_id, name, sort_order)
+wedding_items          room_id, name, quantity, priority P1|P2|P3,
+                       price_low?, price_target?, price_high?, price_actual?,
+                       status to_research|researched|planned|bought,
+                       responsible_user_id?, supplier_id?, links text[], notes?,
+                       expense_id? -> wedding_expenses
+wedding_savings_goals  area_id?, month (date), target_amount
+wedding_contributions  user_id (quem aportou), amount, date, note?
+wedding_expenses       area_id, item_id?, supplier_id?, amount, date,
+                       paid_by_user_id, split ('equal'|'payer'|custom), note?
+wedding_tasks          area_id, title, kind task|decision, due_date?, status,
+                       responsible_user_id?, notes?
+wedding_notes          area_id, title, content
+wedding_suppliers      name, category?, contact?, url?, notes?
+```
+Todas: `workspace_id`, `created_by`, timestamps, `deleted_at/deleted_by` (lixeira) onde fizer sentido. Valores monetários `numeric`, sempre nulos até o casal preencher.
 
-## 5. Controle de acesso
-- RLS: SELECT/UPDATE/DELETE por `user_is_workspace_member`; INSERT exige membro + `created_by = auth.uid()`; responsável via FK composta para membro real.
-- Trigger valida que room/item/transação/contexto/meta pertencem ao mesmo workspace (`validate_workspace_references`).
-- Bloqueio em workspaces `is_demo` e em workspaces sem 2 membros (opcional, a confirmar); grants para authenticated/service_role, sem anon.
-- Soft-delete incluído em `trash_record`/`list_trash`; triggers de sync e auditoria mínima.
-- Life AI: ferramenta de leitura `wedding` via caller RLS; propostas (criar item, registrar compra/aporte) apenas com confirmação e read-back.
+## 4. Controle de acesso
+- RLS em todas: SELECT/UPDATE/DELETE por membro do workspace; INSERT exige membro e `created_by = auth.uid()`; SELECT inclui `deleted_at IS NULL`.
+- FKs compostas `(workspace_id, *_user_id)` → `workspace_members` para responsável, aportante e pagador; FKs compostas `(workspace_id, id)` entre item/cômodo/despesa/fornecedor para impedir vínculo entre workspaces.
+- Grants só `authenticated` e `service_role`; sem anon.
+- Módulo disponível apenas em workspaces não-demo (checagem server-side via trigger/RPC); workspaces pessoais mostram estado "disponível no espaço do casal".
+- Life AI (fase posterior): ferramenta de leitura `wedding` via caller RLS e propostas com confirmação e read-back; registry fechado de plugins.
 
-## 6. Inventário inicial
-- Botão "Criar inventário sugerido" (ação explícita do usuário, nunca automático): ~14 cômodos e itens com quantidade e prioridade sugeridas, **todos os preços vazios**. Lista mantida em código, revisável antes de gravar (prévia).
-- Importação/exportação CSV reaproveitando o padrão de prévia e neutralização de fórmulas.
+## 5. Inventário inicial
+- Botão "Criar inventário sugerido" (ação explícita, com prévia): cômodos — quarto principal, segundo quarto multifuncional, sala, jantar, cozinha/eletrodomésticos/utensílios/louças, banheiro, lavanderia, limpeza/manutenção, cama/mesa/banho, tecnologia, segurança, organização, áreas externas, instalação/mudança — com quantidades e prioridades sugeridas e **preços vazios**.
+- Importação/exportação CSV própria do módulo, com prévia e neutralização de fórmulas.
 
-## 7. Riscos e migrações
-- Somente aditiva; nenhuma alteração em dados existentes.
-- Risco de gasto duplicado se o usuário também lançar a compra no Financeiro manualmente → oferecer "vincular transação existente".
-- Totais com preços faltantes podem enganar → sempre exibir "X itens sem preço".
-- Divisão de compras depende das regras atuais de splits; testar contrato.
-- Testes: contrato SQL (RLS/FKs, sem seed de preços), cálculo do dashboard, fluxo compra→transação única, rejeição de referências de outro workspace.
+## 6. Riscos e migrações
+- Apenas aditiva; nenhuma alteração em tabelas ou dados existentes.
+- Lixeira e sync: estender `trash_record`/`list_trash` e triggers de sync às novas tabelas (alteração de função, sem mudar dados).
+- Totais com preços faltantes → sempre exibidos como parciais.
+- Duplicidade se o casal lançar o mesmo gasto também no Financeiro geral → aviso informativo; integração explícita fica para depois.
+- Testes: contrato SQL (RLS, FKs, sem seed de preços), cálculos do painel, rejeição de referências de outro workspace e de usuário não-membro, isolamento (nada aparece nas consultas gerais).
 
-## 8. Perguntas para o casal
-1. Contexto existente ou novo contexto "Casamento"?
-2. Uma meta única de economia ou metas separadas (enxoval, cerimônia, mudança)?
-3. Escopo: só a casa agora, ou já prever cerimônia/festa/lua de mel como submódulos futuros?
-4. Aportes devem sair de uma conta específica (ex.: poupança) como transferência no Financeiro?
-5. Compras padrão divididas 50/50 ou por quem pagou?
-6. Ordem do menu: item solto "Casamento" ou dentro de Contextos?
-7. Faixas econômica/premium: valores manuais ou só preço-meta intermediário obrigatório?
+## 7. Decisões pendentes com o casal
+1. Despesas divididas 50/50 por padrão ou por quem pagou?
+2. Meta de economia única para a casa ou por subárea desde já?
+3. Metas mensais fixas ou valor variável por mês?
+4. Fornecedores já no início ou depois?
+5. Faixas econômica/premium preenchidas manualmente ou só preço-meta?
+6. Quem pode excluir itens/despesas: ambos (padrão) ou com confirmação do outro?
+7. Ordem no menu e se Casamento deve ser a tela inicial de alguém.
