@@ -95,3 +95,10 @@
 - [x] Faculdade compartilhada entre membros com separação por aluno (migration 0018, submenu por primeiro nome, IA grava no perfil da disciplina)
 - [ ] Verificação autenticada da Faculdade compartilhada na prévia (bloqueada: sessão não injetada neste contexto)
 - [x] Faculdade: perfil acadêmico por aluno (0019), cadastro desde o início sem presumir instituição/curso; perfil da Renifer começa vazio (0 registros existentes, nada apagado)
+
+## Casamento (módulo isolado)
+- [x] Tabelas próprias wedding_* com acesso por membro do espaço, bloqueio em demonstração
+- [x] Nossa Casa / Enxoval: painel, inventário sugerido sem preços, compra interna, economia, despesas, preparativos, fornecedores
+- [ ] Cerimônia, Festa, Lua de Mel, Planejamento do Casal (placeholders)
+- [ ] Lixeira, importação/exportação CSV e Life AI para o Casamento
+- [ ] Decisões pendentes do casal (divisão padrão, metas fixas/variáveis, exclusões)

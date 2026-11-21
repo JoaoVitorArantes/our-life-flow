@@ -139,7 +139,7 @@ export function computeSummary(
   const saved = contributions.reduce((s, c) => s + Number(c.amount), 0);
   const spent = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const savingsTarget = goals.reduce((s, g) => s + Number(g.target_amount), 0);
-  const remainingToSave = items.length === 0 ? null : Math.max(0, estimated - saved);
+  const remainingToSave = estimated === 0 ? null : Math.max(0, estimated - saved);
   return {
     estimated,
     itemsWithoutPrice,

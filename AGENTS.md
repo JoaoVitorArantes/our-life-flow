@@ -33,3 +33,4 @@
 - CSV exports neutralize formula-like text while preserving numeric values. Why: exported user content must not become spreadsheet commands.
 - Mermaid loads asynchronously. Why: diagram failures must not abort startup.
 - Calendar uses authenticated functions, single-use public popup completion and encrypted user/connector/workspace handles; Agenda queries are user-keyed, read-only and never persist Google events. Why: partners never inherit credentials or events.
+- Casamento (`/casamento`, `src/features/wedding/`) is an isolated module: `wedding_*` tables are its only source of truth and it never reads or writes Financeiro, Metas, Tarefas, Agenda, Notas, Compras or Contextos; any future link must be an explicit user action. Why: the couple asked for wedding money and plans to stay separate from general modules.
