@@ -1,0 +1,1 @@
+ALTER FUNCTION public.wedding_normalize_code(text) SET search_path = public;
