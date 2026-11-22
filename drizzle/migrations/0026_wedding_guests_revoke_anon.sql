@@ -1,0 +1,2 @@
+REVOKE ALL ON public.wedding_invitations, public.wedding_guests, public.wedding_checkins, public.wedding_guest_messages, public.wedding_public_content, public.wedding_guest_audit, public.wedding_portal_attempts FROM anon;
+REVOKE ALL ON public.wedding_portal_attempts FROM authenticated;

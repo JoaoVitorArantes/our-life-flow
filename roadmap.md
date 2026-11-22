@@ -106,5 +106,6 @@
 ## Casamento — Fase 1 (visual + inventário)
 - [x] Prioridades/status editáveis, cômodos clicáveis, detalhe do item, duplicar, lixeira, fotos, tema próprio
 - [x] Validação final (navegador em 320–1440px, testes, contagens do casal) e publicação da Fase 1
-- [ ] Fase 2 — Convidados, portal, RSVP e check-in (aguardando decisões)
+- [ ] Fase 2 — Convidados, portal, RSVP e check-in (implementado; em validação, NÃO publicar)
+  - [x] Validação: typecheck, ESLint, Vitest, E2E individual/grupo, portal anônimo, limite de acompanhantes, check-in duplicado/desfazer, responsividade, RLS/isolamento, contagens do casal
 - [ ] Fase 3 — Presentes e contribuições (aguardando decisões)

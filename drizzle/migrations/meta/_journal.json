@@ -176,6 +176,20 @@
       "when": 1795362152858,
       "tag": "0024_wedding_guests_portal",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795364472615,
+      "tag": "0025_wedding_guest_audit_fix",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795364586722,
+      "tag": "0026_wedding_guests_revoke_anon",
+      "breakpoints": true
     }
   ]
 }
