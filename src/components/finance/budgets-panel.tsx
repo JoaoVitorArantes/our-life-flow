@@ -142,6 +142,25 @@ export function BudgetsPanel({
   const spentBudgeted = budgeted.reduce((t, x) => t + x.spent, 0);
   const unbudgetedSpend = spent.total - spentBudgeted;
   const free = activeCats.filter((c) => !budgets.get(c.id));
+  const alerts: { tone: "bad" | "warn"; text: string }[] = [];
+  if (overall && overall.amount > 0 && spent.total > overall.amount)
+    alerts.push({
+      tone: "bad",
+      text: `O orçamento geral passou ${formatCurrency(spent.total - overall.amount)}.`,
+    });
+  for (const x of budgeted) {
+    const ratio = x.spent / x.b!.amount;
+    if (ratio > 1)
+      alerts.push({
+        tone: "bad",
+        text: `${x.c.name} passou ${formatCurrency(x.spent - x.b!.amount)} do limite.`,
+      });
+    else if (ratio >= 0.85)
+      alerts.push({
+        tone: "warn",
+        text: `${x.c.name} já usou ${Math.round(ratio * 100)}% do limite.`,
+      });
+  }
   const years = useMemo(() => {
     const ys = new Set<number>();
     const now = Number(today.slice(0, 4));
@@ -471,6 +490,19 @@ export function BudgetsPanel({
 
       {rulesQ.isError ? (
         <p className="text-sm text-destructive">Não foi possível carregar os orçamentos.</p>
+      ) : null}
+
+      {alerts.length ? (
+        <ul
+          className="space-y-1 rounded-2xl border border-border bg-surface p-3 text-sm"
+          aria-label="Alertas do orçamento"
+        >
+          {alerts.map((a) => (
+            <li key={a.text} className={a.tone === "bad" ? "text-destructive" : "text-warning"}>
+              • {a.text}
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       {/* Resumo */}
