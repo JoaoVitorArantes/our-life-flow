@@ -246,6 +246,13 @@
       "when": 1795367442636,
       "tag": "0034_wedding_gifts_tighten_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1795368168365,
+      "tag": "0035_migration",
+      "breakpoints": true
     }
   ]
 }

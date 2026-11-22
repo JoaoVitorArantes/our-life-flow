@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { portalErrorMessage, validateCompanions } from "@/features/wedding/guest-contracts";
+import { getPortalCover } from "@/features/wedding/portal-cover.functions";
 import { portalGet, portalMessage, portalRsvp, type PortalData } from "@/features/wedding/guests";
 
 export const Route = createFileRoute("/convite/$token")({
@@ -105,6 +106,10 @@ function PortalView({
   const [msg, setMsg] = useState("");
   const [msgState, setMsgState] = useState<string | null>(null);
   const c = data.content;
+  const [cover, setCover] = useState<string | null>(null);
+  useEffect(() => {
+    void getPortalCover({ data: { cred: token } }).then((r) => setCover(r.url));
+  }, [token]);
   const anyYes = Object.values(answers).some((a) => a.rsvp === "yes");
   const complete = main.every((g) => answers[g.id]?.rsvp);
   const locked = data.invitation.locked;
@@ -140,6 +145,13 @@ function PortalView({
   return (
     <main className="min-h-dvh bg-background px-4 py-6 text-foreground sm:py-10">
       <div className="mx-auto max-w-xl space-y-5">
+        {cover && (
+          <img
+            src={cover}
+            alt="Foto do casal"
+            className="aspect-[16/9] w-full rounded-3xl object-cover shadow-sm"
+          />
+        )}
         <header className="wed-card relative overflow-hidden p-6 text-center sm:p-8">
           <div className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full bg-wed-blush/40 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-12 size-44 rounded-full bg-wed-lavender/40 blur-3xl" />

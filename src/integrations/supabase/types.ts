@@ -4000,6 +4000,7 @@ export type Database = {
         Args: { _bucket: string; _name: string }
         Returns: boolean
       }
+      wedding_portal_cover_path: { Args: { _cred: string }; Returns: string }
       wedding_portal_get: { Args: { _cred: string }; Returns: Json }
       wedding_portal_gifts: { Args: { _cred: string }; Returns: Json }
       wedding_portal_gifts_payload: { Args: { _inv: string }; Returns: Json }
