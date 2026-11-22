@@ -121,6 +121,7 @@
 
 ## Orçamentos e Metas contínuos
 - [x] Regras de orçamento por período/recorrência (categoria e geral; casal e pessoal), seletor mês/ano, editar só este mês ou daqui em diante, histórico
+- [x] Orçamento: seletor de qualquer ano, visão anual, pausar um mês, filtro por quem gastou, cadastro em janela única, gastos lidos por ano
 - [x] Compatibilidade com o limite mensal antigo das categorias
 - [x] Metas com início, prazo opcional (contínua), frequência e valor por período
 - [ ] Teste com as contas reais de João e Renifer (não executado; só usuário de teste)

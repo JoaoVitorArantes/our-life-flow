@@ -192,3 +192,87 @@ export function monthBudgetStatus(
   }
   return items;
 }
+
+/** Ano digitado pelo usuário: qualquer ano de 4 dígitos (sem faixa artificial). */
+export function parseYear(raw: string | number): number | null {
+  const n = typeof raw === "number" ? raw : Number(String(raw).trim());
+  return Number.isInteger(n) && n >= 1900 && n <= 9999 ? n : null;
+}
+
+export type BudgetState = "none" | "ok" | "warn" | "over";
+export function budgetState(spent: number, limit: number): BudgetState {
+  if (!(limit > 0)) return "none";
+  if (spent > limit) return "over";
+  return spent / limit >= 0.85 ? "warn" : "ok";
+}
+
+/** Só lançamentos de uma pessoa (filtro “quem gastou”); null = todos. */
+export function byOwner<T extends { owner_id: string }>(rows: T[], ownerId: string | null) {
+  return ownerId ? rows.filter((r) => r.owner_id === ownerId) : rows;
+}
+
+/**
+ * Resumo de um mês. Com orçamento geral (> 0) o teto é o geral e conta todo o gasto;
+ * sem ele, o teto é a soma dos limites por categoria e conta só o gasto dessas categorias.
+ */
+export function monthSummary(
+  rules: BudgetRule[],
+  transactions: Tx[],
+  key: MonthKey,
+  scope: BudgetScope,
+  userId: string,
+) {
+  const budgets = resolveBudgets(rules, key, scope, userId);
+  const spent = spentByCategory(transactions, key, scope, userId);
+  const overall = budgets.get(ALL);
+  let catPlanned = 0;
+  let catUsed = 0;
+  for (const [k, b] of budgets) {
+    if (k === ALL || b.amount <= 0) continue;
+    catPlanned += b.amount;
+    catUsed += spent.byCategory.get(k) ?? 0;
+  }
+  const hasOverall = !!overall && overall.amount > 0;
+  const planned = hasOverall ? overall.amount : catPlanned;
+  const used = hasOverall ? spent.total : catUsed;
+  return {
+    key,
+    budgets,
+    spent,
+    hasOverall,
+    catPlanned,
+    planned,
+    used,
+    spentTotal: spent.total,
+    unbudgeted: hasOverall ? 0 : spent.total - catUsed,
+    left: planned - used,
+    pct: planned > 0 ? Math.round((used / planned) * 100) : null,
+    state: budgetState(used, planned),
+  };
+}
+
+/** Visão anual: 12 resumos calculados das mesmas regras e lançamentos (nada é copiado). */
+export function yearSummary(
+  rules: BudgetRule[],
+  transactions: Tx[],
+  year: number,
+  scope: BudgetScope,
+  userId: string,
+) {
+  const months = Array.from({ length: 12 }, (_, i) =>
+    monthSummary(
+      rules,
+      transactions,
+      `${String(year).padStart(4, "0")}-${String(i + 1).padStart(2, "0")}`,
+      scope,
+      userId,
+    ),
+  );
+  return {
+    months,
+    planned: months.reduce((t, m) => t + m.planned, 0),
+    spent: months.reduce((t, m) => t + m.spentTotal, 0),
+    used: months.reduce((t, m) => t + m.used, 0),
+    monthsWithBudget: months.filter((m) => m.planned > 0).length,
+  };
+}

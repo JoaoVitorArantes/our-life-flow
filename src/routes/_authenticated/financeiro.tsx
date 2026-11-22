@@ -375,7 +375,7 @@ function Financeiro() {
           <CashFlow transactions={transactions} accounts={accounts} />
         </TabsContent>
         <TabsContent value="orcamento" className="pt-6">
-          {workspaceId ? <BudgetsPanel transactions={transactions} categories={categories} /> : null}
+          {workspaceId ? <BudgetsPanel categories={categories} /> : null}
         </TabsContent>
 
         {/* ------------------------------------------------------- a pagar */}
