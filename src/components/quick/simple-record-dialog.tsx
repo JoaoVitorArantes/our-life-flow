@@ -22,7 +22,13 @@ type SimpleRecord = {
   due_date?: string | null;
   starts_at?: string | null;
   target_amount?: number | string | null;
+  start_date?: string | null;
+  recurrence?: string | null;
+  recurrence_months?: number | null;
+  period_amount?: number | string | null;
 };
+
+type Recurrence = "NONE" | "MONTHLY" | "YEARLY" | "CUSTOM";
 
 const CONFIG: Record<
   SimpleKind,
@@ -70,6 +76,11 @@ export function SimpleRecordDialog({
   const [target, setTarget] = useState("");
   const [content, setContent] = useState("");
   const [contextId, setContextId] = useState<string>(NO_CONTEXT);
+  const [startDate, setStartDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [recurrence, setRecurrence] = useState<Recurrence>("NONE");
+  const [months, setMonths] = useState("3");
+  const [periodAmount, setPeriodAmount] = useState("");
   const [saving, setSaving] = useState(false);
 
   const config = CONFIG[kind];
@@ -82,6 +93,11 @@ export function SimpleRecordDialog({
       setContent(record.content ?? "");
       setTarget(record.target_amount ? String(Number(record.target_amount)).replace(".", ",") : "");
       setContextId(record.context_id ?? NO_CONTEXT);
+      setStartDate(record.start_date ?? "");
+      setDueDate(record.due_date ?? "");
+      setRecurrence(((record.recurrence as Recurrence) || "NONE"));
+      setMonths(String(record.recurrence_months ?? 3));
+      setPeriodAmount(record.period_amount ? String(Number(record.period_amount)).replace(".", ",") : "");
       if (record.starts_at) {
         const start = new Date(record.starts_at);
         setDate(toDateInput(start));
@@ -97,9 +113,14 @@ export function SimpleRecordDialog({
       setTarget("");
       setDate(toDateInput());
       setTime("19:00");
+      setStartDate(kind === "goal" ? toDateInput() : "");
+      setDueDate("");
+      setRecurrence("NONE");
+      setMonths("3");
+      setPeriodAmount("");
       setContextId(defaultContextId ?? activeContextId ?? NO_CONTEXT);
     }
-  }, [open, record, defaultContextId, activeContextId]);
+  }, [open, record, defaultContextId, activeContextId, kind]);
 
   async function handleSubmit() {
     if (!workspaceId || !userId) return;
@@ -120,6 +141,17 @@ export function SimpleRecordDialog({
           time,
           amount: parseAmount(target) || null,
           content,
+          ...(kind === "goal"
+            ? {
+                goal: {
+                  startDate: startDate || null,
+                  dueDate: dueDate || null,
+                  recurrence,
+                  recurrenceMonths: recurrence === "CUSTOM" ? Number(months) || null : null,
+                  periodAmount: recurrence !== "NONE" ? parseAmount(periodAmount) || null : null,
+                },
+              }
+            : {}),
         },
         record?.id,
       );
@@ -152,7 +184,48 @@ export function SimpleRecordDialog({
             />
           </div>
 
-          {kind !== "note" ? (
+          {kind === "goal" ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="target">Valor alvo (opcional)</Label>
+                <Input id="target" inputMode="decimal" placeholder="R$ 0,00" value={target} onChange={(event) => setTarget(event.target.value)} />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="goal-start">Começa em</Label>
+                  <Input id="goal-start" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="goal-due">Prazo (opcional)</Label>
+                  <Input id="goal-due" type="date" value={dueDate} min={startDate || undefined} onChange={(event) => setDueDate(event.target.value)} />
+                  <p className="text-xs text-muted-foreground">{dueDate ? <button type="button" className="underline" onClick={() => setDueDate("")}>Tornar contínua (sem prazo)</button> : "Sem prazo: a meta é contínua."}</p>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="goal-freq">Frequência</Label>
+                  <select id="goal-freq" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={recurrence} onChange={(event) => setRecurrence(event.target.value as Recurrence)}>
+                    <option value="NONE">Sem frequência</option>
+                    <option value="MONTHLY">Mensal</option>
+                    <option value="YEARLY">Anual</option>
+                    <option value="CUSTOM">A cada N meses</option>
+                  </select>
+                </div>
+                {recurrence === "CUSTOM" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="goal-months">A cada quantos meses</Label>
+                    <Input id="goal-months" type="number" min={1} max={120} value={months} onChange={(event) => setMonths(event.target.value)} />
+                  </div>
+                ) : null}
+                {recurrence !== "NONE" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="goal-period">Juntar por período (opcional)</Label>
+                    <Input id="goal-period" inputMode="decimal" placeholder="R$ 0,00" value={periodAmount} onChange={(event) => setPeriodAmount(event.target.value)} />
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : kind !== "note" ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="date">{kind === "task" ? "Prazo" : "Data"}</Label>
@@ -171,18 +244,6 @@ export function SimpleRecordDialog({
                     type="time"
                     value={time}
                     onChange={(event) => setTime(event.target.value)}
-                  />
-                </div>
-              ) : null}
-              {kind === "goal" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="target">Valor alvo</Label>
-                  <Input
-                    id="target"
-                    inputMode="decimal"
-                    placeholder="R$ 0,00"
-                    value={target}
-                    onChange={(event) => setTarget(event.target.value)}
                   />
                 </div>
               ) : null}

@@ -16,8 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BudgetPanel, CashFlow, FinanceCalendar, FinanceSearch, ReportsPanel } from "@/components/finance/finance-overview";
+import { CashFlow, FinanceCalendar, FinanceSearch, ReportsPanel } from "@/components/finance/finance-overview";
 import { FinanceCockpit } from "@/components/finance/finance-cockpit";
+import { BudgetsPanel } from "@/components/finance/budgets-panel";
 
 const SECTIONS = [
   { id: "visao", label: "Visão geral", subs: [{ value: "visao", label: "Visão geral" }] },
@@ -374,7 +375,7 @@ function Financeiro() {
           <CashFlow transactions={transactions} accounts={accounts} />
         </TabsContent>
         <TabsContent value="orcamento" className="pt-6">
-          {workspaceId ? <BudgetPanel transactions={transactions} categories={categories} workspaceId={workspaceId} /> : null}
+          {workspaceId ? <BudgetsPanel transactions={transactions} categories={categories} /> : null}
         </TabsContent>
 
         {/* ------------------------------------------------------- a pagar */}

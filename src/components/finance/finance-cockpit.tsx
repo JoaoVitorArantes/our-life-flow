@@ -8,6 +8,9 @@ import { daysBetween, sumBy, todayISO } from "@/features/finance/calc";
 import type { Account, Category, Transaction } from "@/features/finance/queries";
 import { formatCurrency, formatDateShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useApp } from "@/features/app/app-context";
+import { useBudgetRules } from "@/features/finance/budget-api";
+import { ALL, monthBudgetStatus } from "@/features/finance/budgets";
 
 type Props = {
   payments?: import("@/features/finance/queries").InvoicePayment[];
@@ -87,6 +90,8 @@ function MoneyCurve({ past, future }: { past: { date: string; value: number }[];
 }
 
 export function FinanceCockpit({ accounts, transactions, categories, recurrences = [], payments = [], onNavigate }: Props) {
+  const { workspaceId, userId } = useApp();
+  const budgetRules = useBudgetRules(workspaceId).data ?? [];
   const today = todayISO();
   const s = useMemo(() => calculateSafeToSpend(accounts, transactions, 30, undefined, recurrences, payments), [accounts, transactions, recurrences, payments]);
   const mood = financialMood(s);
@@ -161,9 +166,13 @@ export function FinanceCockpit({ accounts, transactions, categories, recurrences
       byCat.set(t.category_id ?? "none", (byCat.get(t.category_id ?? "none") ?? 0) + amt(t));
   const cat = (id: string) => categories.find((c) => c.id === id);
   const top = [...byCat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const budgets = categories
-    .filter((c) => Number(c.monthly_budget) > 0)
-    .map((c) => ({ c, spent: byCat.get(c.id) ?? 0, budget: Number(c.monthly_budget) }))
+  const budgets = monthBudgetStatus(budgetRules, transactions, monthKey, userId ?? "")
+    .map((x) => ({
+      ...x,
+      c: x.categoryId === ALL
+        ? { id: `${x.scope}-all`, icon: null, name: x.scope === "SHARED" ? "Geral do casal" : "Meu geral" }
+        : { ...(cat(x.categoryId) ?? { icon: null, name: "Categoria" }), id: `${x.scope}-${x.categoryId}`, name: `${cat(x.categoryId)?.name ?? "Categoria"}${x.scope === "MINE" ? " (meu)" : ""}` },
+    }))
     .sort((a, b) => b.spent / b.budget - a.spent / a.budget)
     .slice(0, 3);
 

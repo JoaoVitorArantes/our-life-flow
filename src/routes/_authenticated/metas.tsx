@@ -16,7 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/features/app/app-context";
 import { useGoals, type Goal } from "@/features/planner/queries";
 import { goalProgress, useAllContributions } from "@/features/planner/contributions";
-import { formatCurrency, formatDateShort } from "@/lib/format";
+import { formatCurrency, formatDateShort, toDateInput } from "@/lib/format";
+import { GoalPeriodLine } from "@/components/goals/goal-period-line";
 
 export const Route = createFileRoute("/_authenticated/metas")({
   head: () => ({
@@ -84,11 +85,9 @@ function Metas() {
                 <div className="flex items-start justify-between gap-3">
                   <Link to="/metas/$id" params={{ id: goal.id }} className="min-w-0 flex-1">
                     <p className="truncate font-medium">{goal.title}</p>
-                    {goal.due_date ? (
-                      <p className="text-xs text-muted-foreground">
-                        até {formatDateShort(goal.due_date)}
-                      </p>
-                    ) : null}
+                    <p className="text-xs text-muted-foreground">
+                      {goal.due_date ? `até ${formatDateShort(goal.due_date)}` : "Contínua, sem prazo"}
+                    </p>
                   </Link>
                   <div className="flex shrink-0 items-center gap-1">
                     <CreatedBy userId={goal.owner_id} />
@@ -112,6 +111,11 @@ function Metas() {
                     />
                   </div>
                 </div>
+                <GoalPeriodLine
+                  goal={goal}
+                  contributions={contributions.filter((c) => c.goal_id === goal.id)}
+                  today={toDateInput()}
+                />
                 <Button
                   variant="outline"
                   size="sm"

@@ -1,8 +1,5 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
 import {
   accountBalance,
   addMonths,
@@ -22,6 +19,9 @@ import type {
 } from "@/features/finance/queries";
 import { formatCurrency, formatDateShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useApp } from "@/features/app/app-context";
+import { useBudgetRules } from "@/features/finance/budget-api";
+import { ALL, monthBudgetStatus, resolveBudgets } from "@/features/finance/budgets";
 
 const monthKey = (iso: string) => iso.slice(0, 7);
 const currentMonth = () => todayISO().slice(0, 7);
@@ -77,6 +77,9 @@ type Props = {
 };
 
 export function FinanceOverview({ transactions, accounts, cards, categories, loans, financings }: Props) {
+  const { workspaceId, userId } = useApp();
+  const budgetRules = useBudgetRules(workspaceId).data ?? [];
+  const sharedBudgets = resolveBudgets(budgetRules, currentMonth(), "SHARED", userId ?? "");
   const today = todayISO();
   const key = currentMonth();
   const prevKey = shiftMonth(key, -1);
@@ -110,10 +113,9 @@ export function FinanceOverview({ transactions, accounts, cards, categories, loa
   }
   const ranking = [...byCategory.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? "Sem categoria";
-  const over = categories
-    .filter((c) => Number(c.monthly_budget) > 0)
-    .map((c) => ({ c, spent: byCategory.get(c.id) ?? 0, budget: Number(c.monthly_budget) }))
-    .filter((x) => x.spent > x.budget);
+  const over = monthBudgetStatus(budgetRules, transactions, key, userId ?? "")
+    .filter((x) => x.spent > x.budget)
+    .map((x) => ({ ...x, c: { name: x.categoryId === ALL ? (x.scope === "SHARED" ? "O orçamento geral do casal" : "Seu orçamento geral") : catName(x.categoryId) } }));
 
   const next = open
     .filter((t) => dueDateOf(t) >= today)
@@ -170,7 +172,7 @@ export function FinanceOverview({ transactions, accounts, cards, categories, loa
           {ranking.length ? (
             <ul className="space-y-3">
               {ranking.map(([id, value]) => {
-                const budget = Number(categories.find((c) => c.id === id)?.monthly_budget) || 0;
+                const budget = sharedBudgets.get(id)?.amount ?? 0;
                 return (
                   <li key={id} className="space-y-1">
                     <div className="flex justify-between text-sm">
@@ -273,70 +275,6 @@ export function CashFlow({ transactions, accounts }: { transactions: Transaction
       {overdueOpen.length ? (
         <p className="text-xs text-muted-foreground">{overdueOpen.length} pendência(s) antigas não aparecem nesta janela.</p>
       ) : null}
-    </div>
-  );
-}
-
-/** Orçamento mensal por categoria (salvo na própria categoria). */
-export function BudgetPanel({ transactions, categories, workspaceId }: { transactions: Transaction[]; categories: Category[]; workspaceId: string }) {
-  const queryClient = useQueryClient();
-  const key = currentMonth();
-  const [draft, setDraft] = useState<Record<string, string>>({});
-  const expenseCats = categories.filter((c) => c.type !== "INCOME");
-  const spentOf = (id: string) => sumBy(expensesIn(transactions, key).filter((t) => t.category_id === id), amt);
-  const totalBudget = sumBy(expenseCats, (c) => Number(c.monthly_budget) || 0);
-  const totalSpent = sumBy(expenseCats.filter((c) => Number(c.monthly_budget) > 0), (c) => spentOf(c.id));
-
-  async function save(cat: Category) {
-    const raw = draft[cat.id];
-    if (raw === undefined) return undefined;
-    const value = raw.trim() === "" ? null : Number(raw.replace(",", "."));
-    if (value !== null && (Number.isNaN(value) || value < 0)) { toast.error("Valor inválido"); return undefined; }
-    const { error } = await supabase.from("categories").update({ monthly_budget: value }).eq("id", cat.id).eq("workspace_id", workspaceId);
-    if (error) { toast.error("Não foi possível salvar"); return undefined; }
-    toast.success(`Orçamento de ${cat.name} salvo`);
-    setDraft(({ [cat.id]: _, ...rest }) => rest);
-    await queryClient.invalidateQueries({ queryKey: ["categories", workspaceId] });
-    return undefined;
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Tile label="Orçado no mês" value={formatCurrency(totalBudget)} />
-        <Tile label="Gasto nas categorias orçadas" value={formatCurrency(totalSpent)} tone={totalSpent > totalBudget && totalBudget > 0 ? "bad" : undefined} />
-        <Tile label="Ainda disponível" value={formatCurrency(Math.max(0, totalBudget - totalSpent))} tone="accent" />
-      </div>
-      <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
-        {expenseCats.map((cat) => {
-          const spent = spentOf(cat.id);
-          const budget = Number(cat.monthly_budget) || 0;
-          const pct = budget ? (spent / budget) * 100 : 0;
-          return (
-            <li key={cat.id} className="grid gap-2 p-3 sm:grid-cols-[1fr_160px] sm:items-center">
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span>{cat.name}</span>
-                  <span className="numeric text-muted-foreground">
-                    {formatCurrency(spent)}
-                    {budget ? ` · ${pct.toFixed(0)}%` : ""}
-                  </span>
-                </div>
-                {budget ? <Bar value={spent} max={budget} danger={spent > budget} /> : <p className="text-xs text-muted-foreground">Sem orçamento definido</p>}
-              </div>
-              <Input
-                inputMode="decimal"
-                placeholder="Limite mensal"
-                aria-label={`Orçamento de ${cat.name}`}
-                value={draft[cat.id] ?? (cat.monthly_budget ?? "").toString()}
-                onChange={(e) => setDraft((d) => ({ ...d, [cat.id]: e.target.value }))}
-                onBlur={() => save(cat)}
-                onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-              />
-            </li>
-          );
-        })}
-      </ul>
     </div>
   );
 }

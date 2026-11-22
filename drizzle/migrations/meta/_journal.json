@@ -253,6 +253,20 @@
       "when": 1795368168365,
       "tag": "0035_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1795368854774,
+      "tag": "0036_continuous_budgets_and_goal_periods",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1795368879370,
+      "tag": "0037_budget_rules_revoke_anon",
+      "breakpoints": true
     }
   ]
 }

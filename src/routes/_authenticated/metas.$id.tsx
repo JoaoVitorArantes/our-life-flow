@@ -20,7 +20,8 @@ import {
   useGoalContributions,
   type GoalContribution,
 } from "@/features/planner/contributions";
-import { formatCurrency, formatDateShort } from "@/lib/format";
+import { formatCurrency, formatDateShort, toDateInput } from "@/lib/format";
+import { GoalPeriodLine } from "@/components/goals/goal-period-line";
 
 export const Route = createFileRoute("/_authenticated/metas/$id")({
   head: () => ({
@@ -97,7 +98,8 @@ function GoalDetail() {
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{goal.title}</h1>
             <p className="text-sm text-muted-foreground">
-              {goal.due_date ? `até ${formatDateShort(goal.due_date)}` : "Sem prazo"}
+              {goal.start_date ? `desde ${formatDateShort(goal.start_date)} · ` : ""}
+              {goal.due_date ? `até ${formatDateShort(goal.due_date)}` : "Contínua, sem prazo"}
               
             </p>
           </div>
@@ -116,6 +118,7 @@ function GoalDetail() {
       </div>
 
       <Panel className="space-y-4">
+        <GoalPeriodLine goal={goal} contributions={contributions} today={toDateInput()} />
         <div className="flex flex-wrap items-end justify-between gap-2">
           <p className="numeric text-3xl font-semibold">{formatCurrency(current)}</p>
           <p className="numeric text-sm text-muted-foreground">

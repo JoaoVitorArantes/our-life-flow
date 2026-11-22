@@ -648,6 +648,66 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_rules: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          end_month: string | null
+          from_legacy: boolean
+          id: string
+          note: string | null
+          owner_id: string
+          start_month: string
+          updated_at: string
+          visibility: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          end_month?: string | null
+          from_legacy?: boolean
+          id?: string
+          note?: string | null
+          owner_id: string
+          start_month: string
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          end_month?: string | null
+          from_legacy?: boolean
+          id?: string
+          note?: string | null
+          owner_id?: string
+          start_month?: string
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_rules_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_rules_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_invoice_payments: {
         Row: {
           amount: number
@@ -1144,6 +1204,10 @@ export type Database = {
           id: string
           is_demo: boolean
           owner_id: string
+          period_amount: number | null
+          recurrence: string
+          recurrence_months: number | null
+          start_date: string | null
           status: Database["public"]["Enums"]["goal_status"]
           target_amount: number | null
           title: string
@@ -1162,6 +1226,10 @@ export type Database = {
           id?: string
           is_demo?: boolean
           owner_id: string
+          period_amount?: number | null
+          recurrence?: string
+          recurrence_months?: number | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"]
           target_amount?: number | null
           title: string
@@ -1180,6 +1248,10 @@ export type Database = {
           id?: string
           is_demo?: boolean
           owner_id?: string
+          period_amount?: number | null
+          recurrence?: string
+          recurrence_months?: number | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"]
           target_amount?: number | null
           title?: string
@@ -3889,6 +3961,7 @@ export type Database = {
     }
     Functions: {
       bootstrap_account: { Args: { _name?: string }; Returns: string }
+      budget_rule_owner: { Args: { _ws: string }; Returns: string }
       category_usage: { Args: { _category_id: string }; Returns: number }
       create_partner_invitation: {
         Args: { _email: string; _workspace_id: string }
