@@ -218,6 +218,13 @@
       "when": 1795365613649,
       "tag": "0030_receipts_revoke_anon",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1795365715613,
+      "tag": "0031_trash_record_static_sql",
+      "breakpoints": true
     }
   ]
 }
