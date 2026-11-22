@@ -46,10 +46,12 @@ function PublicPage() {
   const m = useGuestMutations(workspaceId, userId);
   const [f, setF] = useState(EMPTY);
   const [published, setPublished] = useState(false);
+  const [allowEdit, setAllowEdit] = useState(true);
   useEffect(() => {
     const c = content.data;
     if (!c) return;
     setPublished(c.published);
+    setAllowEdit(c.allow_rsvp_edit);
     setF({
       headline: c.headline ?? "",
       message: c.message ?? "",
@@ -75,6 +77,7 @@ function PublicPage() {
     m.savePublicContent.mutate(
       {
         published,
+        allow_rsvp_edit: allowEdit,
         headline: n(f.headline),
         message: n(f.message),
         event_date: n(f.event_date),
@@ -120,6 +123,20 @@ function PublicPage() {
             checked={published}
             onCheckedChange={setPublished}
             aria-label="Publicar informações"
+          />
+        </div>
+        <div className="flex items-center justify-between gap-3 rounded-xl border p-3">
+          <div>
+            <p className="font-medium">Convidado pode alterar a resposta</p>
+            <p className="text-xs text-muted-foreground">
+              Ligado: pode mudar até vocês encerrarem as respostas do convite. Desligado: só
+              responde uma vez.
+            </p>
+          </div>
+          <Switch
+            checked={allowEdit}
+            onCheckedChange={setAllowEdit}
+            aria-label="Convidado pode alterar a resposta"
           />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">

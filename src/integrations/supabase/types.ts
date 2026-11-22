@@ -3010,6 +3010,24 @@ export type Database = {
         }
         Relationships: []
       }
+      wedding_portal_secret: {
+        Row: {
+          created_at: string
+          id: boolean
+          salt: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          salt: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          salt?: string
+        }
+        Relationships: []
+      }
       wedding_priorities: {
         Row: {
           archived_at: string | null
@@ -3063,6 +3081,7 @@ export type Database = {
       wedding_public_content: {
         Row: {
           address: string | null
+          allow_rsvp_edit: boolean
           created_at: string
           created_by: string
           event_date: string | null
@@ -3079,6 +3098,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          allow_rsvp_edit?: boolean
           created_at?: string
           created_by: string
           event_date?: string | null
@@ -3095,6 +3115,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          allow_rsvp_edit?: boolean
           created_at?: string
           created_by?: string
           event_date?: string | null
@@ -3667,6 +3688,7 @@ export type Database = {
         Returns: string
       }
       wedding_hash: { Args: { _v: string }; Returns: string }
+      wedding_invitation_locked: { Args: { _inv: string }; Returns: boolean }
       wedding_issue_invitation_link: {
         Args: { _invitation_id: string }
         Returns: {
