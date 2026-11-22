@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarHeart, CheckCircle2, Heart, MapPin, Plus, Trash2 } from "lucide-react";
 import { Ornament, useWeddingTheme } from "@/components/wedding/shell";
+import { PortalGifts } from "@/components/wedding/portal-gifts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -340,6 +341,8 @@ function PortalView({
             Seus dados são usados apenas pelos noivos para organizar o casamento.
           </p>
         </section>
+
+        <PortalGifts token={token} />
 
         <section className="wed-card space-y-3 p-5">
           <h2 className="wed-display text-xl">Mensagem aos noivos</h2>

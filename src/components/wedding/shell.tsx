@@ -39,12 +39,10 @@ const NAV = [
   { to: "/casamento/fornecedores", label: "Fornecedores", icon: Store },
   { to: "/casamento/convidados", label: "Convidados", icon: Mail },
   { to: "/casamento/checkin", label: "Check-in", icon: ScanLine },
+  { to: "/casamento/presentes", label: "Presentes", icon: Gift },
   { to: "/casamento/configuracoes", label: "Ajustes", icon: Settings },
 ] as const;
-const SOON = [
-  { slug: "presentes", label: "Presentes", icon: Gift },
-  { slug: "cerimonia", label: "Cerimônia", icon: CalendarHeart },
-] as const;
+const SOON = [{ slug: "cerimonia", label: "Cerimônia", icon: CalendarHeart }] as const;
 
 export function WeddingShell({
   title,
@@ -101,7 +99,10 @@ export function WeddingShell({
             {action && <div className="flex flex-wrap gap-2">{action}</div>}
           </div>
           <div className="wed-divider" />
-          <nav aria-label="Áreas do casamento" className="grid grid-cols-4 gap-2 lg:grid-cols-8">
+          <nav
+            aria-label="Áreas do casamento"
+            className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-9"
+          >
             {NAV.map((n) => (
               <Link
                 key={n.to}

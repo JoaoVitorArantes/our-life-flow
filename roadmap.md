@@ -108,11 +108,13 @@
 - [x] Validação final (navegador em 320–1440px, testes, contagens do casal) e publicação da Fase 1
 - [x] Fase 2 — Convidados, portal, RSVP e check-in (validado no preview; NÃO publicado)
   - [x] Validação: typecheck, ESLint, Vitest, E2E individual/grupo, portal anônimo, limite de acompanhantes, check-in duplicado/desfazer, responsividade, RLS/isolamento, contagens do casal
-- [ ] Fase 3 — Presentes e contribuições: escopo final aprovado, aguardando autorização para implementar
+- [x] Fase 3 — Presentes e contribuições: implementada e validada no preview (não publicada)
   - Tipos physical/fund/quota; anonimato couple; reservas pendentes expiram em 15 dias; confirmação manual pelo casal
   - Pix e instruções só informativos, vazios até o casal preencher; portal de presentes desligado até ativação
   - Teto R$ 50.000,00 por reserva; convidado não edita (só cancela pendente e cria outra); portal sem progresso de fundos
   - Isolado em wedding_*; sem Financeiro/recibos/metas/compras/agenda/tarefas; sem checkout/cartão
+  - [ ] Imagens dos presentes no portal (hoje só no painel do casal)
+  - [ ] Revisar acesso de visitantes às tabelas da Fase 1 (protegidas pelas regras de linha, mas com permissão de tabela aberta)
 
 ## Notas fiscais e recibos (Life AI)
 - [x] Enviar foto/PDF de nota ou recibo, IA lê e categoriza, confirmação antes de gravar, lista PRÓPRIA de notas (não entra no Financeiro), exportável em CSV

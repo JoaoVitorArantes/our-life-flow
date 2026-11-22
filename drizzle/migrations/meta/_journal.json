@@ -225,6 +225,27 @@
       "when": 1795365715613,
       "tag": "0031_trash_record_static_sql",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1795366961862,
+      "tag": "0032_wedding_gifts_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1795367045676,
+      "tag": "0033_wedding_gifts_rpcs",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1795367442636,
+      "tag": "0034_wedding_gifts_tighten_grants",
+      "breakpoints": true
     }
   ]
 }

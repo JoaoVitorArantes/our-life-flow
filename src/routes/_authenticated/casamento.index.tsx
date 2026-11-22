@@ -4,6 +4,8 @@ import { Bar, OptionBadge, SectionTitle, Stat, WeddingShell } from "@/components
 import { useWeddingData } from "@/features/wedding/use-wedding";
 import { useGuestsData } from "@/features/wedding/guests";
 import { summarizeGuests } from "@/features/wedding/guest-contracts";
+import { useGiftsData } from "@/features/wedding/gifts";
+import { summarizePledges } from "@/features/wedding/gift-contracts";
 import { formatCurrency } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/casamento/")({
@@ -39,6 +41,8 @@ function daysUntil(d: string | null | undefined) {
 function WeddingOverview() {
   const w = useWeddingData();
   const gd = useGuestsData(w.workspaceId);
+  const gifts = useGiftsData(w.workspaceId);
+  const gs = summarizePledges(gifts.pledges);
   if (w.loading) return <LoadingState />;
   const s = w.summary;
   const days = daysUntil(w.plan?.wedding_date);
@@ -175,20 +179,31 @@ function WeddingOverview() {
         </section>
       </div>
 
-      <section className="grid gap-3 sm:grid-cols-2">
-        <div className="wed-card p-4">
-          <p className="wed-display text-lg">💌 Convidados</p>
-          <p className="text-sm text-muted-foreground">
-            Em preparação — lista, RSVP e portal chegam na próxima fase.
+      <Link
+        to="/casamento/presentes"
+        className="wed-card grid grid-cols-2 gap-3 p-4 transition hover:border-primary/40 sm:grid-cols-4 sm:p-5"
+      >
+        <div>
+          <p className="text-xs text-muted-foreground">🎁 Presentes</p>
+          <p className="wed-display text-2xl tabular-nums">
+            {gifts.gifts.filter((g) => !g.archived_at).length}
           </p>
         </div>
-        <div className="wed-card p-4">
-          <p className="wed-display text-lg">🎁 Presentes</p>
-          <p className="text-sm text-muted-foreground">
-            Em preparação — lista de presentes e cotas numa fase seguinte.
+        <div>
+          <p className="text-xs text-muted-foreground">Aguardando confirmação</p>
+          <p className="wed-display text-2xl tabular-nums">{gs.pending}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Recebidos</p>
+          <p className="wed-display text-2xl tabular-nums">{gs.confirmed}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Portal</p>
+          <p className="wed-display text-2xl">
+            {gifts.settings?.portal_enabled ? "Ligado" : "Desligado"}
           </p>
         </div>
-      </section>
+      </Link>
     </WeddingShell>
   );
 }

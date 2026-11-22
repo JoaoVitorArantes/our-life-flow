@@ -2651,14 +2651,219 @@ export type Database = {
           },
         ]
       }
+      wedding_gift_pledges: {
+        Row: {
+          amount: number | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by_kind: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          expires_at: string
+          gift_id: string
+          id: string
+          invitation_id: string
+          message: string | null
+          state: string
+          units: number | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          amount?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by_kind?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          expires_at: string
+          gift_id: string
+          id?: string
+          invitation_id: string
+          message?: string | null
+          state?: string
+          units?: number | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          amount?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by_kind?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          expires_at?: string
+          gift_id?: string
+          id?: string
+          invitation_id?: string
+          message?: string | null
+          state?: string
+          units?: number | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_gift_pledges_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_gift_pledges_workspace_id_gift_id_fkey"
+            columns: ["workspace_id", "gift_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_gifts"
+            referencedColumns: ["workspace_id", "id"]
+          },
+          {
+            foreignKeyName: "wedding_gift_pledges_workspace_id_invitation_id_fkey"
+            columns: ["workspace_id", "invitation_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_invitations"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_gift_settings: {
+        Row: {
+          anonymity: string
+          created_at: string
+          created_by: string
+          delivery_instructions: string | null
+          instructions: string | null
+          pending_days: number
+          pix_key: string | null
+          pix_key_type: string | null
+          pix_receiver_name: string | null
+          portal_enabled: boolean
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          anonymity?: string
+          created_at?: string
+          created_by: string
+          delivery_instructions?: string | null
+          instructions?: string | null
+          pending_days?: number
+          pix_key?: string | null
+          pix_key_type?: string | null
+          pix_receiver_name?: string | null
+          portal_enabled?: boolean
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          anonymity?: string
+          created_at?: string
+          created_by?: string
+          delivery_instructions?: string | null
+          instructions?: string | null
+          pending_days?: number
+          pix_key?: string | null
+          pix_key_type?: string | null
+          pix_receiver_name?: string | null
+          portal_enabled?: boolean
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_gift_settings_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedding_gifts: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          external_url: string | null
+          goal_amount: number | null
+          id: string
+          image_path: string | null
+          is_visible: boolean
+          kind: string
+          quantity_total: number | null
+          quota_amount: number | null
+          quota_total: number | null
+          sort_order: number
+          suggested_amount: number | null
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          external_url?: string | null
+          goal_amount?: number | null
+          id?: string
+          image_path?: string | null
+          is_visible?: boolean
+          kind: string
+          quantity_total?: number | null
+          quota_amount?: number | null
+          quota_total?: number | null
+          sort_order?: number
+          suggested_amount?: number | null
+          title: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          external_url?: string | null
+          goal_amount?: number | null
+          id?: string
+          image_path?: string | null
+          is_visible?: boolean
+          kind?: string
+          quantity_total?: number | null
+          quota_amount?: number | null
+          quota_total?: number | null
+          sort_order?: number
+          suggested_amount?: number | null
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_gifts_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wedding_guest_audit: {
         Row: {
           action: string
           actor_id: string | null
           created_at: string
+          gift_id: string | null
           guest_id: string | null
           id: string
           invitation_id: string | null
+          pledge_id: string | null
           via_portal: boolean
           workspace_id: string
         }
@@ -2666,9 +2871,11 @@ export type Database = {
           action: string
           actor_id?: string | null
           created_at?: string
+          gift_id?: string | null
           guest_id?: string | null
           id?: string
           invitation_id?: string | null
+          pledge_id?: string | null
           via_portal?: boolean
           workspace_id: string
         }
@@ -2676,9 +2883,11 @@ export type Database = {
           action?: string
           actor_id?: string | null
           created_at?: string
+          gift_id?: string | null
           guest_id?: string | null
           id?: string
           invitation_id?: string | null
+          pledge_id?: string | null
           via_portal?: boolean
           workspace_id?: string
         }
@@ -3762,6 +3971,21 @@ export type Database = {
         Args: { _cred: string; _workspace_id: string }
         Returns: string
       }
+      wedding_gift_cancel: {
+        Args: { _pledge: string; _reason: string }
+        Returns: undefined
+      }
+      wedding_gift_confirm: {
+        Args: { _amount?: number; _pledge: string }
+        Returns: undefined
+      }
+      wedding_gift_refresh: {
+        Args: { _workspace_id: string }
+        Returns: undefined
+      }
+      wedding_gift_reopen: { Args: { _pledge: string }; Returns: undefined }
+      wedding_gift_sweep: { Args: { _ws: string }; Returns: undefined }
+      wedding_gift_used: { Args: { _gift: string }; Returns: number }
       wedding_hash: { Args: { _v: string }; Returns: string }
       wedding_invitation_locked: { Args: { _inv: string }; Returns: boolean }
       wedding_issue_invitation_link: {
@@ -3777,11 +4001,27 @@ export type Database = {
         Returns: boolean
       }
       wedding_portal_get: { Args: { _cred: string }; Returns: Json }
+      wedding_portal_gifts: { Args: { _cred: string }; Returns: Json }
+      wedding_portal_gifts_payload: { Args: { _inv: string }; Returns: Json }
       wedding_portal_message: {
         Args: { _body: string; _cred: string }
         Returns: Json
       }
       wedding_portal_payload: { Args: { _inv: string }; Returns: Json }
+      wedding_portal_pledge: {
+        Args: {
+          _amount: number
+          _cred: string
+          _gift: string
+          _message: string
+          _units: number
+        }
+        Returns: Json
+      }
+      wedding_portal_pledge_cancel: {
+        Args: { _cred: string; _pledge: string }
+        Returns: Json
+      }
       wedding_portal_resolve: { Args: { _cred: string }; Returns: string }
       wedding_portal_rsvp: {
         Args: { _companions: Json; _cred: string; _responses: Json }
