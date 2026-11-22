@@ -10,6 +10,14 @@
  */
 
 @theme inline {
+  --font-display: "Fraunces", Georgia, serif;
+  --color-wed-gold: var(--wed-gold);
+  --color-wed-blush: var(--wed-blush);
+  --color-wed-lavender: var(--wed-lavender);
+  --color-wed-plum: var(--wed-plum);
+  --color-wed-sage: var(--wed-sage);
+  --color-wed-sky: var(--wed-sky);
+  --color-wed-stone: var(--wed-stone);
   --font-sans:
     "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-numeric: "JetBrains Mono", ui-monospace, monospace;
@@ -193,3 +201,78 @@ input, textarea, select, [role="combobox"] {
   scroll-margin-bottom: 7rem;
 }
 html { -webkit-text-size-adjust: 100%; }
+
+/*
+ * Casamento: identidade própria, aplicada só enquanto uma rota /casamento/* está aberta
+ * (classe no <html>, para que diálogos e menus também herdem). Contraste AA nos pares texto/fundo.
+ */
+html.wedding-theme {
+  color-scheme: light;
+  --wed-gold: oklch(0.72 0.1 80);
+  --wed-blush: oklch(0.8 0.08 10);
+  --wed-lavender: oklch(0.8 0.07 300);
+  --wed-plum: oklch(0.42 0.12 345);
+  --wed-sage: oklch(0.8 0.06 150);
+  --wed-sky: oklch(0.82 0.05 230);
+  --wed-stone: oklch(0.86 0.015 70);
+  --background: oklch(0.977 0.012 80);
+  --foreground: oklch(0.27 0.045 345);
+  --surface: oklch(0.993 0.006 80);
+  --elevated: oklch(1 0 0);
+  --card: oklch(0.993 0.006 80);
+  --card-foreground: oklch(0.27 0.045 345);
+  --popover: oklch(0.995 0.005 80);
+  --popover-foreground: oklch(0.27 0.045 345);
+  --primary: oklch(0.52 0.13 355);
+  --primary-foreground: oklch(0.99 0.005 80);
+  --secondary: oklch(0.93 0.03 300);
+  --secondary-foreground: oklch(0.32 0.08 320);
+  --muted: oklch(0.94 0.018 75);
+  --muted-foreground: oklch(0.46 0.04 340);
+  --accent: oklch(0.93 0.035 15);
+  --accent-foreground: oklch(0.32 0.08 345);
+  --border: oklch(0.88 0.03 75);
+  --input: oklch(0.86 0.03 75);
+  --ring: oklch(0.52 0.13 355);
+  --sidebar: oklch(0.965 0.016 75);
+  --sidebar-foreground: oklch(0.3 0.045 345);
+  --sidebar-accent: oklch(0.92 0.035 15);
+  --sidebar-accent-foreground: oklch(0.3 0.08 345);
+  --sidebar-border: oklch(0.88 0.03 75);
+  --sidebar-primary: oklch(0.52 0.13 355);
+  --sidebar-primary-foreground: oklch(0.99 0.005 80);
+  --sidebar-ring: oklch(0.52 0.13 355);
+}
+html.wedding-theme[data-wedding-theme="lavender"] {
+  --background: oklch(0.975 0.012 300);
+  --surface: oklch(0.993 0.006 300);
+  --card: oklch(0.993 0.006 300);
+  --primary: oklch(0.47 0.12 320);
+  --ring: oklch(0.47 0.12 320);
+  --accent: oklch(0.93 0.035 300);
+  --border: oklch(0.89 0.03 300);
+}
+html.wedding-theme[data-wedding-theme="ivory"] {
+  --background: oklch(0.985 0.01 90);
+  --primary: oklch(0.5 0.09 70);
+  --ring: oklch(0.5 0.09 70);
+  --accent: oklch(0.94 0.035 85);
+  --foreground: oklch(0.28 0.03 60);
+}
+html.wedding-theme body { font-family: "Manrope", var(--font-sans); }
+
+@utility wed-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+@utility wed-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 2px oklch(0.4 0.05 345 / 0.06), 0 12px 32px -18px oklch(0.4 0.08 345 / 0.25);
+}
+@utility wed-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-wed-gold), transparent);
+}

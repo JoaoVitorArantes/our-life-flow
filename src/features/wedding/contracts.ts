@@ -7,6 +7,8 @@ import { z } from "zod";
 
 export const WEDDING_AREAS = [
   { key: "house", slug: "casa", label: "Nossa Casa / Enxoval", emoji: "🏡", ready: true },
+  { key: "guests", slug: "convidados", label: "Convidados", emoji: "💌", ready: false },
+  { key: "gifts", slug: "presentes", label: "Presentes", emoji: "🎁", ready: false },
   { key: "ceremony", slug: "cerimonia", label: "Cerimônia", emoji: "💍", ready: false },
   { key: "party", slug: "festa", label: "Festa", emoji: "🥂", ready: false },
   { key: "honeymoon", slug: "lua-de-mel", label: "Lua de Mel", emoji: "✈️", ready: false },
@@ -43,19 +45,86 @@ export const itemInputSchema = z
   .object({
     room_id: z.string().uuid(),
     name: z.string().trim().min(1).max(160),
+    description: z.string().trim().max(2000).nullable(),
     quantity: z.number().int().min(1).max(999),
-    priority: z.enum(["P1", "P2", "P3"]),
+    priority_id: z.string().uuid().nullable(),
+    status_id: z.string().uuid().nullable(),
     price_low: money,
     price_target: money,
     price_high: money,
     price_actual: money,
-    status: z.enum(["to_research", "researched", "planned", "bought"]),
     responsible_user_id: z.string().uuid().nullable(),
     links: z.array(z.string().trim().url().max(500)).max(10),
     notes: z.string().trim().max(2000).nullable(),
+    image_path: z.string().max(300).nullable(),
   })
   .strict();
 export type ItemInput = z.infer<typeof itemInputSchema>;
+
+export const WED_COLORS = ["blush", "lavender", "gold", "plum", "sage", "sky", "stone"] as const;
+export type WedColor = (typeof WED_COLORS)[number];
+export const WED_COLOR_LABEL: Record<WedColor, string> = {
+  blush: "Rosé",
+  lavender: "Lavanda",
+  gold: "Dourado",
+  plum: "Ameixa",
+  sage: "Sálvia",
+  sky: "Céu",
+  stone: "Pedra",
+};
+/** Classes estáticas (Tailwind precisa vê-las literalmente). */
+export const WED_COLOR_CLASS: Record<WedColor, string> = {
+  blush: "bg-wed-blush/35 text-foreground border-wed-blush",
+  lavender: "bg-wed-lavender/35 text-foreground border-wed-lavender",
+  gold: "bg-wed-gold/30 text-foreground border-wed-gold",
+  plum: "bg-wed-plum text-primary-foreground border-wed-plum",
+  sage: "bg-wed-sage/45 text-foreground border-wed-sage",
+  sky: "bg-wed-sky/45 text-foreground border-wed-sky",
+  stone: "bg-wed-stone/60 text-foreground border-wed-stone",
+};
+export function colorClass(c: string | null | undefined) {
+  return WED_COLOR_CLASS[
+    (WED_COLORS as readonly string[]).includes(c ?? "") ? (c as WedColor) : "stone"
+  ];
+}
+
+export const optionInputSchema = z
+  .object({
+    label: z.string().trim().min(1).max(60),
+    description: z.string().trim().max(200).nullable().optional(),
+    color: z.enum(WED_COLORS),
+    counts_as_bought: z.boolean().optional(),
+  })
+  .strict();
+
+export const roomInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    description: z.string().trim().max(500).nullable(),
+    icon: z.string().max(8).nullable(),
+    color: z.enum(WED_COLORS).nullable(),
+  })
+  .strict();
+
+/** Troca a posição de um elemento com o vizinho; devolve os pares (id, nova ordem). */
+export function moveInOrder<T extends { id: string }>(list: readonly T[], id: string, dir: -1 | 1) {
+  const i = list.findIndex((x) => x.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= list.length) return [];
+  const next = [...list];
+  [next[i], next[j]] = [next[j]!, next[i]!];
+  return next.map((x, index) => ({ id: x.id, sort_order: index + 1 }));
+}
+
+/** Cópia de um item para "Duplicar": mesmo conteúdo, sem preço real e com status inicial. */
+export function duplicateInput(item: ItemInput, initialStatusId: string | null): ItemInput {
+  return {
+    ...item,
+    name: `${item.name} (cópia)`.slice(0, 160),
+    price_actual: null,
+    status_id: initialStatusId,
+  };
+}
 
 export const planInputSchema = z
   .object({
@@ -86,9 +155,9 @@ export const DEFAULT_PLAN: PlanInput = {
 type SummaryItem = {
   room_id: string;
   quantity: number;
-  priority: string;
+  priority_id: string | null;
   price_target: number | null;
-  status: string;
+  status_id: string | null;
 };
 
 export type WeddingSummary = {
@@ -100,7 +169,7 @@ export type WeddingSummary = {
   spent: number;
   remainingToSave: number | null;
   savingsTarget: number;
-  byPriority: Record<Priority, { total: number; bought: number }>;
+  byPriority: Record<string, { total: number; bought: number }>;
   byRoom: Record<string, { total: number; bought: number; estimated: number }>;
 };
 
@@ -110,27 +179,22 @@ export function computeSummary(
   contributions: readonly { amount: number }[],
   expenses: readonly { amount: number }[],
   goals: readonly { target_amount: number }[],
+  boughtStatusIds: ReadonlySet<string> = new Set(),
 ): WeddingSummary {
-  const byPriority: WeddingSummary["byPriority"] = {
-    P1: { total: 0, bought: 0 },
-    P2: { total: 0, bought: 0 },
-    P3: { total: 0, bought: 0 },
-  };
+  const byPriority: WeddingSummary["byPriority"] = {};
   const byRoom: WeddingSummary["byRoom"] = {};
   let estimated = 0;
   let itemsWithoutPrice = 0;
   let boughtItems = 0;
   for (const item of items) {
-    const bought = item.status === "bought";
+    const bought = !!item.status_id && boughtStatusIds.has(item.status_id);
     if (bought) boughtItems += 1;
     const value = item.price_target == null ? null : Number(item.price_target) * item.quantity;
     if (value == null) itemsWithoutPrice += 1;
     else estimated += value;
-    const p = byPriority[item.priority as Priority];
-    if (p) {
-      p.total += 1;
-      if (bought) p.bought += 1;
-    }
+    const p = (byPriority[item.priority_id ?? "none"] ??= { total: 0, bought: 0 });
+    p.total += 1;
+    if (bought) p.bought += 1;
     const r = (byRoom[item.room_id] ??= { total: 0, bought: 0, estimated: 0 });
     r.total += 1;
     if (bought) r.bought += 1;

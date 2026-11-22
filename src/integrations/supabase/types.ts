@@ -2531,9 +2531,13 @@ export type Database = {
       }
       wedding_items: {
         Row: {
+          archived_at: string | null
+          archived_by: string | null
           created_at: string
           created_by: string
+          description: string | null
           id: string
+          image_path: string | null
           links: string[]
           name: string
           notes: string | null
@@ -2542,18 +2546,25 @@ export type Database = {
           price_low: number | null
           price_target: number | null
           priority: string
+          priority_id: string | null
           quantity: number
           responsible_user_id: string | null
           room_id: string
+          sort_order: number
           status: string
+          status_id: string | null
           supplier_id: string | null
           updated_at: string
           workspace_id: string
         }
         Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
           created_at?: string
           created_by: string
+          description?: string | null
           id?: string
+          image_path?: string | null
           links?: string[]
           name: string
           notes?: string | null
@@ -2562,18 +2573,25 @@ export type Database = {
           price_low?: number | null
           price_target?: number | null
           priority?: string
+          priority_id?: string | null
           quantity?: number
           responsible_user_id?: string | null
           room_id: string
+          sort_order?: number
           status?: string
+          status_id?: string | null
           supplier_id?: string | null
           updated_at?: string
           workspace_id: string
         }
         Update: {
+          archived_at?: string | null
+          archived_by?: string | null
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: string
+          image_path?: string | null
           links?: string[]
           name?: string
           notes?: string | null
@@ -2582,15 +2600,32 @@ export type Database = {
           price_low?: number | null
           price_target?: number | null
           priority?: string
+          priority_id?: string | null
           quantity?: number
           responsible_user_id?: string | null
           room_id?: string
+          sort_order?: number
           status?: string
+          status_id?: string | null
           supplier_id?: string | null
           updated_at?: string
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "wedding_items_priority_fkey"
+            columns: ["workspace_id", "priority_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_priorities"
+            referencedColumns: ["workspace_id", "id"]
+          },
+          {
+            foreignKeyName: "wedding_items_status_fkey"
+            columns: ["workspace_id", "status_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_statuses"
+            referencedColumns: ["workspace_id", "id"]
+          },
           {
             foreignKeyName: "wedding_items_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -2624,13 +2659,17 @@ export type Database = {
       wedding_plans: {
         Row: {
           bedrooms: number | null
+          couple_names: string | null
+          cover_path: string | null
           created_at: string
           created_by: string
           housing: string
+          message: string | null
           move_in_date: string | null
           notes: string | null
           savings_start: string | null
           standard: string
+          theme: string
           total_budget: number | null
           updated_at: string
           wedding_date: string | null
@@ -2638,13 +2677,17 @@ export type Database = {
         }
         Insert: {
           bedrooms?: number | null
+          couple_names?: string | null
+          cover_path?: string | null
           created_at?: string
           created_by: string
           housing?: string
+          message?: string | null
           move_in_date?: string | null
           notes?: string | null
           savings_start?: string | null
           standard?: string
+          theme?: string
           total_budget?: number | null
           updated_at?: string
           wedding_date?: string | null
@@ -2652,13 +2695,17 @@ export type Database = {
         }
         Update: {
           bedrooms?: number | null
+          couple_names?: string | null
+          cover_path?: string | null
           created_at?: string
           created_by?: string
           housing?: string
+          message?: string | null
           move_in_date?: string | null
           notes?: string | null
           savings_start?: string | null
           standard?: string
+          theme?: string
           total_budget?: number | null
           updated_at?: string
           wedding_date?: string | null
@@ -2674,11 +2721,65 @@ export type Database = {
           },
         ]
       }
-      wedding_rooms: {
+      wedding_priorities: {
         Row: {
-          area: string
+          archived_at: string | null
+          color: string
           created_at: string
           created_by: string
+          description: string | null
+          id: string
+          label: string
+          legacy_key: string | null
+          sort_order: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          color?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          label: string
+          legacy_key?: string | null
+          sort_order?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          color?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          label?: string
+          legacy_key?: string | null
+          sort_order?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_priorities_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedding_rooms: {
+        Row: {
+          archived_at: string | null
+          area: string
+          color: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          icon: string | null
           id: string
           name: string
           sort_order: number
@@ -2686,9 +2787,13 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          archived_at?: string | null
           area?: string
+          color?: string | null
           created_at?: string
           created_by: string
+          description?: string | null
+          icon?: string | null
           id?: string
           name: string
           sort_order?: number
@@ -2696,9 +2801,13 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          archived_at?: string | null
           area?: string
+          color?: string | null
           created_at?: string
           created_by?: string
+          description?: string | null
+          icon?: string | null
           id?: string
           name?: string
           sort_order?: number
@@ -2749,6 +2858,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "wedding_savings_goals_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedding_statuses: {
+        Row: {
+          archived_at: string | null
+          color: string
+          counts_as_bought: boolean
+          created_at: string
+          created_by: string
+          id: string
+          label: string
+          legacy_key: string | null
+          sort_order: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          color?: string
+          counts_as_bought?: boolean
+          created_at?: string
+          created_by: string
+          id?: string
+          label: string
+          legacy_key?: string | null
+          sort_order?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          color?: string
+          counts_as_bought?: boolean
+          created_at?: string
+          created_by?: string
+          id?: string
+          label?: string
+          legacy_key?: string | null
+          sort_order?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_statuses_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -3153,6 +3312,10 @@ export type Database = {
       }
       user_is_workspace_member: {
         Args: { _workspace_id: string }
+        Returns: boolean
+      }
+      wedding_object_allowed: {
+        Args: { _bucket: string; _name: string }
         Returns: boolean
       }
       workspace_can: {

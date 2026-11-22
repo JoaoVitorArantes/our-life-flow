@@ -1,20 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 import { SUGGESTED_INVENTORY, type ItemInput, type PlanInput } from "./contracts";
 
 export type WeddingPlan = Tables<"wedding_plans">;
 export type WeddingRoom = Tables<"wedding_rooms">;
 export type WeddingItem = Tables<"wedding_items">;
+export type WeddingPriority = Tables<"wedding_priorities">;
+export type WeddingStatus = Tables<"wedding_statuses">;
 export type WeddingGoal = Tables<"wedding_savings_goals">;
 export type WeddingContribution = Tables<"wedding_contributions">;
 export type WeddingExpense = Tables<"wedding_expenses">;
 export type WeddingTask = Tables<"wedding_tasks">;
 export type WeddingSupplier = Tables<"wedding_suppliers">;
 
-type ListTable =
+export type ListTable =
   | "wedding_rooms"
   | "wedding_items"
+  | "wedding_priorities"
+  | "wedding_statuses"
   | "wedding_savings_goals"
   | "wedding_contributions"
   | "wedding_expenses"
@@ -54,6 +58,33 @@ export function useWeddingPlan(workspaceId?: string) {
   });
 }
 
+/** URL temporária para imagem privada do módulo (pasta do próprio workspace). */
+export function useWeddingImage(path?: string | null) {
+  return useQuery({
+    queryKey: ["wedding_image", path],
+    enabled: !!path,
+    staleTime: 50 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage.from("wedding").createSignedUrl(path!, 3600);
+      if (error) throw error;
+      return data.signedUrl;
+    },
+  });
+}
+
+export async function uploadWeddingImage(workspaceId: string, file: File) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
+    throw new Error("Use uma imagem JPG, PNG ou WebP.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("A imagem deve ter até 5 MB.");
+  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${workspaceId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("wedding")
+    .upload(path, file, { contentType: file.type });
+  if (error) throw error;
+  return path;
+}
+
 function useInvalidate() {
   const qc = useQueryClient();
   return (...tables: string[]) =>
@@ -63,7 +94,10 @@ function useInvalidate() {
 export function useSavePlan(workspaceId?: string, userId?: string) {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: async (input: PlanInput) => {
+    mutationFn: async (
+      input: PlanInput &
+        Partial<Pick<WeddingPlan, "couple_names" | "message" | "cover_path" | "theme">>,
+    ) => {
       if (!workspaceId || !userId) throw new Error("Sessão ou espaço indisponível.");
       const { error } = await supabase
         .from("wedding_plans")
@@ -86,19 +120,27 @@ export async function createSuggestedInventory(workspaceId: string, userId: stri
         workspace_id: workspaceId,
         created_by: userId,
         name: group.room,
-        sort_order: index,
+        sort_order: index + 1,
       })
       .select("id")
       .single();
     if (error) throw error;
+    // O primeiro cômodo dispara a criação das prioridades/status padrão no banco.
+    const [{ data: prios }, { data: statuses }] = await Promise.all([
+      supabase.from("wedding_priorities").select("id, legacy_key").eq("workspace_id", workspaceId),
+      supabase.from("wedding_statuses").select("id, legacy_key").eq("workspace_id", workspaceId),
+    ]);
+    const initial = statuses?.find((s) => s.legacy_key === "to_research")?.id ?? null;
     const { error: itemsError } = await supabase.from("wedding_items").insert(
-      group.items.map(([name, quantity, priority]) => ({
+      group.items.map(([name, quantity, priority], i) => ({
         workspace_id: workspaceId,
         created_by: userId,
         room_id: room.id,
         name,
         quantity,
-        priority,
+        priority_id: prios?.find((p) => p.legacy_key === priority)?.id ?? null,
+        status_id: initial,
+        sort_order: i + 1,
       })),
     );
     if (itemsError) throw itemsError;
@@ -111,46 +153,104 @@ export function useWeddingMutations(workspaceId?: string, userId?: string) {
     if (!workspaceId || !userId) throw new Error("Sessão ou espaço indisponível.");
     return { workspaceId, userId };
   };
-  const wrap = <A>(tables: string[], fn: (a: A) => Promise<unknown>) =>
+  const wrap = <A, R = unknown>(tables: string[], fn: (a: A) => Promise<R>) =>
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useMutation({ mutationFn: fn, onSuccess: () => invalidate(...tables) });
 
+  const update = async (table: ListTable, id: string, patch: Record<string, unknown>) => {
+    const s = ensure();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from(table) as any)
+      .update(patch)
+      .eq("workspace_id", s.workspaceId)
+      .eq("id", id);
+    if (error) throw error;
+  };
+
   return {
-    seed: wrap(["wedding_rooms", "wedding_items"], async () => {
-      const s = ensure();
-      await createSuggestedInventory(s.workspaceId, s.userId);
-    }),
-    addRoom: wrap(["wedding_rooms"], async (name: string) => {
-      const s = ensure();
-      const { error } = await supabase
-        .from("wedding_rooms")
-        .insert({ workspace_id: s.workspaceId, created_by: s.userId, name, sort_order: 999 });
-      if (error) throw error;
-    }),
+    seed: wrap(
+      ["wedding_rooms", "wedding_items", "wedding_priorities", "wedding_statuses"],
+      async () => {
+        const s = ensure();
+        await createSuggestedInventory(s.workspaceId, s.userId);
+      },
+    ),
+
+    // Cômodos
+    saveRoom: wrap(
+      ["wedding_rooms", "wedding_priorities", "wedding_statuses"],
+      async ({
+        id,
+        input,
+      }: {
+        id?: string | undefined;
+        input: {
+          name: string;
+          description: string | null;
+          icon: string | null;
+          color: string | null;
+        };
+      }) => {
+        const s = ensure();
+        if (id) return update("wedding_rooms", id, input);
+        const { error } = await supabase
+          .from("wedding_rooms")
+          .insert({ ...input, workspace_id: s.workspaceId, created_by: s.userId, sort_order: 999 });
+        if (error) throw error;
+      },
+    ),
+    reorder: wrap(
+      ["wedding_rooms", "wedding_items", "wedding_priorities", "wedding_statuses"],
+      async ({ table, rows }: { table: ListTable; rows: { id: string; sort_order: number }[] }) => {
+        for (const r of rows) await update(table, r.id, { sort_order: r.sort_order });
+      },
+    ),
+    setArchived: wrap(
+      ["wedding_rooms", "wedding_items", "wedding_priorities", "wedding_statuses"],
+      async ({
+        table,
+        id,
+        archived,
+      }: {
+        table: "wedding_rooms" | "wedding_items" | "wedding_priorities" | "wedding_statuses";
+        id: string;
+        archived: boolean;
+      }) => {
+        const s = ensure();
+        const patch: Record<string, unknown> = {
+          archived_at: archived ? new Date().toISOString() : null,
+        };
+        if (table === "wedding_items") patch["archived_by"] = archived ? s.userId : null;
+        await update(table, id, patch);
+      },
+    ),
+
+    // Itens
     saveItem: wrap(
       ["wedding_items"],
       async ({ id, input }: { id?: string | undefined; input: ItemInput }) => {
         const s = ensure();
-        const res = id
-          ? await supabase
-              .from("wedding_items")
-              .update(input)
-              .eq("workspace_id", s.workspaceId)
-              .eq("id", id)
-          : await supabase
-              .from("wedding_items")
-              .insert({ ...input, workspace_id: s.workspaceId, created_by: s.userId });
-        if (res.error) throw res.error;
+        if (id) return update("wedding_items", id, input as TablesUpdate<"wedding_items">);
+        const { data, error } = await supabase
+          .from("wedding_items")
+          .insert({ ...input, workspace_id: s.workspaceId, created_by: s.userId, sort_order: 999 })
+          .select("id")
+          .single();
+        if (error) throw error;
+        return data.id;
       },
     ),
     deleteRow: wrap(
       [
         "wedding_items",
+        "wedding_rooms",
         "wedding_expenses",
         "wedding_contributions",
         "wedding_tasks",
         "wedding_suppliers",
         "wedding_savings_goals",
+        "wedding_priorities",
+        "wedding_statuses",
       ],
       async ({ table, id }: { table: ListTable; id: string }) => {
         const s = ensure();
@@ -162,7 +262,7 @@ export function useWeddingMutations(workspaceId?: string, userId?: string) {
         if (error) throw error;
       },
     ),
-    /** Compra: despesa interna do módulo + item marcado como comprado. Nada vai ao Financeiro geral. */
+    /** Compra: despesa interna do módulo + item no status de compra. Nada vai ao Financeiro geral. */
     buyItem: wrap(
       ["wedding_items", "wedding_expenses"],
       async (a: {
@@ -171,6 +271,7 @@ export function useWeddingMutations(workspaceId?: string, userId?: string) {
         paidBy: string;
         split: "equal" | "payer";
         date: string;
+        boughtStatusId: string | null;
       }) => {
         const s = ensure();
         const { error } = await supabase.from("wedding_expenses").insert({
@@ -184,14 +285,39 @@ export function useWeddingMutations(workspaceId?: string, userId?: string) {
           spent_on: a.date,
         });
         if (error) throw error;
-        const { error: e2 } = await supabase
-          .from("wedding_items")
-          .update({ status: "bought", price_actual: a.amount })
-          .eq("workspace_id", s.workspaceId)
-          .eq("id", a.item.id);
-        if (e2) throw e2;
+        await update("wedding_items", a.item.id, {
+          status_id: a.boughtStatusId,
+          price_actual: a.amount,
+        });
       },
     ),
+
+    // Prioridades e status
+    saveOption: wrap(
+      ["wedding_priorities", "wedding_statuses"],
+      async ({
+        table,
+        id,
+        input,
+      }: {
+        table: "wedding_priorities" | "wedding_statuses";
+        id?: string | undefined;
+        input: Record<string, unknown>;
+      }) => {
+        const s = ensure();
+        if (id) return update(table, id, input);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase.from(table) as any).insert({
+          ...input,
+          workspace_id: s.workspaceId,
+          created_by: s.userId,
+          sort_order: 999,
+        });
+        if (error) throw error;
+      },
+    ),
+
+    // Economia, despesas, preparativos, fornecedores
     addExpense: wrap(
       ["wedding_expenses"],
       async (a: {
@@ -265,15 +391,8 @@ export function useWeddingMutations(workspaceId?: string, userId?: string) {
     ),
     setTaskStatus: wrap(
       ["wedding_tasks"],
-      async (a: { id: string; status: "todo" | "doing" | "done" }) => {
-        const s = ensure();
-        const { error } = await supabase
-          .from("wedding_tasks")
-          .update({ status: a.status })
-          .eq("workspace_id", s.workspaceId)
-          .eq("id", a.id);
-        if (error) throw error;
-      },
+      async (a: { id: string; status: "todo" | "doing" | "done" }) =>
+        update("wedding_tasks", a.id, { status: a.status }),
     ),
     addSupplier: wrap(
       ["wedding_suppliers"],
@@ -292,3 +411,4 @@ export function useWeddingMutations(workspaceId?: string, userId?: string) {
     ),
   };
 }
+export type WeddingMutations = ReturnType<typeof useWeddingMutations>;

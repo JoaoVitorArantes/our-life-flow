@@ -59,7 +59,10 @@ export const NAV_GROUPS: NavGroup[] = [
         emoji: "💍",
         children: [
           { to: "/casamento/casa", label: "Nossa Casa / Enxoval", icon: Home, emoji: "🏡" },
-          { to: "/casamento/configuracoes", label: "Configurações", icon: Settings, emoji: "⚙️" },
+          { to: "/casamento/orcamento", label: "Orçamento", icon: Wallet, emoji: "💰" },
+          { to: "/casamento/preparativos", label: "Preparativos", icon: CheckSquare, emoji: "✅" },
+          { to: "/casamento/fornecedores", label: "Fornecedores", icon: ShoppingBag, emoji: "🛍️" },
+          { to: "/casamento/configuracoes", label: "Ajustes", icon: Settings, emoji: "⚙️" },
         ],
       },
     ],

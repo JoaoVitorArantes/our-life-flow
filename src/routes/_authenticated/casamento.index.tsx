@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Panel, PanelTitle } from "@/components/common/page";
 import { LoadingState } from "@/components/common/states";
-import { WeddingShell, Stat } from "@/components/wedding/shell";
-import { WEDDING_AREAS } from "@/features/wedding/contracts";
+import { Bar, OptionBadge, SectionTitle, Stat, WeddingShell } from "@/components/wedding/shell";
 import { useWeddingData } from "@/features/wedding/use-wedding";
 import { formatCurrency } from "@/lib/format";
 
@@ -12,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/casamento/")({
       { title: "Casamento — Life OS" },
       {
         name: "description",
-        content: "Planejamento do casamento do casal: casa, economia e preparativos.",
+        content: "Painel do casamento do casal: casa, orçamento e preparativos.",
       },
       { property: "og:title", content: "Casamento — Life OS" },
       { property: "og:description", content: "O projeto do casal, em um só lugar." },
@@ -21,66 +19,169 @@ export const Route = createFileRoute("/_authenticated/casamento/")({
   component: WeddingOverview,
 });
 
-function fmtDate(d: string | null | undefined) {
-  return d ? new Date(`${d}T12:00:00`).toLocaleDateString("pt-BR") : "Não informada";
+const fmtDate = (d: string | null | undefined) =>
+  d
+    ? new Date(`${d}T12:00:00`).toLocaleDateString("pt-BR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
+function daysUntil(d: string | null | undefined) {
+  if (!d) return null;
+  const diff = Math.ceil((new Date(`${d}T12:00:00`).getTime() - Date.now()) / 86_400_000);
+  return diff;
 }
 
 function WeddingOverview() {
   const w = useWeddingData();
   if (w.loading) return <LoadingState />;
   const s = w.summary;
+  const days = daysUntil(w.plan?.wedding_date);
+  const open = w.tasks.filter((t) => t.status !== "done");
+  const next = [...open]
+    .sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"))
+    .slice(0, 5);
+  const progress = s.totalItems ? Math.round((s.boughtItems / s.totalItems) * 100) : 0;
   return (
     <WeddingShell
       title="Nosso casamento"
-      subtitle="Área independente do casal — dados próprios, separados do Financeiro, Metas e Tarefas gerais."
+      subtitle={w.plan?.message ?? "Área do casal, separada dos módulos gerais do Life OS."}
     >
+      <section className="wed-card grid gap-4 p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-6">
+        <div className="text-center sm:text-left">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Data do casamento
+          </p>
+          <p className="wed-display mt-1 text-3xl">
+            {fmtDate(w.plan?.wedding_date) ?? "Não informada"}
+          </p>
+          {days != null && days >= 0 && (
+            <p className="mt-1 text-sm text-primary">
+              {days === 0 ? "É hoje!" : `Faltam ${days} dias`}
+            </p>
+          )}
+          {!w.plan?.wedding_date && (
+            <Link
+              to="/casamento/configuracoes"
+              className="mt-1 inline-block text-sm text-primary underline-offset-4 hover:underline"
+            >
+              Definir em Ajustes
+            </Link>
+          )}
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Enxoval</span>
+            <span className="tabular-nums text-muted-foreground">{progress}%</span>
+          </div>
+          <Bar value={progress} />
+          <p className="text-xs text-muted-foreground">
+            Mudança: {fmtDate(w.plan?.move_in_date) ?? "não informada"}
+          </p>
+        </div>
+      </section>
+
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Data do casamento" value={fmtDate(w.plan?.wedding_date)} />
-        <Stat label="Mudança" value={fmtDate(w.plan?.move_in_date)} />
         <Stat
-          label="Orçamento total"
-          value={
-            w.plan?.total_budget != null
-              ? formatCurrency(Number(w.plan.total_budget))
-              : "Não informado"
-          }
+          label="Itens comprados"
+          value={`${s.boughtItems}/${s.totalItems}`}
+          hint={s.itemsWithoutPrice ? `${s.itemsWithoutPrice} sem preço-meta` : undefined}
         />
-        <Stat label="Economia desde" value={fmtDate(w.plan?.savings_start ?? "2027-01-01")} />
-        <Stat label="Acumulado" value={formatCurrency(s.saved)} />
-        <Stat label="Gasto" value={formatCurrency(s.spent)} />
         <Stat
           label="Casa estimada"
-          value={formatCurrency(s.estimated)}
-          hint={
-            s.itemsWithoutPrice
-              ? `${s.itemsWithoutPrice} itens sem preço — total parcial`
-              : undefined
-          }
+          value={s.estimated ? formatCurrency(s.estimated) : "—"}
+          hint={s.itemsWithoutPrice && s.estimated ? "Total parcial" : undefined}
         />
         <Stat
-          label="Pendências"
-          value={String(w.tasks.filter((t) => t.status !== "done").length)}
+          label="Guardado"
+          value={formatCurrency(s.saved)}
+          hint={s.savingsTarget ? `Meta ${formatCurrency(s.savingsTarget)}` : "Sem meta definida"}
+        />
+        <Stat
+          label="Gasto"
+          value={formatCurrency(s.spent)}
+          hint={
+            w.plan?.total_budget != null
+              ? `Orçamento ${formatCurrency(Number(w.plan.total_budget))}`
+              : "Orçamento não informado"
+          }
         />
       </div>
-      <Panel>
-        <PanelTitle>Áreas</PanelTitle>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {WEDDING_AREAS.map((a) => (
-            <Link
-              key={a.key}
-              to="/casamento/$area"
-              params={{ area: a.slug }}
-              className="rounded-2xl border border-border bg-background/40 p-4 transition hover:border-primary/50"
-            >
-              <p className="text-2xl">{a.emoji}</p>
-              <p className="mt-2 font-medium">{a.label}</p>
-              <p className="text-xs text-muted-foreground">
-                {a.ready ? `${s.totalItems} itens · ${s.boughtItems} comprados` : "Em breve"}
-              </p>
-            </Link>
-          ))}
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="wed-card p-4 sm:p-5">
+          <SectionTitle
+            action={
+              <Link to="/casamento/casa" className="text-sm text-primary hover:underline">
+                Ver casa
+              </Link>
+            }
+          >
+            Por prioridade
+          </SectionTitle>
+          <ul className="space-y-3">
+            {w.priorities.map((p) => {
+              const d = s.byPriority[p.id] ?? { total: 0, bought: 0 };
+              return (
+                <li key={p.id} className="space-y-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <OptionBadge label={p.label} color={p.color} />
+                    <span className="text-sm tabular-nums text-muted-foreground">
+                      {d.bought}/{d.total}
+                    </span>
+                  </div>
+                  <Bar value={d.total ? (d.bought / d.total) * 100 : 0} />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+        <section className="wed-card p-4 sm:p-5">
+          <SectionTitle
+            action={
+              <Link to="/casamento/preparativos" className="text-sm text-primary hover:underline">
+                Ver todos
+              </Link>
+            }
+          >
+            Próximos preparativos
+          </SectionTitle>
+          {next.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum preparativo em aberto.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {next.map((t) => (
+                <li key={t.id} className="py-2.5">
+                  <p className="break-words font-medium">{t.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t.due_date
+                      ? new Date(`${t.due_date}T12:00:00`).toLocaleDateString("pt-BR")
+                      : "sem prazo"}{" "}
+                    · {w.personName(t.responsible_user_id)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <section className="grid gap-3 sm:grid-cols-2">
+        <div className="wed-card p-4">
+          <p className="wed-display text-lg">💌 Convidados</p>
+          <p className="text-sm text-muted-foreground">
+            Em preparação — lista, RSVP e portal chegam na próxima fase.
+          </p>
         </div>
-      </Panel>
+        <div className="wed-card p-4">
+          <p className="wed-display text-lg">🎁 Presentes</p>
+          <p className="text-sm text-muted-foreground">
+            Em preparação — lista de presentes e cotas numa fase seguinte.
+          </p>
+        </div>
+      </section>
     </WeddingShell>
   );
 }

@@ -148,6 +148,27 @@
       "when": 1795301733903,
       "tag": "0020_wedding_module",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795358592278,
+      "tag": "0021_wedding_customization",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795358611645,
+      "tag": "0022_wedding_storage_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795358631137,
+      "tag": "0023_wedding_storage_policies_safe",
+      "breakpoints": true
     }
   ]
 }

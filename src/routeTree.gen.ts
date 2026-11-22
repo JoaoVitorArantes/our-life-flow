@@ -30,8 +30,10 @@ import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticate
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as AuthenticatedCasamentoIndexRouteImport } from './routes/_authenticated/casamento.index'
 import { Route as AuthenticatedCasamentoAreaRouteImport } from './routes/_authenticated/casamento.$area'
-import { Route as AuthenticatedCasamentoCasaRouteImport } from './routes/_authenticated/casamento.casa'
 import { Route as AuthenticatedCasamentoConfiguracoesRouteImport } from './routes/_authenticated/casamento.configuracoes'
+import { Route as AuthenticatedCasamentoFornecedoresRouteImport } from './routes/_authenticated/casamento.fornecedores'
+import { Route as AuthenticatedCasamentoOrcamentoRouteImport } from './routes/_authenticated/casamento.orcamento'
+import { Route as AuthenticatedCasamentoPreparativosRouteImport } from './routes/_authenticated/casamento.preparativos'
 import { Route as AuthenticatedConfiguracoesIndexRouteImport } from './routes/_authenticated/configuracoes.index'
 import { Route as AuthenticatedConfiguracoesAtividadeRouteImport } from './routes/_authenticated/configuracoes.atividade'
 import { Route as AuthenticatedConfiguracoesCategoriasRouteImport } from './routes/_authenticated/configuracoes.categorias'
@@ -49,6 +51,9 @@ import { Route as AuthenticatedFaculdadeOwnerIdRouteImport } from './routes/_aut
 import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox.index'
 import { Route as AuthenticatedInboxThreadIdRouteImport } from './routes/_authenticated/inbox.$threadId'
 import { Route as AuthenticatedMetasIdRouteImport } from './routes/_authenticated/metas.$id'
+import { Route as AuthenticatedCasamentoCasaIndexRouteImport } from './routes/_authenticated/casamento.casa.index'
+import { Route as AuthenticatedCasamentoCasaRoomIdRouteImport } from './routes/_authenticated/casamento.casa.$roomId'
+import { Route as AuthenticatedCasamentoCasaItemItemIdRouteImport } from './routes/_authenticated/casamento.casa.item.$itemId'
 import { Route as ApiPublicOauthGoogleCalendarReturnRouteImport } from './routes/api/public/oauth/google-calendar.return'
 
 const IndexRoute = IndexRouteImport.update({
@@ -158,16 +163,28 @@ const AuthenticatedCasamentoAreaRoute =
     path: '/$area',
     getParentRoute: () => AuthenticatedCasamentoRoute,
   } as any)
-const AuthenticatedCasamentoCasaRoute =
-  AuthenticatedCasamentoCasaRouteImport.update({
-    id: '/casa',
-    path: '/casa',
-    getParentRoute: () => AuthenticatedCasamentoRoute,
-  } as any)
 const AuthenticatedCasamentoConfiguracoesRoute =
   AuthenticatedCasamentoConfiguracoesRouteImport.update({
     id: '/configuracoes',
     path: '/configuracoes',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoFornecedoresRoute =
+  AuthenticatedCasamentoFornecedoresRouteImport.update({
+    id: '/fornecedores',
+    path: '/fornecedores',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoOrcamentoRoute =
+  AuthenticatedCasamentoOrcamentoRouteImport.update({
+    id: '/orcamento',
+    path: '/orcamento',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoPreparativosRoute =
+  AuthenticatedCasamentoPreparativosRouteImport.update({
+    id: '/preparativos',
+    path: '/preparativos',
     getParentRoute: () => AuthenticatedCasamentoRoute,
   } as any)
 const AuthenticatedConfiguracoesIndexRoute =
@@ -270,6 +287,24 @@ const AuthenticatedMetasIdRoute = AuthenticatedMetasIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMetasRoute,
 } as any)
+const AuthenticatedCasamentoCasaIndexRoute =
+  AuthenticatedCasamentoCasaIndexRouteImport.update({
+    id: '/casa/',
+    path: '/casa/',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoCasaRoomIdRoute =
+  AuthenticatedCasamentoCasaRoomIdRouteImport.update({
+    id: '/casa/$roomId',
+    path: '/casa/$roomId',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
+const AuthenticatedCasamentoCasaItemItemIdRoute =
+  AuthenticatedCasamentoCasaItemItemIdRouteImport.update({
+    id: '/casa/item/$itemId',
+    path: '/casa/item/$itemId',
+    getParentRoute: () => AuthenticatedCasamentoRoute,
+  } as any)
 const ApiPublicOauthGoogleCalendarReturnRoute =
   ApiPublicOauthGoogleCalendarReturnRouteImport.update({
     id: '/api/public/oauth/google-calendar/return',
@@ -297,8 +332,10 @@ export interface FileRoutesByFullPath {
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
   '/casamento/$area': typeof AuthenticatedCasamentoAreaRoute
-  '/casamento/casa': typeof AuthenticatedCasamentoCasaRoute
   '/casamento/configuracoes': typeof AuthenticatedCasamentoConfiguracoesRoute
+  '/casamento/fornecedores': typeof AuthenticatedCasamentoFornecedoresRoute
+  '/casamento/orcamento': typeof AuthenticatedCasamentoOrcamentoRoute
+  '/casamento/preparativos': typeof AuthenticatedCasamentoPreparativosRoute
   '/configuracoes/atividade': typeof AuthenticatedConfiguracoesAtividadeRoute
   '/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/configuracoes/dados': typeof AuthenticatedConfiguracoesDadosRoute
@@ -317,6 +354,9 @@ export interface FileRoutesByFullPath {
   '/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos/': typeof AuthenticatedContextosIndexRoute
   '/inbox/': typeof AuthenticatedInboxIndexRoute
+  '/casamento/casa/$roomId': typeof AuthenticatedCasamentoCasaRoomIdRoute
+  '/casamento/casa/': typeof AuthenticatedCasamentoCasaIndexRoute
+  '/casamento/casa/item/$itemId': typeof AuthenticatedCasamentoCasaItemItemIdRoute
   '/api/public/oauth/google-calendar/return': typeof ApiPublicOauthGoogleCalendarReturnRoute
 }
 export interface FileRoutesByTo {
@@ -337,8 +377,10 @@ export interface FileRoutesByTo {
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
   '/casamento/$area': typeof AuthenticatedCasamentoAreaRoute
-  '/casamento/casa': typeof AuthenticatedCasamentoCasaRoute
   '/casamento/configuracoes': typeof AuthenticatedCasamentoConfiguracoesRoute
+  '/casamento/fornecedores': typeof AuthenticatedCasamentoFornecedoresRoute
+  '/casamento/orcamento': typeof AuthenticatedCasamentoOrcamentoRoute
+  '/casamento/preparativos': typeof AuthenticatedCasamentoPreparativosRoute
   '/configuracoes/atividade': typeof AuthenticatedConfiguracoesAtividadeRoute
   '/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/configuracoes/dados': typeof AuthenticatedConfiguracoesDadosRoute
@@ -357,6 +399,9 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesIndexRoute
   '/contextos': typeof AuthenticatedContextosIndexRoute
   '/inbox': typeof AuthenticatedInboxIndexRoute
+  '/casamento/casa/$roomId': typeof AuthenticatedCasamentoCasaRoomIdRoute
+  '/casamento/casa': typeof AuthenticatedCasamentoCasaIndexRoute
+  '/casamento/casa/item/$itemId': typeof AuthenticatedCasamentoCasaItemItemIdRoute
   '/api/public/oauth/google-calendar/return': typeof ApiPublicOauthGoogleCalendarReturnRoute
 }
 export interface FileRoutesById {
@@ -381,8 +426,10 @@ export interface FileRoutesById {
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
   '/_authenticated/casamento/$area': typeof AuthenticatedCasamentoAreaRoute
-  '/_authenticated/casamento/casa': typeof AuthenticatedCasamentoCasaRoute
   '/_authenticated/casamento/configuracoes': typeof AuthenticatedCasamentoConfiguracoesRoute
+  '/_authenticated/casamento/fornecedores': typeof AuthenticatedCasamentoFornecedoresRoute
+  '/_authenticated/casamento/orcamento': typeof AuthenticatedCasamentoOrcamentoRoute
+  '/_authenticated/casamento/preparativos': typeof AuthenticatedCasamentoPreparativosRoute
   '/_authenticated/configuracoes/atividade': typeof AuthenticatedConfiguracoesAtividadeRoute
   '/_authenticated/configuracoes/categorias': typeof AuthenticatedConfiguracoesCategoriasRoute
   '/_authenticated/configuracoes/dados': typeof AuthenticatedConfiguracoesDadosRoute
@@ -401,6 +448,9 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/_authenticated/contextos/': typeof AuthenticatedContextosIndexRoute
   '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
+  '/_authenticated/casamento/casa/$roomId': typeof AuthenticatedCasamentoCasaRoomIdRoute
+  '/_authenticated/casamento/casa/': typeof AuthenticatedCasamentoCasaIndexRoute
+  '/_authenticated/casamento/casa/item/$itemId': typeof AuthenticatedCasamentoCasaItemItemIdRoute
   '/api/public/oauth/google-calendar/return': typeof ApiPublicOauthGoogleCalendarReturnRoute
 }
 export interface FileRouteTypes {
@@ -425,8 +475,10 @@ export interface FileRouteTypes {
     | '/tarefas'
     | '/api/agent'
     | '/casamento/$area'
-    | '/casamento/casa'
     | '/casamento/configuracoes'
+    | '/casamento/fornecedores'
+    | '/casamento/orcamento'
+    | '/casamento/preparativos'
     | '/configuracoes/atividade'
     | '/configuracoes/categorias'
     | '/configuracoes/dados'
@@ -445,6 +497,9 @@ export interface FileRouteTypes {
     | '/configuracoes/'
     | '/contextos/'
     | '/inbox/'
+    | '/casamento/casa/$roomId'
+    | '/casamento/casa/'
+    | '/casamento/casa/item/$itemId'
     | '/api/public/oauth/google-calendar/return'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -465,8 +520,10 @@ export interface FileRouteTypes {
     | '/tarefas'
     | '/api/agent'
     | '/casamento/$area'
-    | '/casamento/casa'
     | '/casamento/configuracoes'
+    | '/casamento/fornecedores'
+    | '/casamento/orcamento'
+    | '/casamento/preparativos'
     | '/configuracoes/atividade'
     | '/configuracoes/categorias'
     | '/configuracoes/dados'
@@ -485,6 +542,9 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/contextos'
     | '/inbox'
+    | '/casamento/casa/$roomId'
+    | '/casamento/casa'
+    | '/casamento/casa/item/$itemId'
     | '/api/public/oauth/google-calendar/return'
   id:
     | '__root__'
@@ -508,8 +568,10 @@ export interface FileRouteTypes {
     | '/_authenticated/tarefas'
     | '/api/agent'
     | '/_authenticated/casamento/$area'
-    | '/_authenticated/casamento/casa'
     | '/_authenticated/casamento/configuracoes'
+    | '/_authenticated/casamento/fornecedores'
+    | '/_authenticated/casamento/orcamento'
+    | '/_authenticated/casamento/preparativos'
     | '/_authenticated/configuracoes/atividade'
     | '/_authenticated/configuracoes/categorias'
     | '/_authenticated/configuracoes/dados'
@@ -528,6 +590,9 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes/'
     | '/_authenticated/contextos/'
     | '/_authenticated/inbox/'
+    | '/_authenticated/casamento/casa/$roomId'
+    | '/_authenticated/casamento/casa/'
+    | '/_authenticated/casamento/casa/item/$itemId'
     | '/api/public/oauth/google-calendar/return'
   fileRoutesById: FileRoutesById
 }
@@ -689,18 +754,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCasamentoAreaRouteImport
       parentRoute: typeof AuthenticatedCasamentoRoute
     }
-    '/_authenticated/casamento/casa': {
-      id: '/_authenticated/casamento/casa'
-      path: '/casa'
-      fullPath: '/casamento/casa'
-      preLoaderRoute: typeof AuthenticatedCasamentoCasaRouteImport
-      parentRoute: typeof AuthenticatedCasamentoRoute
-    }
     '/_authenticated/casamento/configuracoes': {
       id: '/_authenticated/casamento/configuracoes'
       path: '/configuracoes'
       fullPath: '/casamento/configuracoes'
       preLoaderRoute: typeof AuthenticatedCasamentoConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/fornecedores': {
+      id: '/_authenticated/casamento/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/casamento/fornecedores'
+      preLoaderRoute: typeof AuthenticatedCasamentoFornecedoresRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/orcamento': {
+      id: '/_authenticated/casamento/orcamento'
+      path: '/orcamento'
+      fullPath: '/casamento/orcamento'
+      preLoaderRoute: typeof AuthenticatedCasamentoOrcamentoRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/preparativos': {
+      id: '/_authenticated/casamento/preparativos'
+      path: '/preparativos'
+      fullPath: '/casamento/preparativos'
+      preLoaderRoute: typeof AuthenticatedCasamentoPreparativosRouteImport
       parentRoute: typeof AuthenticatedCasamentoRoute
     }
     '/_authenticated/configuracoes/': {
@@ -822,6 +901,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMetasIdRouteImport
       parentRoute: typeof AuthenticatedMetasRoute
     }
+    '/_authenticated/casamento/casa/': {
+      id: '/_authenticated/casamento/casa/'
+      path: '/casa'
+      fullPath: '/casamento/casa/'
+      preLoaderRoute: typeof AuthenticatedCasamentoCasaIndexRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/casa/$roomId': {
+      id: '/_authenticated/casamento/casa/$roomId'
+      path: '/casa/$roomId'
+      fullPath: '/casamento/casa/$roomId'
+      preLoaderRoute: typeof AuthenticatedCasamentoCasaRoomIdRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
+    '/_authenticated/casamento/casa/item/$itemId': {
+      id: '/_authenticated/casamento/casa/item/$itemId'
+      path: '/casa/item/$itemId'
+      fullPath: '/casamento/casa/item/$itemId'
+      preLoaderRoute: typeof AuthenticatedCasamentoCasaItemItemIdRouteImport
+      parentRoute: typeof AuthenticatedCasamentoRoute
+    }
     '/api/public/oauth/google-calendar/return': {
       id: '/api/public/oauth/google-calendar/return'
       path: '/api/public/oauth/google-calendar/return'
@@ -834,18 +934,32 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedCasamentoRouteChildren {
   AuthenticatedCasamentoAreaRoute: typeof AuthenticatedCasamentoAreaRoute
-  AuthenticatedCasamentoCasaRoute: typeof AuthenticatedCasamentoCasaRoute
   AuthenticatedCasamentoConfiguracoesRoute: typeof AuthenticatedCasamentoConfiguracoesRoute
+  AuthenticatedCasamentoFornecedoresRoute: typeof AuthenticatedCasamentoFornecedoresRoute
+  AuthenticatedCasamentoOrcamentoRoute: typeof AuthenticatedCasamentoOrcamentoRoute
+  AuthenticatedCasamentoPreparativosRoute: typeof AuthenticatedCasamentoPreparativosRoute
   AuthenticatedCasamentoIndexRoute: typeof AuthenticatedCasamentoIndexRoute
+  AuthenticatedCasamentoCasaRoomIdRoute: typeof AuthenticatedCasamentoCasaRoomIdRoute
+  AuthenticatedCasamentoCasaIndexRoute: typeof AuthenticatedCasamentoCasaIndexRoute
+  AuthenticatedCasamentoCasaItemItemIdRoute: typeof AuthenticatedCasamentoCasaItemItemIdRoute
 }
 
 const AuthenticatedCasamentoRouteChildren: AuthenticatedCasamentoRouteChildren =
   {
     AuthenticatedCasamentoAreaRoute: AuthenticatedCasamentoAreaRoute,
-    AuthenticatedCasamentoCasaRoute: AuthenticatedCasamentoCasaRoute,
     AuthenticatedCasamentoConfiguracoesRoute:
       AuthenticatedCasamentoConfiguracoesRoute,
+    AuthenticatedCasamentoFornecedoresRoute:
+      AuthenticatedCasamentoFornecedoresRoute,
+    AuthenticatedCasamentoOrcamentoRoute: AuthenticatedCasamentoOrcamentoRoute,
+    AuthenticatedCasamentoPreparativosRoute:
+      AuthenticatedCasamentoPreparativosRoute,
     AuthenticatedCasamentoIndexRoute: AuthenticatedCasamentoIndexRoute,
+    AuthenticatedCasamentoCasaRoomIdRoute:
+      AuthenticatedCasamentoCasaRoomIdRoute,
+    AuthenticatedCasamentoCasaIndexRoute: AuthenticatedCasamentoCasaIndexRoute,
+    AuthenticatedCasamentoCasaItemItemIdRoute:
+      AuthenticatedCasamentoCasaItemItemIdRoute,
   }
 
 const AuthenticatedCasamentoRouteWithChildren =
