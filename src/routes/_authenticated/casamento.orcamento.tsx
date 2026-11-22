@@ -79,7 +79,7 @@ function Budget() {
 
       <section className="wed-card space-y-3 p-4 sm:p-5">
         <SectionTitle>Registrar aporte</SectionTitle>
-        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]">
           <Choice value={who} onChange={setWho} options={w.people.map((x) => [x.id, x.name])} />
           <Input
             aria-label="Valor do aporte"
@@ -129,7 +129,7 @@ function Budget() {
             return (
               <li
                 key={mo}
-                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2.5 text-sm sm:grid-cols-[10rem_9rem_1fr]"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-2.5 text-sm lg:grid-cols-[10rem_9rem_1fr]"
               >
                 <span className="capitalize">{label}</span>
                 <Input
@@ -148,7 +148,7 @@ function Budget() {
                       );
                   }}
                 />
-                <span className="col-span-2 text-muted-foreground sm:col-span-1">
+                <span className="col-span-2 text-muted-foreground lg:col-span-1">
                   Realizado {formatCurrency(byMonth(mo))}
                 </span>
               </li>
@@ -159,7 +159,7 @@ function Budget() {
 
       <section className="wed-card space-y-3 p-4 sm:p-5">
         <SectionTitle>Nova despesa</SectionTitle>
-        <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_auto]">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_auto]">
           <Input
             aria-label="Descrição da despesa"
             className="h-11"
