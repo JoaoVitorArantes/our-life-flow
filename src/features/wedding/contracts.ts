@@ -7,7 +7,7 @@ import { z } from "zod";
 
 export const WEDDING_AREAS = [
   { key: "house", slug: "casa", label: "Nossa Casa / Enxoval", emoji: "🏡", ready: true },
-  { key: "guests", slug: "convidados", label: "Convidados", emoji: "💌", ready: false },
+  { key: "guests", slug: "convidados", label: "Convidados", emoji: "💌", ready: true },
   { key: "gifts", slug: "presentes", label: "Presentes", emoji: "🎁", ready: false },
   { key: "ceremony", slug: "cerimonia", label: "Cerimônia", emoji: "💍", ready: false },
   { key: "party", slug: "festa", label: "Festa", emoji: "🥂", ready: false },

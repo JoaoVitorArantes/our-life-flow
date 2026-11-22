@@ -19,3 +19,20 @@ export function BackToHouse({ roomId, label }: { roomId?: string | undefined; la
     </Link>
   );
 }
+
+export function BackLink({
+  to,
+  label,
+}: {
+  to: "/casamento/convidados" | "/casamento";
+  label: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="inline-flex min-h-9 items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+    >
+      <ChevronLeft className="size-4" aria-hidden /> <span className="truncate">{label}</span>
+    </Link>
+  );
+}

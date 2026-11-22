@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { LoadingState } from "@/components/common/states";
 import { Bar, OptionBadge, SectionTitle, Stat, WeddingShell } from "@/components/wedding/shell";
 import { useWeddingData } from "@/features/wedding/use-wedding";
+import { useGuestsData } from "@/features/wedding/guests";
+import { summarizeGuests } from "@/features/wedding/guest-contracts";
 import { formatCurrency } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/casamento/")({
@@ -36,6 +38,7 @@ function daysUntil(d: string | null | undefined) {
 
 function WeddingOverview() {
   const w = useWeddingData();
+  const gd = useGuestsData(w.workspaceId);
   if (w.loading) return <LoadingState />;
   const s = w.summary;
   const days = daysUntil(w.plan?.wedding_date);
@@ -49,6 +52,10 @@ function WeddingOverview() {
       title="Nosso casamento"
       subtitle={w.plan?.message ?? "Área do casal, separada dos módulos gerais do Life OS."}
     >
+      <GuestsCard
+        g={summarizeGuests(gd.guests, gd.activeCheckin.size)}
+        invitations={gd.invitations.length}
+      />
       <section className="wed-card grid gap-4 p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-6">
         <div className="text-center sm:text-left">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
@@ -183,5 +190,37 @@ function WeddingOverview() {
         </div>
       </section>
     </WeddingShell>
+  );
+}
+
+function GuestsCard({
+  g,
+  invitations,
+}: {
+  g: ReturnType<typeof summarizeGuests>;
+  invitations: number;
+}) {
+  return (
+    <Link
+      to="/casamento/convidados"
+      className="wed-card grid grid-cols-2 gap-3 p-4 transition hover:border-primary/40 sm:grid-cols-4 sm:p-5"
+    >
+      <div>
+        <p className="text-xs text-muted-foreground">Convites</p>
+        <p className="wed-display text-2xl tabular-nums">{invitations}</p>
+      </div>
+      <div>
+        <p className="text-xs text-muted-foreground">Pessoas</p>
+        <p className="wed-display text-2xl tabular-nums">{g.total}</p>
+      </div>
+      <div>
+        <p className="text-xs text-muted-foreground">Confirmadas</p>
+        <p className="wed-display text-2xl tabular-nums">{g.yes}</p>
+      </div>
+      <div>
+        <p className="text-xs text-muted-foreground">Aguardando</p>
+        <p className="wed-display text-2xl tabular-nums">{g.pending}</p>
+      </div>
+    </Link>
   );
 }

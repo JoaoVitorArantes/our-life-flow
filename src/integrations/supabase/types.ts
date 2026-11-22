@@ -2395,6 +2395,57 @@ export type Database = {
         }
         Relationships: []
       }
+      wedding_checkins: {
+        Row: {
+          checked_at: string
+          created_at: string
+          guest_id: string
+          id: string
+          operator_id: string
+          undo_reason: string | null
+          undone_at: string | null
+          undone_by: string | null
+          workspace_id: string
+        }
+        Insert: {
+          checked_at?: string
+          created_at?: string
+          guest_id: string
+          id?: string
+          operator_id: string
+          undo_reason?: string | null
+          undone_at?: string | null
+          undone_by?: string | null
+          workspace_id: string
+        }
+        Update: {
+          checked_at?: string
+          created_at?: string
+          guest_id?: string
+          id?: string
+          operator_id?: string
+          undo_reason?: string | null
+          undone_at?: string | null
+          undone_by?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_checkins_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_checkins_workspace_id_guest_id_fkey"
+            columns: ["workspace_id", "guest_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_guests"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
       wedding_contributions: {
         Row: {
           amount: number
@@ -2526,6 +2577,226 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "wedding_suppliers"
             referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_guest_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          guest_id: string | null
+          id: string
+          invitation_id: string | null
+          via_portal: boolean
+          workspace_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          guest_id?: string | null
+          id?: string
+          invitation_id?: string | null
+          via_portal?: boolean
+          workspace_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          guest_id?: string | null
+          id?: string
+          invitation_id?: string | null
+          via_portal?: boolean
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_guest_audit_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedding_guest_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          invitation_id: string
+          read_at: string | null
+          workspace_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          invitation_id: string
+          read_at?: string | null
+          workspace_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          invitation_id?: string
+          read_at?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_guest_messages_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_guest_messages_workspace_id_invitation_id_fkey"
+            columns: ["workspace_id", "invitation_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_invitations"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_guests: {
+        Row: {
+          accessibility: string | null
+          archived_at: string | null
+          contact: string | null
+          created_at: string
+          created_by: string
+          dietary: string | null
+          group_label: string | null
+          id: string
+          internal_notes: string | null
+          invitation_id: string | null
+          is_companion: boolean
+          name: string
+          responded_at: string | null
+          rsvp: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          accessibility?: string | null
+          archived_at?: string | null
+          contact?: string | null
+          created_at?: string
+          created_by: string
+          dietary?: string | null
+          group_label?: string | null
+          id?: string
+          internal_notes?: string | null
+          invitation_id?: string | null
+          is_companion?: boolean
+          name: string
+          responded_at?: string | null
+          rsvp?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          accessibility?: string | null
+          archived_at?: string | null
+          contact?: string | null
+          created_at?: string
+          created_by?: string
+          dietary?: string | null
+          group_label?: string | null
+          id?: string
+          internal_notes?: string | null
+          invitation_id?: string | null
+          is_companion?: boolean
+          name?: string
+          responded_at?: string | null
+          rsvp?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_guests_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_guests_workspace_id_invitation_id_fkey"
+            columns: ["workspace_id", "invitation_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_invitations"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_invitations: {
+        Row: {
+          code_hash: string | null
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          kind: string
+          label: string
+          link_issued_at: string | null
+          max_companions: number
+          responded_at: string | null
+          revoked_at: string | null
+          rsvp_locked: boolean
+          status: string
+          token_hash: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          code_hash?: string | null
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          label: string
+          link_issued_at?: string | null
+          max_companions?: number
+          responded_at?: string | null
+          revoked_at?: string | null
+          rsvp_locked?: boolean
+          status?: string
+          token_hash?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          code_hash?: string | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          link_issued_at?: string | null
+          max_companions?: number
+          responded_at?: string | null
+          revoked_at?: string | null
+          rsvp_locked?: boolean
+          status?: string
+          token_hash?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_invitations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2721,6 +2992,24 @@ export type Database = {
           },
         ]
       }
+      wedding_portal_attempts: {
+        Row: {
+          created_at: string
+          id: number
+          key_hash: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          key_hash: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          key_hash?: string
+        }
+        Relationships: []
+      }
       wedding_priorities: {
         Row: {
           archived_at: string | null
@@ -2766,6 +3055,65 @@ export type Database = {
             foreignKeyName: "wedding_priorities_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedding_public_content: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string
+          event_date: string | null
+          event_time: string | null
+          guidance: string | null
+          headline: string | null
+          map_url: string | null
+          message: string | null
+          published: boolean
+          rsvp_deadline: string | null
+          updated_at: string
+          venue: string | null
+          workspace_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by: string
+          event_date?: string | null
+          event_time?: string | null
+          guidance?: string | null
+          headline?: string | null
+          map_url?: string | null
+          message?: string | null
+          published?: boolean
+          rsvp_deadline?: string | null
+          updated_at?: string
+          venue?: string | null
+          workspace_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string
+          event_date?: string | null
+          event_time?: string | null
+          guidance?: string | null
+          headline?: string | null
+          map_url?: string | null
+          message?: string | null
+          published?: boolean
+          rsvp_deadline?: string | null
+          updated_at?: string
+          venue?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_public_content_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
@@ -3314,9 +3662,33 @@ export type Database = {
         Args: { _workspace_id: string }
         Returns: boolean
       }
+      wedding_find_invitation: {
+        Args: { _cred: string; _workspace_id: string }
+        Returns: string
+      }
+      wedding_hash: { Args: { _v: string }; Returns: string }
+      wedding_issue_invitation_link: {
+        Args: { _invitation_id: string }
+        Returns: {
+          code: string
+          token: string
+        }[]
+      }
+      wedding_normalize_code: { Args: { _v: string }; Returns: string }
       wedding_object_allowed: {
         Args: { _bucket: string; _name: string }
         Returns: boolean
+      }
+      wedding_portal_get: { Args: { _cred: string }; Returns: Json }
+      wedding_portal_message: {
+        Args: { _body: string; _cred: string }
+        Returns: Json
+      }
+      wedding_portal_payload: { Args: { _inv: string }; Returns: Json }
+      wedding_portal_resolve: { Args: { _cred: string }; Returns: string }
+      wedding_portal_rsvp: {
+        Args: { _companions: Json; _cred: string; _responses: Json }
+        Returns: Json
       }
       workspace_can: {
         Args: { _action: string; _workspace_id: string }

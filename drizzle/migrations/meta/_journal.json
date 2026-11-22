@@ -169,6 +169,13 @@
       "when": 1795358631137,
       "tag": "0023_wedding_storage_policies_safe",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795362152858,
+      "tag": "0024_wedding_guests_portal",
+      "breakpoints": true
     }
   ]
 }
