@@ -27,6 +27,9 @@ Decisões confirmadas:
 - Confirmação: manual pelo casal.
 - Pix: só informativo e vazio até o casal preencher.
 - Portal de presentes desativado até o casal ativar.
+- Teto por reserva: R$ 50.000,00.
+- O convidado não edita reservas: só cancela a própria pendente e, se quiser, cria outra.
+- O portal não mostra progresso de fundos (nem arrecadado, meta, percentual ou barra).
 
 ### 2.1 Escopo funcional
 
@@ -36,7 +39,7 @@ Decisões confirmadas:
   - Campos: tipo, título, descrição, imagem (bucket privado `wedding`), link externo opcional, ordem e visível no portal.
   - `physical`: quantidade desejada.
   - `quota`: valor da cota e total de cotas.
-  - `fund`: valor sugerido opcional e meta opcional, sem limite de reservas.
+  - `fund`: valor sugerido opcional e meta opcional **visível só para o casal**, sem limite de reservas.
   - Arquivar e restaurar.
 - **Detalhe do presente:** disponibilidade e a lista de reservas/intenções. O casal vê o convite de origem (nome do convite), a quantidade ou valor, a mensagem e o estado.
 - **Ações por reserva:**
@@ -51,14 +54,18 @@ Decisões confirmadas:
 
 **Portal do convidado (`/convite/$token`)**
 - A seção "Presentes" só aparece quando o casal ativar.
-- **Lista:** presentes visíveis e não arquivados, com disponibilidade agregada ("3 de 10 cotas disponíveis", "Disponível", "Esgotado"). Nunca mostra quem reservou.
+- **Lista:** presentes visíveis e não arquivados, só com a disponibilidade e a regra de reserva:
+  - `physical`: "X de N disponíveis" ou "Esgotado".
+  - `quota`: valor da cota e "X de N cotas disponíveis" ou "Esgotado".
+  - `fund`: apenas "Disponível" e o valor sugerido, se houver. Nunca arrecadado, meta, percentual ou progresso.
+  - Nunca mostra quem reservou.
 - **Reservar:**
   - `physical`: quantidade, até o que está disponível.
   - `quota`: número de cotas.
   - `fund`: valor que pretende enviar.
   - Mensagem curta opcional.
 - **Depois de reservar:** mostra estado "Aguardando confirmação do casal" com prazo, as instruções e o Pix, se cadastrados.
-- **Minhas reservas:** só as do próprio convite, com estado. Pode cancelar as pendentes.
+- **Minhas reservas:** só as do próprio convite, com estado. Sem edição: o convidado pode cancelar a própria pendente e, se quiser, criar outra. Não existe função pública de edição.
 
 ### 2.2 Modelo de dados e migrations (aditivas)
 
@@ -103,7 +110,8 @@ wedding_gift_settings (1 linha por workspace)
   - O valor confirmado de `fund` pode ser ajustado pelo casal.
 - **Limites:**
   - Até 10 reservas por convite por hora.
-  - Até 100 unidades por reserva e teto de R$ 50.000 por reserva.
+  - Até 100 unidades por reserva.
+  - Teto de R$ 50.000,00 por reserva: `amount` em `fund` e unidades × valor da cota em `quota`, validado na função e por CHECK no banco.
   - Mensagens com até 500 caracteres, sem HTML.
 - O Pix nunca é validado nem conciliado.
 
@@ -112,7 +120,7 @@ wedding_gift_settings (1 linha por workspace)
 - O casal (membros do espaço) lê e escreve só nas linhas `wedding_gift*` do próprio espaço.
 - Visitantes sem login não têm acesso direto às tabelas. O portal só usa as funções acima.
 - O portal recebe só o próprio convite, resolvido pelo servidor a partir do hash do código. Não aceita ids vindos do cliente.
-- O portal devolve apenas a disponibilidade agregada e as reservas do próprio convite. Não devolve nomes, outros convites, ids internos nem hashes.
+- O portal devolve apenas a disponibilidade agregada e as reservas do próprio convite. Para `fund`, não devolve soma, meta nem percentual. Não devolve nomes, outros convites, ids internos nem hashes.
 - Anonimato `couple`: o nome do convite aparece só no painel do casal.
 - Nada é escrito em Financeiro, Notas e recibos, Metas, Compras, Agenda, Tarefas nem em `wedding_expenses`. Também não há gatilhos ligando essas áreas.
 - Imagens ficam no bucket privado `wedding`. O portal recebe links temporários gerados no servidor, só para presentes visíveis.
@@ -121,7 +129,8 @@ wedding_gift_settings (1 linha por workspace)
 ### 2.5 Testes e aceite
 
 - **Testes automáticos de regras:**
-  - Disponibilidade por tipo, expiração em 15 dias e limites de valor e quantidade.
+  - Disponibilidade por tipo, expiração em 15 dias e limites de valor e quantidade: R$ 50.000,00 aceito, R$ 50.000,01 recusado.
+  - O retorno do portal não traz progresso de fundo nem função de edição.
   - Formulários: campos obrigatórios por tipo.
   - Formato do retorno do portal sem campos privados.
 - **Testes no banco, com usuário de teste em espaço próprio:**
@@ -140,20 +149,17 @@ wedding_gift_settings (1 linha por workspace)
 - **Navegador:** fluxo casal → ativar portal → convidado reserva → casal confirma, em 320/375/768/1024/1440px, sem rolagem horizontal e sem erros JS.
 - **Verificações finais:** tipos, lint e todos os testes passando. Nova verificação de segurança antes de publicar.
 
-### 2.6 Riscos e pontos ainda abertos
+### 2.6 Riscos e decisões
 
 - **Riscos:**
   - A produção já tem a Fase 2 no ar, e as migrations valem na hora para a produção. Por isso as novas tabelas precisam nascer fechadas, e o portal de presentes desligado.
   - A interface nova só vai ao ar com publicação.
   - Expirar só quando alguém acessa é seguro, mas o estado gravado no banco pode ficar desatualizado até a próxima leitura. O cálculo de disponibilidade nunca depende desse estado.
-- **Abertos, com default proposto:**
-  - Teto por reserva: R$ 50.000.
-  - O convidado pode editar uma reserva pendente? Default: não, ele cancela e refaz.
-  - `fund` mostra para os convidados o progresso da meta? Default: não, só "Disponível".
-  - Valor recebido diferente do reservado: o casal ajusta ao confirmar.
+- **Decisões fechadas:** teto de R$ 50.000,00; sem edição pelo convidado; sem progresso de fundos no portal; se o valor recebido for diferente do reservado, o casal ajusta ao confirmar.
+- Nenhuma decisão de produto em aberto.
 
 ### Ao aprovar
-- Primeiro passo: atualizar o roadmap (Fase 3 com estas decisões).
+- Primeiro passo: atualizar o `roadmap.md` com a Fase 3 e estas decisões. Isso não é permitido no modo de planejamento, por isso fica para depois da aprovação.
 - Depois: migrations 0032/0033, telas e testes.
 - Sem publicar e sem limpar workspaces.
 
