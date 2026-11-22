@@ -2538,6 +2538,175 @@ export type Database = {
         }
         Relationships: []
       }
+      wedding_budget_categories: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_budget_categories_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wedding_budget_items: {
+        Row: {
+          category_id: string | null
+          contracted_amount: number | null
+          created_at: string
+          created_by: string
+          due_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          planned_amount: number | null
+          status: string
+          supplier_id: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          contracted_amount?: number | null
+          created_at?: string
+          created_by: string
+          due_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          planned_amount?: number | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          category_id?: string | null
+          contracted_amount?: number | null
+          created_at?: string
+          created_by?: string
+          due_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          planned_amount?: number | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_budget_items_workspace_id_category_id_fkey"
+            columns: ["workspace_id", "category_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_budget_categories"
+            referencedColumns: ["workspace_id", "id"]
+          },
+          {
+            foreignKeyName: "wedding_budget_items_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_budget_items_workspace_id_supplier_id_fkey"
+            columns: ["workspace_id", "supplier_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_suppliers"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_budget_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          id: string
+          item_id: string
+          note: string | null
+          paid_by_user_id: string | null
+          paid_on: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          id?: string
+          item_id: string
+          note?: string | null
+          paid_by_user_id?: string | null
+          paid_on?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          item_id?: string
+          note?: string | null
+          paid_by_user_id?: string | null
+          paid_on?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_budget_payments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_budget_payments_workspace_id_item_id_fkey"
+            columns: ["workspace_id", "item_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_budget_items"
+            referencedColumns: ["workspace_id", "id"]
+          },
+          {
+            foreignKeyName: "wedding_budget_payments_workspace_id_paid_by_user_id_fkey"
+            columns: ["workspace_id", "paid_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["workspace_id", "user_id"]
+          },
+        ]
+      }
       wedding_checkins: {
         Row: {
           checked_at: string

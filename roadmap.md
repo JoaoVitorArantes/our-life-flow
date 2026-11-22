@@ -125,3 +125,6 @@
 - [x] Compatibilidade com o limite mensal antigo das categorias
 - [x] Metas com início, prazo opcional (contínua), frequência e valor por período
 - [ ] Teste com as contas reais de João e Renifer (não executado; só usuário de teste)
+
+## Orçamento do Casamento
+- [x] Itens com previsto/contratado/pago, pagamentos parciais, categorias próprias, vencimentos, filtros/busca, visão por período em qualquer ano, economia sem limite de ano

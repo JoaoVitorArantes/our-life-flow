@@ -267,6 +267,13 @@
       "when": 1795368879370,
       "tag": "0037_budget_rules_revoke_anon",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1795371468534,
+      "tag": "0038_wedding_budget_items_payments",
+      "breakpoints": true
     }
   ]
 }
