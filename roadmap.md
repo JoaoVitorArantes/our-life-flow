@@ -111,4 +111,4 @@
 - [ ] Fase 3 — Presentes e contribuições (aguardando decisões)
 
 ## Notas fiscais e recibos (Life AI)
-- [ ] Enviar foto/PDF de nota ou recibo, IA lê e categoriza, confirmação antes de gravar, tabela de despesas exportável (CSV)
+- [x] Enviar foto/PDF de nota ou recibo, IA lê e categoriza, confirmação antes de gravar, lista PRÓPRIA de notas (não entra no Financeiro), exportável em CSV

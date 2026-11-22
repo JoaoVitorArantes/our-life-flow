@@ -17,6 +17,9 @@ import {
   MessageSquareText,
   Gem,
   Home,
+  Mail,
+  ScanLine,
+  Receipt,
 } from "lucide-react";
 
 export type NavItem = {
@@ -62,6 +65,8 @@ export const NAV_GROUPS: NavGroup[] = [
           { to: "/casamento/orcamento", label: "Orçamento", icon: Wallet, emoji: "💰" },
           { to: "/casamento/preparativos", label: "Preparativos", icon: CheckSquare, emoji: "✅" },
           { to: "/casamento/fornecedores", label: "Fornecedores", icon: ShoppingBag, emoji: "🛍️" },
+          { to: "/casamento/convidados", label: "Convidados", icon: Mail, emoji: "💌" },
+          { to: "/casamento/checkin", label: "Check-in", icon: ScanLine, emoji: "✔️" },
           { to: "/casamento/configuracoes", label: "Ajustes", icon: Settings, emoji: "⚙️" },
         ],
       },
@@ -72,6 +77,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/financeiro", label: "Financeiro", icon: Wallet, emoji: "💰" },
       { to: "/compras", label: "Compras", icon: ShoppingBag, emoji: "🛍️" },
+      { to: "/notas-fiscais", label: "Notas e recibos", icon: Receipt, emoji: "🧾" },
     ],
   },
   {
@@ -102,6 +108,7 @@ export const SECONDARY_NAV: NavItem[] = [
   { to: "/contextos", label: "Contextos", icon: Compass, emoji: "🧭" },
   { to: "/compras", label: "Compras", icon: ShoppingBag, emoji: "🛍️" },
   { to: "/casamento", label: "Casamento", icon: Gem, emoji: "💍" },
+  { to: "/notas-fiscais", label: "Notas e recibos", icon: Receipt, emoji: "🧾" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [

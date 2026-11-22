@@ -1709,6 +1709,77 @@ export type Database = {
           },
         ]
       }
+      receipts: {
+        Row: {
+          ai_read: boolean
+          category: string
+          created_at: string
+          created_by: string
+          currency: string
+          description: string | null
+          document_number: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          items: Json
+          merchant: string | null
+          notes: string | null
+          payment_method: string | null
+          receipt_date: string | null
+          total: number | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          ai_read?: boolean
+          category?: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          description?: string | null
+          document_number?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          items?: Json
+          merchant?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          receipt_date?: string | null
+          total?: number | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          ai_read?: boolean
+          category?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          description?: string | null
+          document_number?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          items?: Json
+          merchant?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          receipt_date?: string | null
+          total?: number | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_transactions: {
         Row: {
           account_id: string | null
@@ -3647,6 +3718,10 @@ export type Database = {
       rebuild_transaction_settlement: {
         Args: { _transaction_id: string }
         Returns: undefined
+      }
+      receipt_object_allowed: {
+        Args: { _bucket: string; _name: string }
+        Returns: boolean
       }
       reset_demo_workspace: {
         Args: { _workspace_id: string }

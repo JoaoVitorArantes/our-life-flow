@@ -25,6 +25,7 @@ import { Route as AuthenticatedMetasRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedMeuDiaRouteImport } from './routes/_authenticated/meu-dia'
 import { Route as AuthenticatedNosRouteImport } from './routes/_authenticated/nos'
 import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
+import { Route as AuthenticatedNotasFiscaisRouteImport } from './routes/_authenticated/notas-fiscais'
 import { Route as AuthenticatedRotinasRouteImport } from './routes/_authenticated/rotinas'
 import { Route as AuthenticatedTarefasRouteImport } from './routes/_authenticated/tarefas'
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
@@ -142,6 +143,12 @@ const AuthenticatedNotasRoute = AuthenticatedNotasRouteImport.update({
   path: '/notas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotasFiscaisRoute =
+  AuthenticatedNotasFiscaisRouteImport.update({
+    id: '/notas-fiscais',
+    path: '/notas-fiscais',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRotinasRoute = AuthenticatedRotinasRouteImport.update({
   id: '/rotinas',
   path: '/rotinas',
@@ -368,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
   '/notas': typeof AuthenticatedNotasRoute
+  '/notas-fiscais': typeof AuthenticatedNotasFiscaisRoute
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
@@ -419,6 +427,7 @@ export interface FileRoutesByTo {
   '/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/nos': typeof AuthenticatedNosRoute
   '/notas': typeof AuthenticatedNotasRoute
+  '/notas-fiscais': typeof AuthenticatedNotasFiscaisRoute
   '/rotinas': typeof AuthenticatedRotinasRoute
   '/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
@@ -474,6 +483,7 @@ export interface FileRoutesById {
   '/_authenticated/meu-dia': typeof AuthenticatedMeuDiaRoute
   '/_authenticated/nos': typeof AuthenticatedNosRoute
   '/_authenticated/notas': typeof AuthenticatedNotasRoute
+  '/_authenticated/notas-fiscais': typeof AuthenticatedNotasFiscaisRoute
   '/_authenticated/rotinas': typeof AuthenticatedRotinasRoute
   '/_authenticated/tarefas': typeof AuthenticatedTarefasRoute
   '/api/agent': typeof ApiAgentRoute
@@ -529,6 +539,7 @@ export interface FileRouteTypes {
     | '/meu-dia'
     | '/nos'
     | '/notas'
+    | '/notas-fiscais'
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
@@ -580,6 +591,7 @@ export interface FileRouteTypes {
     | '/meu-dia'
     | '/nos'
     | '/notas'
+    | '/notas-fiscais'
     | '/rotinas'
     | '/tarefas'
     | '/api/agent'
@@ -634,6 +646,7 @@ export interface FileRouteTypes {
     | '/_authenticated/meu-dia'
     | '/_authenticated/nos'
     | '/_authenticated/notas'
+    | '/_authenticated/notas-fiscais'
     | '/_authenticated/rotinas'
     | '/_authenticated/tarefas'
     | '/api/agent'
@@ -795,6 +808,13 @@ declare module '@tanstack/react-router' {
       path: '/notas'
       fullPath: '/notas'
       preLoaderRoute: typeof AuthenticatedNotasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notas-fiscais': {
+      id: '/_authenticated/notas-fiscais'
+      path: '/notas-fiscais'
+      fullPath: '/notas-fiscais'
+      preLoaderRoute: typeof AuthenticatedNotasFiscaisRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rotinas': {
@@ -1165,6 +1185,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMeuDiaRoute: typeof AuthenticatedMeuDiaRoute
   AuthenticatedNosRoute: typeof AuthenticatedNosRoute
   AuthenticatedNotasRoute: typeof AuthenticatedNotasRoute
+  AuthenticatedNotasFiscaisRoute: typeof AuthenticatedNotasFiscaisRoute
   AuthenticatedRotinasRoute: typeof AuthenticatedRotinasRoute
   AuthenticatedTarefasRoute: typeof AuthenticatedTarefasRoute
   AuthenticatedContextosIdRoute: typeof AuthenticatedContextosIdRoute
@@ -1187,6 +1208,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMeuDiaRoute: AuthenticatedMeuDiaRoute,
   AuthenticatedNosRoute: AuthenticatedNosRoute,
   AuthenticatedNotasRoute: AuthenticatedNotasRoute,
+  AuthenticatedNotasFiscaisRoute: AuthenticatedNotasFiscaisRoute,
   AuthenticatedRotinasRoute: AuthenticatedRotinasRoute,
   AuthenticatedTarefasRoute: AuthenticatedTarefasRoute,
   AuthenticatedContextosIdRoute: AuthenticatedContextosIdRoute,
