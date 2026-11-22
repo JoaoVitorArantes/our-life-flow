@@ -18,66 +18,144 @@
   - O portal público já responde em produção. Hoje ele só mostra um convite a quem tiver um código válido.
 - Publicar de novo agora não levaria nada novo ao ar.
 
-## 2. Escopo da Fase 3 — Presentes e contribuições (sem pagamento online)
+## 2. Fase 3 — Presentes (escopo final com as decisões confirmadas)
 
-Tudo em tabelas `wedding_*`, sem nenhuma ligação com Financeiro, Notas e recibos, Metas, Compras ou o orçamento/despesas do próprio Casamento. A ligação com o orçamento só acontece se o casal pedir depois.
+Decisões confirmadas:
+- Tipos: `physical`, `fund` e `quota`.
+- Anonimato: `couple`.
+- Expiração: 15 dias.
+- Confirmação: manual pelo casal.
+- Pix: só informativo e vazio até o casal preencher.
+- Portal de presentes desativado até o casal ativar.
 
-**Painel do casal (`/casamento/presentes`)**
-- **Lista de presentes** com três tipos: item físico (com quantidade desejada), fundo livre (valor aberto) e cotas (valor da cota × número de cotas).
-- **Para cada presente:** título, descrição, imagem (no armazenamento privado do casamento), link externo opcional, valor sugerido, ordem, visível ou oculto no portal, arquivado.
-- **Para cada presente, também:** quantas reservas estão pendentes, confirmadas, canceladas e expiradas, e quanto ainda está disponível.
-- **Reservas e intenções:** lista com convite de origem, nome ou "Anônimo", quantidade ou valor, mensagem e estado.
-- **Ações do casal:** confirmar recebimento (manual), cancelar com motivo e reabrir. Todas são registradas no histórico, sem dados pessoais.
-- **Configuração de Pix e instruções:** só texto exibido (chave escolhida pelo casal, nome do recebedor, instruções). O sistema nunca processa pagamento. Começa vazio.
-- **Painel inicial do Casamento:** presentes recebidos e pendentes de confirmação. Só aparece com dados reais.
+### 2.1 Escopo funcional
+
+**Painel do casal (`/casamento/presentes`, novo item no submenu Casamento)**
+- **Lista de presentes:** cards responsivos com filtros por tipo, estado (disponível/esgotado/oculto/arquivado) e busca.
+- **Criar e editar presente:**
+  - Campos: tipo, título, descrição, imagem (bucket privado `wedding`), link externo opcional, ordem e visível no portal.
+  - `physical`: quantidade desejada.
+  - `quota`: valor da cota e total de cotas.
+  - `fund`: valor sugerido opcional e meta opcional, sem limite de reservas.
+  - Arquivar e restaurar.
+- **Detalhe do presente:** disponibilidade e a lista de reservas/intenções. O casal vê o convite de origem (nome do convite), a quantidade ou valor, a mensagem e o estado.
+- **Ações por reserva:**
+  - Confirmar recebimento.
+  - Cancelar (com motivo).
+  - Reabrir uma cancelada ou expirada, se ainda houver disponibilidade.
+- **Configurações de presentes:**
+  - Ativar a seção no portal.
+  - Tipo da chave Pix, chave, nome do recebedor e instruções (Pix e entrega de itens físicos).
+  - Tudo vazio por padrão. Se o Pix estiver vazio, o portal não mostra Pix.
+- **Painel inicial do Casamento:** cards "Recebidos" e "Aguardando confirmação", com dados reais.
 
 **Portal do convidado (`/convite/$token`)**
-- Seção "Presentes", visível só se o casal ativar.
-- O convidado vê os presentes visíveis com a disponibilidade agregada (ex.: "2 de 5 cotas disponíveis"). Nunca vê quem reservou.
-- Ele pode reservar um item ou cota, ou declarar a intenção de contribuir, com mensagem curta opcional e a opção de aparecer como anônimo.
-- Depois de reservar, vê as instruções de Pix ou de entrega e o estado da reserva: "aguardando confirmação do casal" ou "recebido".
-- Pode cancelar a própria reserva pendente. Só enxerga as reservas do próprio convite.
+- A seção "Presentes" só aparece quando o casal ativar.
+- **Lista:** presentes visíveis e não arquivados, com disponibilidade agregada ("3 de 10 cotas disponíveis", "Disponível", "Esgotado"). Nunca mostra quem reservou.
+- **Reservar:**
+  - `physical`: quantidade, até o que está disponível.
+  - `quota`: número de cotas.
+  - `fund`: valor que pretende enviar.
+  - Mensagem curta opcional.
+- **Depois de reservar:** mostra estado "Aguardando confirmação do casal" com prazo, as instruções e o Pix, se cadastrados.
+- **Minhas reservas:** só as do próprio convite, com estado. Pode cancelar as pendentes.
 
-**Regras e segurança**
-- Toda ação pública passa por funções `wedding_portal_*` que validam o código do convite no servidor, como na Fase 2. Visitantes não acessam as tabelas.
-- Reserva concorrente: o item é travado durante a reserva, e as reservas ativas (pendentes + confirmadas) são contadas. Se passar do limite, a reserva é recusada. Assim, a última cota só pode ser pega uma vez.
-- Limites: tamanho da mensagem, número máximo de reservas por convite por hora e valores positivos com teto razoável.
-- Reservas pendentes expiram automaticamente no prazo configurado. A expiração é checada quando alguém acessa (sem tarefa agendada).
-- "Recebido" só pode ser marcado por um membro do casal.
-- Anonimato: o portal nunca mostra nomes de outros convidados. No painel, uma reserva anônima mostra "Anônimo" (ver decisão 4).
-- Nenhum dado de cartão ou conta bancária é guardado. Não há checkout nem gateway.
-- Migrations só aditivas. Os dados da Fase 1 e da Fase 2 são preservados.
+### 2.2 Modelo de dados e migrations (aditivas)
 
-**Tabelas novas (todas com `workspace_id` e acesso por membro do espaço)**
 ```text
-wedding_gifts           tipo (item|fundo|cotas), título, descrição, imagem, link, valor sugerido,
-                        valor da cota, quantidade/cotas totais, visível, ordem, arquivado
-wedding_gift_pledges    presente, convite, quantidade/cotas, valor, mensagem, anônimo,
-                        estado (pendente|confirmado|cancelado|expirado), expira_em,
-                        confirmado_por/em, cancelado_por/motivo
-wedding_gift_settings   portal ativo, prazo de expiração, edição/cancelamento pelo convidado,
-                        Pix: tipo e texto da chave, recebedor, instruções (só exibição)
+wedding_gifts
+  id, workspace_id, kind (physical|fund|quota), title, description, image_path, external_url,
+  quantity_total (physical), quota_amount + quota_total (quota), suggested_amount, goal_amount (fund),
+  is_visible, sort_order, archived_at, created_by, created_at, updated_at
+  CHECKs por kind; valores > 0; FK composta (workspace_id, id) para pledges
+
+wedding_gift_pledges
+  id, workspace_id, gift_id, invitation_id, units (physical/quota), amount (fund ou units*cota),
+  message (≤ 500), state (pending|confirmed|cancelled|expired), expires_at (created + 15 dias),
+  confirmed_by/at, cancelled_by_kind (guest|couple|system), cancel_reason, created_at, updated_at
+  FKs compostas por workspace para gift e invitation
+
+wedding_gift_settings (1 linha por workspace)
+  portal_enabled (default false), pending_days (default 15), anonymity (default 'couple'),
+  pix_key_type, pix_key, pix_receiver_name, instructions, delivery_instructions (todos nulos)
 ```
 
-**Aceite**
-- Duas reservas simultâneas da última cota: só uma passa.
-- Reserva pendente expira ou é cancelada corretamente, e a disponibilidade volta.
-- O convite A não vê nem cancela as reservas do convite B. Visitante sem código: nenhum acesso.
-- O anonimato é respeitado no portal (e no painel, conforme a decisão).
-- Nenhuma linha nova em Financeiro, Notas e recibos, Metas ou despesas do Casamento.
-- Telas funcionando em 320/375/768/1024/1440px sem cortes. Fluxo testado com usuário de teste em espaço próprio. Os 15 cômodos e 80 itens do casal ficam intactos.
+- **Migration 0032:** tabelas, grants (authenticated + service_role, nada para anon), RLS por membro, FKs compostas, triggers de `updated_at`, bloqueio em workspace demo e eventos de sincronização.
+- **Migration 0033:**
+  - Funções do painel: `wedding_gift_confirm`, `wedding_gift_cancel`, `wedding_gift_reopen`, que checam se quem chama é membro.
+  - Funções do portal: `wedding_portal_gifts`, `wedding_portal_pledge`, `wedding_portal_pledge_cancel`, todas com o mesmo código/token, limite de tentativas e `search_path` fixo usados na Fase 2.
+- **Histórico:** todo evento entra em `wedding_guest_audit`, só com ação, tipo, id e ator.
 
-## 3. Decisões mínimas (com default recomendado)
+### 2.3 Regras de reserva
 
-1. **Tipos de presente:** os três (item físico, fundo livre, cotas). Default: os três ativos.
-2. **Valores:** o casal define cada valor. A lista começa vazia, sem sugestões de preço. Default: sem valor mínimo; teto de R$ 50.000 por reserva só como proteção.
-3. **Pix:** só texto informativo, preenchido pelo casal. Default: vazio e oculto até ser preenchido. Não vou inventar chave.
-4. **Anonimato:** default "anônimo para os outros convidados, mas o casal vê o nome do convite". A alternativa é anonimato total, em que nem o casal vê.
-5. **Reserva:** default "o convidado reserva e o casal confirma o recebimento manualmente".
-6. **Expiração:** default 7 dias para reservas pendentes. Um fundo livre (sem limite) não expira.
-7. **Cancelamento:** default "convidado pode cancelar enquanto estiver pendente; depois de confirmado, só o casal".
-8. **Portal:** default seção de Presentes desligada até o casal ativar, mostrando só a disponibilidade agregada.
-9. **Entrega de itens físicos:** default "sem endereço no sistema", só um texto de instruções opcional escrito pelo casal.
+- **Disponibilidade:** total menos as unidades em reservas pendentes ainda no prazo e confirmadas. `fund` não tem limite.
+- **Concorrência:** a reserva roda dentro de uma função que trava o presente (`SELECT … FOR UPDATE`), recalcula a disponibilidade e recusa se faltar. Com isso, a última cota só pode ser pega uma vez.
+- **Expiração em 15 dias:**
+  - `expires_at` é gravado na criação.
+  - Uma reserva pendente vencida deixa de contar na hora (o cálculo já filtra pelo prazo).
+  - Ela é marcada como `expired` quando o portal ou o painel é lido ou quando há uma nova reserva. Não há tarefa agendada.
+- **Cancelamento:**
+  - O convidado só cancela as próprias pendentes. O casal cancela qualquer uma, com motivo.
+  - Cancelar libera a disponibilidade e fica registrado no histórico.
+- **Confirmação:**
+  - Só o casal marca uma pendente como `confirmed`.
+  - Uma reserva expirada só pode ser confirmada depois de ser reaberta, e reabrir revalida a disponibilidade com trava.
+  - O valor confirmado de `fund` pode ser ajustado pelo casal.
+- **Limites:**
+  - Até 10 reservas por convite por hora.
+  - Até 100 unidades por reserva e teto de R$ 50.000 por reserva.
+  - Mensagens com até 500 caracteres, sem HTML.
+- O Pix nunca é validado nem conciliado.
+
+### 2.4 Privacidade, RLS e isolamento
+
+- O casal (membros do espaço) lê e escreve só nas linhas `wedding_gift*` do próprio espaço.
+- Visitantes sem login não têm acesso direto às tabelas. O portal só usa as funções acima.
+- O portal recebe só o próprio convite, resolvido pelo servidor a partir do hash do código. Não aceita ids vindos do cliente.
+- O portal devolve apenas a disponibilidade agregada e as reservas do próprio convite. Não devolve nomes, outros convites, ids internos nem hashes.
+- Anonimato `couple`: o nome do convite aparece só no painel do casal.
+- Nada é escrito em Financeiro, Notas e recibos, Metas, Compras, Agenda, Tarefas nem em `wedding_expenses`. Também não há gatilhos ligando essas áreas.
+- Imagens ficam no bucket privado `wedding`. O portal recebe links temporários gerados no servidor, só para presentes visíveis.
+- Nenhum dado de cartão ou conta, nenhuma chave Pix inventada e nenhum valor de exemplo.
+
+### 2.5 Testes e aceite
+
+- **Testes automáticos de regras:**
+  - Disponibilidade por tipo, expiração em 15 dias e limites de valor e quantidade.
+  - Formulários: campos obrigatórios por tipo.
+  - Formato do retorno do portal sem campos privados.
+- **Testes no banco, com usuário de teste em espaço próprio:**
+  - Duas reservas simultâneas da última cota: só uma passa.
+  - Uma reserva vencida libera a disponibilidade e vira `expired`.
+  - Cancelar libera. Reabrir revalida.
+  - O convite A não vê nem cancela as reservas do convite B.
+  - Visitante sem login: 401 nas tabelas.
+  - Membro de outro espaço: sem acesso.
+  - Com o portal desligado, a seção não aparece e a reserva é recusada.
+  - Pix vazio não é exibido.
+- **Contagens antes e depois:**
+  - Financeiro, recibos, metas, compras e `wedding_expenses` sem linhas novas.
+  - 15 cômodos e 80 itens intactos.
+  - Workspaces de teste preservados.
+- **Navegador:** fluxo casal → ativar portal → convidado reserva → casal confirma, em 320/375/768/1024/1440px, sem rolagem horizontal e sem erros JS.
+- **Verificações finais:** tipos, lint e todos os testes passando. Nova verificação de segurança antes de publicar.
+
+### 2.6 Riscos e pontos ainda abertos
+
+- **Riscos:**
+  - A produção já tem a Fase 2 no ar, e as migrations valem na hora para a produção. Por isso as novas tabelas precisam nascer fechadas, e o portal de presentes desligado.
+  - A interface nova só vai ao ar com publicação.
+  - Expirar só quando alguém acessa é seguro, mas o estado gravado no banco pode ficar desatualizado até a próxima leitura. O cálculo de disponibilidade nunca depende desse estado.
+- **Abertos, com default proposto:**
+  - Teto por reserva: R$ 50.000.
+  - O convidado pode editar uma reserva pendente? Default: não, ele cancela e refaz.
+  - `fund` mostra para os convidados o progresso da meta? Default: não, só "Disponível".
+  - Valor recebido diferente do reservado: o casal ajusta ao confirmar.
+
+### Ao aprovar
+- Primeiro passo: atualizar o roadmap (Fase 3 com estas decisões).
+- Depois: migrations 0032/0033, telas e testes.
+- Sem publicar e sem limpar workspaces.
 
 ## Fora do escopo
-Checkout, gateway, Stripe/Mercado Pago, cartão, conciliação bancária automática, envio de mensagens, organizadores, Cerimônia/Festa, limpeza de workspaces de teste, publicação.
+Checkout, gateway, Stripe/Mercado Pago, cartão, conciliação automática, envio de mensagens, organizadores, Cerimônia/Festa, limpeza de workspaces de teste, publicação.
