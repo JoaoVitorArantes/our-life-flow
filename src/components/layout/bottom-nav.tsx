@@ -1,5 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Plus, Home, Wallet, CalendarDays, Heart } from "lucide-react";
+import { Plus, Home, Wallet, CalendarDays, Heart, Gem } from "lucide-react";
+import { isWeddingPath } from "@/features/app/navigation";
+import { useNavGroups } from "@/features/preferences/queries";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/features/app/app-context";
 
@@ -9,26 +11,31 @@ const ITEMS = [
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
   { to: "/nos", label: "Nós", icon: Heart },
 ];
+const WEDDING = { to: "/casamento", label: "Casamento", icon: Gem };
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { setQuickMenuOpen } = useApp();
+  // Casamento só aparece se o módulo estiver no menu da pessoa (não ocultado nas preferências).
+  const groups = useNavGroups();
+  const showWedding = groups.some((g) => g.items.some((i) => i.to === WEDDING.to));
   const left = ITEMS.slice(0, 2);
-  const right = ITEMS.slice(2);
+  const right = showWedding ? [ITEMS[2]!, WEDDING, ITEMS[3]!] : ITEMS.slice(2);
 
   const renderItem = (item: (typeof ITEMS)[number]) => {
-    const active = pathname === item.to;
+    const active = item.to === WEDDING.to ? isWeddingPath(pathname) : pathname === item.to;
     return (
       <Link
         key={item.to}
         to={item.to}
+        aria-current={active ? "page" : undefined}
         className={cn(
-          "relative flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium transition-all duration-200",
+          "relative flex min-w-0 flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium transition-all duration-200",
           active ? "text-primary" : "text-muted-foreground",
         )}
       >
         <item.icon className={cn("size-5 transition-transform", active && "-translate-y-0.5")} />
-        {item.label}
+        <span className="max-w-full truncate px-0.5">{item.label}</span>
         {active ? <span className="absolute bottom-0 size-1 rounded-full bg-primary" /> : null}
       </Link>
     );

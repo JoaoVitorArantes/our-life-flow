@@ -4,7 +4,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Camera, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
-import { FOOTER_NAV, type NavItem } from "@/features/app/navigation";
+import { FOOTER_NAV, isWeddingPath, type NavItem } from "@/features/app/navigation";
 import { useNavigationIndicators } from "@/features/app/use-navigation-indicators";
 import { useApp } from "@/features/app/app-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -212,6 +212,19 @@ export function MobileMenu() {
             className="flex-1 overflow-y-auto overscroll-contain px-3 py-4"
           >
             <div className="space-y-5">
+              {(() => {
+                // Atalho fixo para Casamento no topo (só se o módulo está no menu da pessoa).
+                const wedding = navGroups
+                  .flatMap((g) => g.items)
+                  .find((i) => i.to === "/casamento");
+                return wedding ? (
+                  <MobileNavLink
+                    item={wedding}
+                    active={isWeddingPath(pathname)}
+                    close={() => setOpen(false)}
+                  />
+                ) : null;
+              })()}
               {navGroups.map((group) => (
                 <section key={group.label} aria-labelledby={`mobile-${group.label}`}>
                   <p

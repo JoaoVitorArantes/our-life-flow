@@ -21,17 +21,17 @@ export function Header() {
         </kbd>
       </button>
 
-      <Button
-        className="hidden md:inline-flex"
-        size="sm"
-        onClick={() => setQuickMenuOpen(true)}
-      >
+      <Button className="hidden md:inline-flex" size="sm" onClick={() => setQuickMenuOpen(true)}>
         <Plus className="size-4" />
         Novo
       </Button>
 
-      <div className="md:hidden"><MobileMenu /></div>
-      <div className="hidden md:block"><AvatarMenu compact /></div>
+      <div className="md:hidden">
+        <MobileMenu />
+      </div>
+      <div className="hidden md:block">
+        <AvatarMenu compact />
+      </div>
     </header>
   );
 }

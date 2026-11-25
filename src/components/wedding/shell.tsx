@@ -19,16 +19,21 @@ import { colorClass } from "@/features/wedding/contracts";
 import { cn } from "@/lib/utils";
 
 /** Aplica o tema do Casamento ao <html> enquanto a área está aberta (inclui diálogos e menus). */
-export function useWeddingTheme(theme: string | undefined) {
+const WEDDING_THEMES = ["champagne", "lavender", "ivory"] as const;
+export const safeWeddingTheme = (t: string | null | undefined) =>
+  (WEDDING_THEMES as readonly string[]).includes(t ?? "") ? (t as string) : "champagne";
+
+export function useWeddingTheme(theme: string | null | undefined, enabled = true) {
   useEffect(() => {
+    if (!enabled) return;
     const root = document.documentElement;
     root.classList.add("wedding-theme");
-    root.dataset["weddingTheme"] = theme ?? "champagne";
+    root.dataset["weddingTheme"] = safeWeddingTheme(theme);
     return () => {
       root.classList.remove("wedding-theme");
       delete root.dataset["weddingTheme"];
     };
-  }, [theme]);
+  }, [theme, enabled]);
 }
 
 const NAV = [
@@ -59,7 +64,7 @@ export function WeddingShell({
 }) {
   const { workspace, workspaceId, loading } = useApp();
   const plan = useWeddingPlan(workspaceId);
-  useWeddingTheme(plan.data?.theme);
+  // O tema é aplicado pelo AppShell em toda rota /casamento (inclui menus e barra inferior).
   const cover = useWeddingImage(plan.data?.cover_path);
   if (loading) return <LoadingState />;
   if (!workspace || workspace.is_demo)

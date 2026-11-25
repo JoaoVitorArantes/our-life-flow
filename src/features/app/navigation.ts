@@ -162,3 +162,6 @@ export function isAcademicMember(
 ): boolean {
   return !!ownerId && members.some((member) => member.user_id === ownerId);
 }
+
+/** Qualquer rota da área Casamento (estado ativo e tema). */
+export const isWeddingPath = (p: string) => p === "/casamento" || p.startsWith("/casamento/");

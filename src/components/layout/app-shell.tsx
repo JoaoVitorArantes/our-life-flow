@@ -9,6 +9,10 @@ import { useCards } from "@/features/finance/queries";
 import { InvitationInbox } from "@/features/workspace/partner";
 import { GlobalAgent } from "@/components/agent/global-agent";
 import { useRealtimeSync } from "@/features/sync/use-realtime-sync";
+import { useRouterState } from "@tanstack/react-router";
+import { useWeddingPlan } from "@/features/wedding/api";
+import { useWeddingTheme } from "@/components/wedding/shell";
+import { isWeddingPath } from "@/features/app/navigation";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -17,7 +21,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Mantém os ciclos de fatura carregados para o cálculo de vencimento em todas as telas.
   useCards(workspaceId);
   // Cor de destaque do espaço: só troca o tom de destaque (estados ativos, seleção, progresso).
-  const accent = workspace?.accent_color;
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const inWedding = isWeddingPath(pathname);
+  // Casamento usa a identidade escolhida nos Ajustes do Casamento em todo o app shell
+  // (barra inferior, menus, sidebar); fora dele, volta o tema geral.
+  const weddingOn = inWedding && !!workspace && !workspace.is_demo;
+  const plan = useWeddingPlan(weddingOn ? (workspaceId ?? undefined) : undefined);
+  useWeddingTheme(plan.data?.theme, weddingOn);
+  const accent = inWedding ? null : workspace?.accent_color;
   useEffect(() => {
     const root = document.documentElement;
     if (!accent) return;
