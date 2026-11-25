@@ -12,6 +12,9 @@ import { CategoriesDialog } from "@/components/wedding/budget/categories-dialog"
 import { useWeddingMutations } from "@/features/wedding/api";
 import { useWeddingData } from "@/features/wedding/use-wedding";
 import { useWeddingBudget, useWeddingBudgetMutations } from "@/features/wedding/budget-api";
+import { useWeddingFunding, useWeddingFundingMutations } from "@/features/wedding/funding-api";
+import { overview } from "@/features/wedding/budget";
+import { FundingTab } from "@/components/wedding/budget/funding-tab";
 
 export const Route = createFileRoute("/_authenticated/casamento/orcamento")({
   head: () => ({
@@ -39,13 +42,15 @@ function Budget() {
   const m = useWeddingMutations(w.workspaceId, w.userId);
   const b = useWeddingBudget(w.workspaceId);
   const bm = useWeddingBudgetMutations(w.workspaceId, w.userId);
+  const fd = useWeddingFunding(w.workspaceId);
+  const fm = useWeddingFundingMutations(w.workspaceId, w.userId);
   const [tab, setTab] = useState("itens");
   const [editing, setEditing] = useState<{ id: string | null; category: string | null } | null>(
     null,
   );
   const [openId, setOpenId] = useState<string | null>(null);
   const [cats, setCats] = useState(false);
-  if (w.loading || b.loading) return <LoadingState />;
+  if (w.loading || b.loading || fd.loading) return <LoadingState />;
 
   const opened = b.items.find((i) => i.id === openId) ?? null;
   const editingItem = editing?.id ? (b.items.find((i) => i.id === editing.id) ?? null) : null;
@@ -60,17 +65,20 @@ function Budget() {
       title="Orçamento"
       subtitle="Só do casamento — nada é lançado no Financeiro geral."
     >
-      {b.error ? (
+      {b.error || fd.error ? (
         <p className="text-sm text-destructive">
           Não foi possível carregar o orçamento. Tente de novo.
         </p>
       ) : null}
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:inline-grid sm:w-auto sm:grid-cols-4">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:inline-grid sm:w-auto sm:grid-cols-5">
           <TabsTrigger value="itens">Itens</TabsTrigger>
           <TabsTrigger value="periodo">Por período</TabsTrigger>
           <TabsTrigger value="economia">Economia</TabsTrigger>
           <TabsTrigger value="avulsas">Avulsas</TabsTrigger>
+          <TabsTrigger value="fontes" className="col-span-2 sm:col-span-1">
+            Fontes e dívidas
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="itens" className="mt-5">
           <ItemsTab
@@ -99,6 +107,13 @@ function Budget() {
         </TabsContent>
         <TabsContent value="avulsas" className="mt-5">
           <ExpensesTab w={w} m={m} />
+        </TabsContent>
+        <TabsContent value="fontes" className="mt-5">
+          <FundingTab
+            data={fd}
+            m={fm}
+            weddingCost={overview(totalBudget, b.items, b.payments, w.expenses).committed}
+          />
         </TabsContent>
       </Tabs>
 

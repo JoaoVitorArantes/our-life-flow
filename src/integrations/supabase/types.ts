@@ -2892,6 +2892,74 @@ export type Database = {
           },
         ]
       }
+      wedding_funding_sources: {
+        Row: {
+          created_at: string
+          created_by: string
+          financial_cost: number | null
+          first_due_date: string | null
+          id: string
+          installment_amount: number | null
+          installment_count: number | null
+          interest_note: string | null
+          kind: string
+          name: string
+          notes: string | null
+          promised_amount: number | null
+          received_amount: number | null
+          received_on: string | null
+          total_to_repay: number | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          financial_cost?: number | null
+          first_due_date?: string | null
+          id?: string
+          installment_amount?: number | null
+          installment_count?: number | null
+          interest_note?: string | null
+          kind: string
+          name: string
+          notes?: string | null
+          promised_amount?: number | null
+          received_amount?: number | null
+          received_on?: string | null
+          total_to_repay?: number | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          financial_cost?: number | null
+          first_due_date?: string | null
+          id?: string
+          installment_amount?: number | null
+          installment_count?: number | null
+          interest_note?: string | null
+          kind?: string
+          name?: string
+          notes?: string | null
+          promised_amount?: number | null
+          received_amount?: number | null
+          received_on?: string | null
+          total_to_repay?: number | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_funding_sources_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wedding_gift_pledges: {
         Row: {
           amount: number | null
@@ -3444,6 +3512,111 @@ export type Database = {
             columns: ["workspace_id", "supplier_id"]
             isOneToOne: false
             referencedRelation: "wedding_suppliers"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_loan_installments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          due_date: string
+          id: string
+          note: string | null
+          number: number
+          source_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          due_date: string
+          id?: string
+          note?: string | null
+          number: number
+          source_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          due_date?: string
+          id?: string
+          note?: string | null
+          number?: number
+          source_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_loan_installments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_loan_installments_workspace_id_source_id_fkey"
+            columns: ["workspace_id", "source_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_funding_sources"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_loan_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          id: string
+          installment_id: string
+          note: string | null
+          paid_on: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          id?: string
+          installment_id: string
+          note?: string | null
+          paid_on: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          installment_id?: string
+          note?: string | null
+          paid_on?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_loan_payments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wedding_loan_payments_workspace_id_installment_id_fkey"
+            columns: ["workspace_id", "installment_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_loan_installments"
             referencedColumns: ["workspace_id", "id"]
           },
         ]
